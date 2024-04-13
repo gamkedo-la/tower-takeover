@@ -164,7 +164,66 @@ var world = initialWorld;
 // ================================================================================
 
 function onTick() {
+  _onTickUnitsEatAndDecay(world);
   _onTickFoodPath(world);
+}
+
+// --------------------------------------------------------------------------------
+// EAT AND DECAY FUNCTIONS
+// --------------------------------------------------------------------------------
+
+// Updates all units to gain and lose energy, such that units have a chance to
+// eat before completely dying, and units that have full energy will lose energy
+// first before eating again.
+function _onTickUnitsEatAndDecay(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+
+      _onTickTileEatAndDecay(tile);
+    }
+  }
+}
+
+function _onTickTileEatAndDecay(tile) {
+  if (Array.isArray(tile)) {
+    // Decay only, don't eat the food at hand.
+    for (const unit of tile) {
+      unit.energy--;
+    }
+  } else if (tile.tag === TILE_TYPE.WALL) {
+    // Do nothing, there are no units inside a wall.
+  } else if (tile.tag === TILE_TYPE.FOOD_FARM) {
+    // Food farm should restore food first.
+    tile.foodStored += 50;
+
+    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
+    tile.foodStored = _feedUnits(tile.farmers, tile.foodStored);
+
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
+    }
+  } else if (tile.tag === TILE_TYPE.FOOD_STORAGE) {
+    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
+
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
+    }
+  }
+}
+
+// ([Array-of Unit], Integer) -> Integer
+// Feeds the given list of units, with the given food remaining, returning the
+// food remaining after as many of the the given units have been fed.
+function _feedUnits(units, foodRemaining) {
+  for (const unit of units) {
+    const unitSpaceForFood = 100 - unit.energy;
+    const foodToTake = Math.min(10, foodRemaining, unitSpaceForFood);
+    unit.energy = Math.min(foodToTake, 100);
+    foodRemaining -= foodToTake;
+  }
+
+  return foodRemaining;
 }
 
 // --------------------------------------------------------------------------------

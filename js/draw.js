@@ -70,8 +70,8 @@ function onDraw() {
 	    rr += dl;
 	  }
 
-	  // IDEA: the lower the energy of the unit, the less saturated the colour.
-	  canvasContext.fillStyle = "green";
+	  const rbColor = 255 - 255 * (unit.energy / 100);
+	  canvasContext.fillStyle = `rgb(${rbColor}, 255, ${rbColor})`;
 	  canvasContext.fillRect(c * 32 + cc * dw, r * 32 + rr * dl, l, w);
 
 	  // If the unit is carrying food, the middle pixel is orange.
