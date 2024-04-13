@@ -94,6 +94,10 @@ function onDraw() {
 	// Orange square.
 	canvasContext.fillStyle = "orange";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
+      } else if (tile.tag === TILE_TYPE.CAPITAL) {
+	// Green square.
+	canvasContext.fillStyle = "green";
+	canvasContext.fillRect(c * 32, r * 32, 32, 32);
       }
     }
   }

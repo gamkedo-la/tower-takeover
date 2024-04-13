@@ -49,7 +49,8 @@
 // A Unit is a {energy: Integer, pathId: Integer, indexInPath: Integer, direction:
 // Direction, isCarryingFood: Boolean, hasMovedInTick: Boolean }
 // Represents a unit that is moving to a particular direction or not moving, and
-// may or may not be carrying food.
+// may or may not be carrying food. pathId and indexInPath are both -1 if the
+// unit is not associated with any paths.
 
 // A Direction is one of:
 // - TO: 0
@@ -73,6 +74,7 @@ const TILE_TYPE = Object.freeze({
   WALL: 0,
   FOOD_STORAGE: 1,
   FOOD_FARM: 2,
+  CAPITAL: 3,
 });
 
 // A FoodStorage is a {tag: TileType, foodStored: Integer, guards: [Array-of Unit],
@@ -86,6 +88,14 @@ const TILE_TYPE = Object.freeze({
 // A FoodFarm is a {tag: TileType, farmers: [Array-of Unit], guards: [Array-of Unit],
 // foodStored: Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the units working, the units standing guard, and the food stored.
+
+// A Capital is a {tag: TileType, isQueenAlive: Boolean, eggTimeGroups: [Array-of
+// EggTimeGroup], guards: [Array-of Unit], foodStored: Integer, pathUnitsQueues:
+// [Array-of PathUnitsQueue]}
+// Represents the building in which eggs are laid and hatched into units.
+
+// An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
+// Represents a group of eggs that have been laid for some number of ticks.
 
 // --------------------------------------------------------------------------------
 // INITIAL STATE
@@ -134,7 +144,7 @@ const foodFarm = {
   farmers: [],
   guards: [],
   foodStored: 10,
-  pathUnitsQueues: [{pathId: 0, unitsQueue: [foodFarmUnit, unit1, unit2, unit3]}],
+  pathUnitsQueues: [{pathId: 0, unitsQueue: []}],
 };
 const singleUnit = {
   energy: 100,
@@ -145,9 +155,17 @@ const singleUnit = {
   hasMovedInTick: false,
 };
 const singleUnit2 = {...singleUnit, indexInPath: 2};
+const capital = {
+  tag: TILE_TYPE.CAPITAL,
+  isQueenAlive: true,
+  eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
+  guards: [],
+  foodStored: 1000,
+  pathUnitsQueues: [],
+};
 const initialWorld = {
   grid: [
-    [wall, wall, wall, wall],
+    [wall, wall, capital, wall],
     [wall, foodFarm, [], wall],
     [wall, wall, [], wall],
     [wall, wall, foodStorage, wall],
@@ -163,9 +181,12 @@ var world = initialWorld;
 // FUNCTIONS
 // ================================================================================
 
+let count = 0;
+
 function onTick() {
   _onTickUnitsEatAndDecay(world);
   _onTickFoodPath(world);
+  _onTickEggs(world);
 }
 
 // --------------------------------------------------------------------------------
@@ -204,6 +225,13 @@ function _onTickTileEatAndDecay(tile) {
       tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
     }
   } else if (tile.tag === TILE_TYPE.FOOD_STORAGE) {
+    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
+
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
+    }
+  } else if (tile.tag === TILE_TYPE.CAPITAL) {
+    // For now no definition for queen ants, so don't feed the queen for now.
     tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
 
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
@@ -356,6 +384,14 @@ function _removePathUnitFromTile(tile, unit, pathId) {
 	break;
       }
     }
+  } else if (tile.tag == TILE_TYPE.CAPITAL) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      // Remove the given unit from the given pathUnitsQueue of the given pathId.
+      if (pathUnitsQueue.pathId == pathId) {
+	_removeUnitFromUnits(pathUnitsQueue.unitsQueue, unit);
+	break;
+      }
+    }
   }
 }
 
@@ -402,6 +438,51 @@ function _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths) {
   }
 }
 
+// --------------------------------------------------------------------------------
+// EGGS FUNCTIONS
+// --------------------------------------------------------------------------------
+
+function _onTickEggs(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+
+      _onTickTileEggs(tile);
+    }
+  }
+}
+
+function _onTickTileEggs(tile) {
+  // Only the capital is affected here.
+  if (tile.tag === TILE_TYPE.CAPITAL) {
+    // Increase all ticksPassed by one.
+    // If a group's ticksPassed is >= 10, then turn them into units inside the
+    // guards.
+    for (let i = tile.eggTimeGroups.length - 1; i >= 0; i--) {
+      // Tick egg time groups, and hatch a group into the given tile's guards if
+      // enough time has passed.
+      const eggTimeGroup = tile.eggTimeGroups[i];
+
+      eggTimeGroup.ticksPassed += 1;
+
+      if (eggTimeGroup.ticksPassed >= 10) {
+	for (let i = 0; i < eggTimeGroup.eggs; i++) {
+	  tile.guards.push({
+	    energy: 100,
+	    pathId: -1,
+	    indexInPath: -1,
+	    direction: DIRECTION.STATIONARY,
+	    isCarryingFood: false,
+	    hasMovedInTick: false,
+	  });
+	}
+
+	// Remove group.
+	tile.eggTimeGroups.splice(i, 1);
+      }
+    }
+  }
+}
 
 
 // --------------------------------------------------------------------------------
@@ -418,3 +499,4 @@ function _removeUnitFromUnits(units, unitToRemove) {
   }
   console.log("Warning: Didn't remove anything.");
 }
+
