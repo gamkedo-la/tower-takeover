@@ -10,21 +10,21 @@
 // DEPENDENCIES
 // ================================================================================
 // onTick() from logic.js
-// onDraw() from draw.js
+// onDraw(), initializeCanvas() from draw.js
 // document from The HTML DOM
 
 // ================================================================================
 // CONSTANTS
 // ================================================================================
-int FRAMES_PER_SECOND = 30;
+const FRAMES_PER_SECOND = 1;
 
 // ================================================================================
 // IMPLEMENTATION
 // ================================================================================
 
 window.onload = function() {
-  var canvas = document.getElementById('gameCanvas');
-  var canvasContext = canvas.getContext('2d');
+  const canvas = document.getElementById('gameCanvas');
+  initializeCanvas(canvas);
 
   // Initialize input.
   // Currently empty, add this in later.
