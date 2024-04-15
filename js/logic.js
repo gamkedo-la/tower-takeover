@@ -46,11 +46,21 @@
 // A WalkableTile is a [Array-of Unit]
 // Represents a tile that may or may not have units traversing it.
 
-// A Unit is a {energy: Integer, pathId: Integer, indexInPath: Integer, direction:
-// Direction, isCarryingFood: Boolean, hasMovedInTick: Boolean }
+// A Unit is a {energy: Integer, affiliation: Affiliation, pathId: Integer,
+// indexInPath: Integer, direction: Direction, isCarryingFood: Boolean,
+// hasMovedInTick: Boolean }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
 // unit is not associated with any paths.
+
+// A Affiliation is one of:
+// - YOURS: 0,
+// - ENEMY: 1,
+// Represents the type of enemy.
+const AFFILIATION = Object.freeze({
+  YOURS: 0,
+  ENEMY: 1,
+});
 
 // A Direction is one of:
 // - TO: 0
@@ -68,6 +78,8 @@ const DIRECTION = Object.freeze({
 // - WALL: 0
 // - FOOD_STORAGE: 1
 // - FOOD_FARM: 2
+// - CAPITAL: 3
+// - ENEMY_CAMP: 4
 // Represents the type of tile. The WalkableTile is notably missing because it
 // is an array and does not need a tag to distinguish itself.
 const TILE_TYPE = Object.freeze({
@@ -75,6 +87,7 @@ const TILE_TYPE = Object.freeze({
   FOOD_STORAGE: 1,
   FOOD_FARM: 2,
   CAPITAL: 3,
+  ENEMY_CAMP: 4,
 });
 
 // A FoodStorage is a {tag: TileType, foodStored: Integer, guards: [Array-of Unit],
@@ -89,13 +102,18 @@ const TILE_TYPE = Object.freeze({
 // foodStored: Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the units working, the units standing guard, and the food stored.
 
-// A Capital is a {tag: TileType, isQueenAlive: Boolean, eggTimeGroups: [Array-of
-// EggTimeGroup], guards: [Array-of Unit], foodStored: Integer, pathUnitsQueues:
-// [Array-of PathUnitsQueue]}
+// A Capital is a {tag: TileType, isQueenAlive: Boolean, eggTimeGroups:
+// [Array-of EggTimeGroup], guards: [Array-of Unit], enemyUnits: [Array-of
+// Unit], foodStored: Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the building in which eggs are laid and hatched into units.
 
 // An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
 // Represents a group of eggs that have been laid for some number of ticks.
+
+// An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit], foodStored:
+// Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
+// Represents that which holds enemies that want to walk to the capital to kill
+// the queen.
 
 // --------------------------------------------------------------------------------
 // INITIAL STATE
@@ -110,9 +128,18 @@ const paths0 =  [{
     {r: 3, c: 2},
   ],
   lastIndex: 3,
+}, {
+  orderedPoss: [
+    {r: 2, c: 3},
+    {r: 2, c: 2},
+    {r: 1, c: 2},
+    {r: 0, c: 2},
+  ],
+  lastIndex: 3,
 }];
 const foodFarmUnit = {
   energy: 100,
+  affiliation: AFFILIATION.YOURS,
   pathId: 0,
   indexInPath: 0,
   direction: DIRECTION.TO,
@@ -144,10 +171,11 @@ const foodFarm = {
   farmers: [],
   guards: [],
   foodStored: 10,
-  pathUnitsQueues: [{pathId: 0, unitsQueue: []}],
+  pathUnitsQueues: [{pathId: 0, unitsQueue: [unit1, unit2, unit3, unit4]}],
 };
 const singleUnit = {
   energy: 100,
+  affiliation: AFFILIATION.YOURS,
   pathId: 0,
   indexInPath: 1,
   direction: DIRECTION.FROM,
@@ -160,14 +188,23 @@ const capital = {
   isQueenAlive: true,
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
   guards: [],
+  enemyUnits: [],
   foodStored: 1000,
   pathUnitsQueues: [],
+};
+const enemyUnit1 = {...singleUnit, affiliation: AFFILIATION.ENEMY, indexInPath: 0, direction: DIRECTION.TO};
+const enemyUnit2 = structuredClone(enemyUnit1);
+const enemyCamp = {
+  tag: TILE_TYPE.ENEMY_CAMP,
+  enemyUnits: [enemyUnit1],
+  foodStored: 1000,
+  pathUnitsQueues: [{pathId: 1, unitsQueue: [enemyUnit2]}],
 };
 const initialWorld = {
   grid: [
     [wall, wall, capital, wall],
     [wall, foodFarm, [], wall],
-    [wall, wall, [], wall],
+    [wall, wall, [], enemyCamp],
     [wall, wall, foodStorage, wall],
   ],
   paths: paths0}
@@ -185,7 +222,8 @@ let count = 0;
 
 function onTick() {
   _onTickUnitsEatAndDecay(world);
-  _onTickFoodPath(world);
+  _onTickBattles(world);
+  _onTickPaths(world);
   _onTickEggs(world);
 }
 
@@ -237,6 +275,12 @@ function _onTickTileEatAndDecay(tile) {
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
       tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
     }
+  } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
+    tile.foodStored = _feedUnits(tile.enemyUnits, tile.foodStored);
+
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
+    }
   }
 }
 
@@ -261,12 +305,12 @@ function _feedUnits(units, foodRemaining) {
 // Updates all units to take one step closer to their destination, and if a unit
 // is already at their destination, to drop off what they are carrying, or to
 // take a resource and leave one step out.
-function _onTickFoodPath(world) {
+function _onTickPaths(world) {
   for (let r = 0; r < world.grid.length; r++) {
     for (let c = 0; c < world.grid[r].length; c++) {
       const tile = world.grid[r][c];
  
-      _onTickTileInFoodPath(tile, world.grid, world.paths);
+      _onTickTileInPaths(tile, world.grid, world.paths);
     }
   }
 
@@ -295,11 +339,11 @@ function _onTickFoodPath(world) {
   }
 }
 
-function _onTickTileInFoodPath(tile, worldGrid, worldPaths) {
+function _onTickTileInPaths(tile, worldGrid, worldPaths) {
   if (Array.isArray(tile)) {
     // Cannot use for...of loop because array will be modified.
     for (let i = tile.length - 1; i >= 0; i--) {
-      _onTickUnitInFoodPath(tile[i], worldGrid, worldPaths);
+      _onTickUnitInPaths(tile[i], worldGrid, worldPaths);
     }
   } else if (tile.tag == TILE_TYPE.WALL) {
     // Do nothing.
@@ -316,7 +360,7 @@ function _onTickTileInFoodPath(tile, worldGrid, worldPaths) {
 // (if moving at all), and if arrive at source or destination, add the unit to
 // the queue, and drop off food if arrive at storage. If leaving source or
 // destination, take food if farm.
-function _onTickUnitInFoodPath(unit, worldGrid, worldPaths) {
+function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   // Moves the given unit one step forward in the given path from its given index
   // with the given direction, if it is moving.
   if (unit.hasMovedInTick) {
@@ -392,6 +436,14 @@ function _removePathUnitFromTile(tile, unit, pathId) {
 	break;
       }
     }
+  } else if (tile.tag == TILE_TYPE.ENEMY_CAMP) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      // Remove the given unit from the given pathUnitsQueue of the given pathId.
+      if (pathUnitsQueue.pathId == pathId) {
+	_removeUnitFromUnits(pathUnitsQueue.unitsQueue, unit);
+	break;
+      }
+    }
   }
 }
 
@@ -404,19 +456,26 @@ function _addPathUnitToTile(tile, unit, pathId) {
     // Do nothing, illegal state.
     console.log("Illegal state: Adding path unit to a wall tile.");
   } else {
-    // Assume has pathUnitsQueues field.
-    for (const pathUnitsQueue of tile.pathUnitsQueues) {
-      // Add unit to the right queue
-      if (pathUnitsQueue.pathId === pathId) {
-	pathUnitsQueue.unitsQueue.push(unit);
-	break;
+    // If enemy entering capital, then the enemy should not be added to the
+    // pathUnitsQueues, but instead the enemyUnits
+    if (tile.tag == TILE_TYPE.CAPITAL && unit.affiliation == AFFILIATION.ENEMY) {
+      tile.enemyUnits.push(unit);
+    } else {
+      // Assume has pathUnitsQueues field.
+      for (const pathUnitsQueue of tile.pathUnitsQueues) {
+	// Add unit to the right queue
+	if (pathUnitsQueue.pathId === pathId) {
+	  pathUnitsQueue.unitsQueue.push(unit);
+	  break;
+	}
+      }
+
+      if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
+	tile.foodStored++;
+	unit.isCarryingFood = false;
       }
     }
-
-    if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
-      tile.foodStored++;
-      unit.isCarryingFood = false;
-    }
+    
   }
 }
 
@@ -432,8 +491,75 @@ function _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths) {
   for (let i = 0; i < pathUnitsQueue.unitsQueue.length; i++) {
     const unit = pathUnitsQueue.unitsQueue[i];
     if (!unit.hasMovedInTick) {
-      _onTickUnitInFoodPath(unit, worldGrid, worldPaths);
+      _onTickUnitInPaths(unit, worldGrid, worldPaths);
       break;
+    }
+  }
+}
+
+// --------------------------------------------------------------------------------
+// BATTLE FUNCTIONS
+// --------------------------------------------------------------------------------
+
+function _onTickBattles(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+
+      _onTickTileBattles(tile);
+    }
+  }
+}
+
+function _onTickTileBattles(tile) {
+  // For now, battles only occur in walkable tiles and the capital.
+  if (Array.isArray(tile)) {
+    const tileOriginalLength = tile.length;
+    let yourUnitsIndices = [];
+    let enemyUnitsIndices = [];
+
+    // Push smallest first, so that we pop the largest.
+    for (let i = 0; i < tile.length; i++) {
+      const unit = tile[i];
+      if (unit.affiliation === AFFILIATION.YOURS) {
+	yourUnitsIndices.push(i);
+      } else if (unit.affiliation === AFFILIATION.ENEMY) {
+	enemyUnitsIndices.push(i);
+      }
+    }
+
+    const numBattles = Math.min(yourUnitsIndices.length, enemyUnitsIndices.length);
+
+    const tileNewLength = tileOriginalLength - (numBattles * 2);
+    for (let i = 0; i < numBattles; i++) {
+      const yourUnitIdx = yourUnitsIndices.pop();
+      const enemyUnitIdx = enemyUnitsIndices.pop();
+
+      tile[yourUnitIdx] = false;
+      tile[enemyUnitIdx] = false;
+    }
+
+    // Filter for non-falses
+    let currIdx = 0;
+    for (let i = 0; i < tileOriginalLength; i++) {
+      const unit = tile[i];
+
+      if (unit != false) {
+	tile[currIdx] = unit;
+	currIdx++;
+      }
+    }
+    tile.length = tileNewLength;
+  } else if (tile.tag === TILE_TYPE.CAPITAL) {
+    // For now, only guards are used in battle. Potentially can use units in
+    // queue.
+    while (tile.guards.length > 0 && tile.enemyUnits.length > 0) {
+      tile.guards.pop();
+      tile.enemyUnits.pop();
+    }
+
+    if (tile.enemyUnits.length > tile.guards.length) {
+      tile.isQueenAlive = false;
     }
   }
 }

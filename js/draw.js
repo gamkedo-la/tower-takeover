@@ -55,10 +55,10 @@ function onDraw() {
 	// tile.
 	let rr = 0;
 	let cc = 0;
-	// The length and width of a unit is 3x3, with a one pixel space between
+	// The length and width of a unit is 9x9, with a one pixel space between
 	// them.
-	let l = 3;
-	let w = 3;
+	let l = 9;
+	let w = 9;
 	let dl = l + 1;
 	let dw = w + 1;
 
@@ -71,13 +71,18 @@ function onDraw() {
 	  }
 
 	  const rbColor = 255 - 255 * (unit.energy / 100);
-	  canvasContext.fillStyle = `rgb(${rbColor}, 255, ${rbColor})`;
-	  canvasContext.fillRect(c * 32 + cc * dw, r * 32 + rr * dl, l, w);
+	  // If yours, color green, if enemy, color red.
+	  if (unit.affiliation === AFFILIATION.YOURS) {
+	    canvasContext.fillStyle = `rgb(${rbColor}, 255, ${rbColor})`;
+	  } else if (unit.affiliation === AFFILIATION.ENEMY) {
+	    canvasContext.fillStyle = `rgb(255, ${rbColor}, ${rbColor})`;
+	  }
+	  canvasContext.fillRect(c * 32 + cc, r * 32 + rr, l, w);
 
 	  // If the unit is carrying food, the middle pixel is orange.
 	  if (unit.isCarryingFood) {
 	    canvasContext.fillStyle = "orange";
-	    canvasContext.fillRect(c * 32 + cc + 1, r * 32 + rr + 1, 1, 1);
+	    canvasContext.fillRect(c * 32 + cc + 5, r * 32 + rr + 5, 1, 1);
 	  }
 	  
 	  cc += dw;
@@ -97,6 +102,10 @@ function onDraw() {
       } else if (tile.tag === TILE_TYPE.CAPITAL) {
 	// Green square.
 	canvasContext.fillStyle = "green";
+	canvasContext.fillRect(c * 32, r * 32, 32, 32);
+      } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
+	// Red square.
+	canvasContext.fillStyle = "red";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
       }
     }
