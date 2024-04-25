@@ -51,14 +51,30 @@ function onDraw() {
 	canvasContext.fillStyle = "white";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
 
+	// A unit's anatomy:
+	// Qyyyy
+	//  yxxy
+	//  yxxy
+	// yxxxxy
+	// yxooxy
+	// yxooxy
+	// yxxxxy
+	// yyyyyy
+
+	// o = food, x = body (ally or enemy color), y = outline,
+	// Q = top-left most pixel coordinate
+	// if no food and no outline, then they would just be x color.
+
+	const hasBlueOutline = true;
+
 	// Row and column position in pixels of the unit to be drawn within the
 	// tile.
 	let rr = 0;
 	let cc = 0;
-	// The length and width of a unit is 9x9, with a one pixel space between
+	// The length and width of a unit is 6x8, with a one pixel space between
 	// them.
-	let l = 9;
-	let w = 9;
+	let l = 8;
+	let w = 6;
 	let dl = l + 1;
 	let dw = w + 1;
 
@@ -70,19 +86,49 @@ function onDraw() {
 	    rr += dl;
 	  }
 
-	  const rbColor = 255 - 255 * (unit.energy / 100);
+	  // Drawing strategy:
+	  // Let (c, r) be the top-left most pixel coordinate Q
+	  // - Draw everything as if everything is x.
+	  //   - Draw beginning at (c + 1, r), 4x3.
+	  //   - Draw beginning at (c, r + 3), 6x5.
+	  // - Draw food if it exists.
+	  //   - Draw beginning at (c + 2, r + 4), 2x2.
+	  // - Draw outline if it exists.
+	  //   - Draw beginning at (c + 1, r), 1x3.
+	  //   - Draw beginning at (c, r + 3), 1x5.
+	  //   - Draw beginning at (c + 1, r + 7), 4x1.
+	  //   - Draw beginning at (c + 5, r + 3), 1x5.
+	  //   - Draw beginning at (c + 4, r), 1x3.
+	  //   - Draw beginning at (c + 2, r), 2x1.
+
+	  const mainColorComponent = 155 + 100 * (unit.energy / 100);
+	  const otherColorComponents = 255 - 255 * (unit.energy / 100);
 	  // If yours, color green, if enemy, color red.
 	  if (unit.affiliation === AFFILIATION.YOURS) {
-	    canvasContext.fillStyle = `rgb(${rbColor}, 255, ${rbColor})`;
+	    canvasContext.fillStyle = `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`;
 	  } else if (unit.affiliation === AFFILIATION.ENEMY) {
-	    canvasContext.fillStyle = `rgb(255, ${rbColor}, ${rbColor})`;
+	    canvasContext.fillStyle = `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
 	  }
-	  canvasContext.fillRect(c * 32 + cc, r * 32 + rr, l, w);
 
-	  // If the unit is carrying food, the middle pixel is orange.
+	  // Draw everything as if x.
+	  _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr, 4, 3);
+	  _drawRectangleInSubtile(canvasContext, c, r, cc, rr + 3, 6, 5);
+
+	  // Draw food if it exists
 	  if (unit.isCarryingFood) {
 	    canvasContext.fillStyle = "orange";
-	    canvasContext.fillRect(c * 32 + cc + 5, r * 32 + rr + 5, 1, 1);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 2, rr + 4, 2, 2);
+	  }
+
+	  // Draw outline if it exists
+	  if (hasBlueOutline) {
+	    canvasContext.fillStyle = "blue";
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr, 1, 3);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc, rr + 3, 1, 5);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr + 7, 4, 1);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 5, rr + 3, 1, 5);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 4, rr, 1, 3);
+	    _drawRectangleInSubtile(canvasContext, c, r, cc + 2, rr, 2, 1);
 	  }
 	  
 	  cc += dw;
@@ -131,4 +177,13 @@ function onDraw() {
       prevPos = currPos;
     }
   }
+}
+
+// A subtile is a smaller tile within a grid of tiles in a 32x32 tile.
+function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subtileTopLeftC, subtileTopLeftR, width, height) {
+  canvasContext.fillRect(
+    tileTopLeftC * 32 + subtileTopLeftC,
+    tileTopLeftR * 32 + subtileTopLeftR,
+    width, height
+  );
 }
