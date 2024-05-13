@@ -19,7 +19,8 @@
 // DATA DEFINITIONS
 // ================================================================================
 // A World is a {grid: [2D-array-of Tile], paths: [Array-of Path],
-// buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType Null]}
+// buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
+// Null], clickMode: ClickMode }
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid.
 
@@ -117,6 +118,15 @@ const TILE_TYPE = Object.freeze({
 // Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents that which holds enemies that want to walk to the capital to kill
 // the queen.
+
+// A ClickMode is one of:
+// - Info
+// - Build
+// Represents what clicking means.
+const CLICK_MODE = Object.freeze({
+  INFO: 0,
+  BUILD: 1,
+});
 
 // --------------------------------------------------------------------------------
 // INITIAL STATE
@@ -221,6 +231,7 @@ const initialWorld = {
   paths: paths0,
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,
+  clickMode: CLICK_MODE.INFO,
 }
 
 // --------------------------------------------------------------------------------
@@ -243,6 +254,15 @@ function onTick() {
 
 function selectBuildTile(tileType) {
   world.buildTileSelected = tileType;
+}
+
+function selectMapTile(r, c) {
+  world.mapTileSelected = world.grid[r][c];
+  console.log("Selected map tile:", r, c);
+}
+
+function changeClickMode(clickMode) {
+  world.clickMode = clickMode;
 }
 
 // Changes the map tile in the given position row r and column c, to the given
