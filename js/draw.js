@@ -27,14 +27,27 @@
 // They cannot be const because they are not initialized when the module gets
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
+let mouseX, mouseY;
 
 // ================================================================================
 // FUNCTION
 // ================================================================================
 
+// Ought to be called in window.onload.
 function initializeCanvas(canvas0) {
   canvas = canvas0;
   canvasContext = canvas.getContext('2d');
+
+  function _onMouseClick(evt) {
+    mouseX = evt.clientX - rect.left - root.scrollLeft;
+    mouseY = evt.clientY - rect.top - root.scrollTop;
+
+    document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
+  }
+  
+  const rect = canvas.getBoundingClientRect();
+  const root = document.documentElement;
+  canvas.addEventListener("click", _onMouseClick);
 }
 
 // Observes the world from the logic module, ideally without changing it.

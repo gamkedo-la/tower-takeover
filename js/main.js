@@ -26,9 +26,6 @@ window.onload = function() {
   const canvas = document.getElementById('gameCanvas');
   initializeCanvas(canvas);
 
-  // Initialize input.
-  // Currently empty, add this in later.
-
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
