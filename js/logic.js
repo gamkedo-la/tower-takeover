@@ -18,7 +18,8 @@
 // ================================================================================
 // DATA DEFINITIONS
 // ================================================================================
-// A World is a {grid: [2D-array-of Tile], paths: [Array-of Path]}
+// A World is a {grid: [2D-array-of Tile], paths: [Array-of Path],
+// buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType Null]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid.
 
@@ -76,18 +77,20 @@ const DIRECTION = Object.freeze({
 
 // A TileType is one of:
 // - WALL: 0
-// - FOOD_STORAGE: 1
-// - FOOD_FARM: 2
-// - CAPITAL: 3
-// - ENEMY_CAMP: 4
-// Represents the type of tile. The WalkableTile is notably missing because it
-// is an array and does not need a tag to distinguish itself.
+// - WALKABLE_TILE: 1
+// - FOOD_STORAGE: 2
+// - FOOD_FARM: 3
+// - CAPITAL: 4
+// - ENEMY_CAMP: 5
+// Represents the type of tile. Note that WalkableTile Tiles do not need the
+// TILE_TYPE to distinguish itself from the other cases.
 const TILE_TYPE = Object.freeze({
   WALL: 0,
-  FOOD_STORAGE: 1,
-  FOOD_FARM: 2,
-  CAPITAL: 3,
-  ENEMY_CAMP: 4,
+  WALKABLE_TILE: 1,
+  FOOD_STORAGE: 2,
+  FOOD_FARM: 3,
+  CAPITAL: 4,
+  ENEMY_CAMP: 5,
 });
 
 // A FoodStorage is a {tag: TileType, foodStored: Integer, guards: [Array-of Unit],
@@ -200,6 +203,14 @@ const enemyCamp = {
   foodStored: 1000,
   pathUnitsQueues: [{pathId: 1, unitsQueue: [enemyUnit2]}],
 };
+
+const buildTileOptions0 = [
+  TILE_TYPE.WALL,
+  TILE_TYPE.WALKABLE_TILE,
+  TILE_TYPE.FOOD_STORAGE,
+  TILE_TYPE.FOOD_FARM,
+];
+
 const initialWorld = {
   grid: [
     [wall, wall, capital, wall],
@@ -207,7 +218,10 @@ const initialWorld = {
     [wall, wall, [], enemyCamp],
     [wall, wall, foodStorage, wall],
   ],
-  paths: paths0}
+  paths: paths0,
+  buildTileOptions: buildTileOptions0,
+  buildTileSelected: null,
+}
 
 // --------------------------------------------------------------------------------
 // WORLD STATE
@@ -225,6 +239,57 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
+}
+
+function selectBuildTile(tileType) {
+  world.buildTileSelected = tileType;
+}
+
+// Changes the map tile in the given position row r and column c, to the given
+// tile type.
+function changeMapTile(r, c, tileType) {
+  // If the tile contains units, they will just disappear.
+  // TODO(ID: 1): Kill units inside tiles that get destroyed. Do this when the kill
+  // code is written.
+  switch (tileType) {
+  case TILE_TYPE.WALL:
+    // NOTE(marvin):
+    // Not exactly sure if players should be able to do this... We can play it
+    // by ear, and remove it as an option if it doesn't work out.
+    world.grid[r][c] = {tag: tileType};
+    break;
+  case TILE_TYPE.WALKABLE_TILE:
+    // NOTE(marvin):
+    // Not exactly sure if players should be able to do this... We can play it
+    // by ear, and remove it as an option if it doesn't work out.
+    world.grid[r][c] = [];
+    break;
+  case TILE_TYPE.FOOD_STORAGE:
+    world.grid[r][c] = {
+      tag: tileType,
+      foodStored: 0,
+      guards: [],
+      pathUnitsQueues: [],
+    };
+    break;
+  case TILE_TYPE.FOOD_FARM:
+    world.grid[r][c] = {
+      tag: tileType,
+      farmers: [],
+      guards: [],
+      foodStored: 0,
+      pathUnitsQueues: [],
+    };
+    break;
+  case TILE_TYPE.CAPITAL:
+    console.log("Players shouldn't have access to building the capital.");
+    break;
+  case TILE_TYPE.ENEMY_CAMP:
+    console.log("Players shouldn't have access to building the enemy camp.");
+    break;
+  default:
+    console.log("Unrecognized tile type:", tileType);
+  }
 }
 
 // --------------------------------------------------------------------------------

@@ -17,7 +17,10 @@
 // DEPENDENCIES
 // ================================================================================
 
-// world from logic.js
+// world, selectBuildTile from logic.js
+
+// Draw code really shouldn't touch any logic functions, but we will take
+// convenience over clean design for now.
 
 // ================================================================================
 // DATA DEFINITIONS
@@ -28,6 +31,16 @@
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
 let mouseX, mouseY;
+
+// A BuildTileUIInfo is a (topLeftC: Number, topLeftR: Number, buildTiles:
+// [List-of TileType]) which represents
+// (top left column in logical positioning, top left row in logical
+// positioning).
+const buildTileUIInfo = {
+  topLeftC: 1,
+  topLeftR: 5,
+  buildTiles: world.buildTileOptions,
+}
 
 // ================================================================================
 // FUNCTION
@@ -43,9 +56,39 @@ function initializeCanvas(canvas0) {
     mouseY = evt.clientY - rect.top - root.scrollTop;
 
     document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
+
+    // Check if the click happens to be inside a building select.
+    // If so, log the selected building.
+    // Deduce screen region from build tiles and log the tile type if click
+    // within a region. Otherwise, do nothing.
+    for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
+      if (mouseY >= buildTileUIInfo.topLeftR * 32 &&
+	  mouseY <= (buildTileUIInfo.topLeftR + 1) * 32 &&
+	  mouseX >= (buildTileUIInfo.topLeftC + i) * 32 &&
+	  mouseX <= (buildTileUIInfo.topLeftC + i + 1) * 32) {
+        const buildTile = buildTileUIInfo.buildTiles[i];
+	selectBuildTile(buildTile);
+      }
+    }
+
+    // Check if the click happens in a tile in the map.
+    // If so, changes the clicked tile to the selected build tile if not null.
+    // In any other situation, does nothing.
+    if (world.buildTileSelected != null) {
+      for (let r = 0; r < world.grid.length; r++) {
+	for (let c = 0; c < world.grid[r].length; c++) {
+	  if (mouseY >= r * 32 &&
+	      mouseY <= (r + 1) * 32 &&
+	      mouseX >= c * 32 &&
+	      mouseX <= (c + 1) * 32) {
+	    changeMapTile(r, c, world.buildTileSelected);
+	  }
+	}
+      }
+    }
   }
   
-  const rect = canvas.getBoundingClientRect();
+   const rect = canvas.getBoundingClientRect();
   const root = document.documentElement;
   canvas.addEventListener("click", _onMouseClick);
 }
@@ -146,26 +189,8 @@ function onDraw() {
 	  
 	  cc += dw;
 	}
-      } else if (tile.tag === TILE_TYPE.WALL) {
-	// Black square.
-	canvasContext.fillStyle = "black";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
-      } else if (tile.tag === TILE_TYPE.FOOD_STORAGE) {
-	// Blue square.
-	canvasContext.fillStyle = "blue";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
-      } else if (tile.tag === TILE_TYPE.FOOD_FARM) {
-	// Orange square.
-	canvasContext.fillStyle = "orange";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
-      } else if (tile.tag === TILE_TYPE.CAPITAL) {
-	// Green square.
-	canvasContext.fillStyle = "green";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
-      } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
-	// Red square.
-	canvasContext.fillStyle = "red";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
+      } else {
+	_drawTileTypeAtPos(tile.tag, c, r);
       }
     }
   }
@@ -189,6 +214,55 @@ function onDraw() {
 
       prevPos = currPos;
     }
+  }
+
+  // Draw the build tile options window.
+  // These are arbitrary values, tune them as necessary and potentially make
+  // their positions dependent on the positions of other UI elements.
+  for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
+    const buildTile = buildTileUIInfo.buildTiles[i];
+    const cc = i;
+
+    _drawTileTypeAtPos(buildTile, buildTileUIInfo.topLeftC + cc, buildTileUIInfo.topLeftR);
+  }
+
+  // Draw the currently selected tile.
+  const selectedBuildTileTopLeftR = 7;
+  const selectedBuildTileTopLeftC = 1;
+
+  if (world.buildTileSelected != null) {
+      _drawTileTypeAtPos(world.buildTileSelected,
+			 selectedBuildTileTopLeftR,
+			 selectedBuildTileTopLeftC);
+  }
+}
+
+// c and r are in terms of 32
+function _drawTileTypeAtPos(tileType, c, r) {
+  if (tileType === TILE_TYPE.WALKABLE_TILE) {
+    // White square.
+    canvasContext.fillStyle = "white";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+  } else if (tileType === TILE_TYPE.WALL) {
+    // Black square.
+    canvasContext.fillStyle = "black";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+  } else if (tileType === TILE_TYPE.FOOD_STORAGE) {
+    // Blue square.
+    canvasContext.fillStyle = "blue";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+  } else if (tileType === TILE_TYPE.FOOD_FARM) {
+    // Orange square.
+    canvasContext.fillStyle = "orange";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+  } else if (tileType === TILE_TYPE.CAPITAL) {
+    // Green square.
+    canvasContext.fillStyle = "green";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+  } else if (tileType === TILE_TYPE.ENEMY_CAMP) {
+    // Red square.
+    canvasContext.fillStyle = "red";
+    canvasContext.fillRect(c * 32, r * 32, 32, 32);
   }
 }
 
