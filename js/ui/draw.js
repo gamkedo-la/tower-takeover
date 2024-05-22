@@ -27,8 +27,6 @@
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
 
-let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
-
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
 // ================================================================================

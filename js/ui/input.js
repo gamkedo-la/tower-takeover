@@ -20,6 +20,7 @@
 // ================================================================================
 // The position the mouse is currently at in pixel coordinates.
 let mouseX, mouseY;
+let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
 
 // ================================================================================
 // FUNCTIONS
