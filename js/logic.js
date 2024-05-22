@@ -20,7 +20,7 @@
 // ================================================================================
 // A World is a {grid: [2D-array-of Tile], paths: [Array-of Path],
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
-// Null], clickMode: ClickMode }
+// Null], clickMode: ClickMode, selectedUnits: [Array-of Unit] }
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid.
 
@@ -50,7 +50,7 @@
 
 // A Unit is a {energy: Integer, affiliation: Affiliation, pathId: Integer,
 // indexInPath: Integer, direction: Direction, isCarryingFood: Boolean,
-// hasMovedInTick: Boolean }
+// hasMovedInTick: Boolean, isSelected: Boolean }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
 // unit is not associated with any paths.
@@ -158,6 +158,7 @@ const foodFarmUnit = {
   direction: DIRECTION.TO,
   isCarryingFood: false,
   hasMovedInTick: false,
+  isSelected: false,
 };
 const foodStorageUnit = {
   ...foodFarmUnit,
@@ -194,6 +195,7 @@ const singleUnit = {
   direction: DIRECTION.FROM,
   isCarryingFood: false,
   hasMovedInTick: false,
+  isSelected: false,
 };
 const singleUnit2 = {...singleUnit, indexInPath: 2};
 const capital = {
@@ -232,6 +234,7 @@ const initialWorld = {
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,
   clickMode: CLICK_MODE.INFO,
+  selectedUnits: [],
 }
 
 // --------------------------------------------------------------------------------
@@ -258,7 +261,14 @@ function selectBuildTile(tileType) {
 
 function selectMapTile(r, c) {
   world.mapTileSelected = world.grid[r][c];
-  console.log("Selected map tile:", r, c);
+}
+
+function clearSelectedUnits() {
+  for (const selectedUnit of world.selectedUnits) {
+    selectedUnit.isSelected = false;
+  }
+
+  world.selectedUnits = [];
 }
 
 function changeClickMode(clickMode) {

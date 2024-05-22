@@ -2,8 +2,13 @@
 // MODULE INTERFACE
 // ================================================================================
 // Responsible for drawing the world using the HTML canvas API so that the
-// players can see the game. This module is equivalent to the view in the MVC
-// architecture. 
+// players can see the game, as well as reading user input from keyboard and
+// mouse. Furthermore, this module sometimes takes some liberties in calling the
+// module logic's functions, sometimes even changing the world state
+// directly. That's not ideal but it gets things running for now. Such liberties
+// should only be taken inside the input callback functions in
+// initializeCanvas. There will come a day where those callback functions are
+// defined else where.
 //
 // initializeCanvas(Canvas): Void
 // Initializes the canvas of the draw module. Ought to be called once prior to
@@ -30,7 +35,9 @@
 // They cannot be const because they are not initialized when the module gets
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
+
 let mouseX, mouseY;
+let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}
 
 // A BuildTileUIInfo is a (topLeftC: Number, topLeftR: Number, buildTiles:
 // [List-of TileType]) which represents
@@ -42,9 +49,20 @@ const buildTileUIInfo = {
   buildTiles: world.buildTileOptions,
 }
 
+const tileUnitsUIInfo = {
+  topLeftX: 800,
+  topLeftY: 0,
+}
+
+let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
+
 // ================================================================================
-// FUNCTION
+// FUNCTIONS
 // ================================================================================
+
+// TODO(marvin): Move the input callback functions elsewhere. Still need access
+// to the view's data definitions. Perhaps have a module called UI, which
+// contains input handling as well as placement of GUI blocks.
 
 // Ought to be called in window.onload.
 function initializeCanvas(canvas0) {
@@ -102,6 +120,56 @@ function initializeCanvas(canvas0) {
     }
   }
 
+  function _onMouseDragStart(evt) {
+    mouseX = evt.clientX - rect.left - root.scrollLeft;
+    mouseY = evt.clientY - rect.top - root.scrollTop;
+    mouseDownPos = {x: mouseX, y: mouseY};
+    clearSelectedUnits();
+  }
+
+  function _onMouseDragEnd(evt) {
+    mouseX = evt.clientX - rect.left - root.scrollLeft;
+    mouseY = evt.clientY - rect.top - root.scrollTop;
+    mouseUpPos = {x: mouseX, y: mouseY};
+
+    // If not drag, don't treat as drag.
+    if (mouseDownPos.x === mouseUpPos.x && mouseDownPos.y === mouseUpPos.y) {
+      return;
+    }
+
+    // Here, we evaluate the drag
+    if (mouseDownPos.x <= (world.grid[0].length + 1) * 32 &&
+        mouseDownPos.y <= (world.grid.length + 1) * 32) {
+      // First mousedown inside map
+      console.log("DRAG INSIDE MAP");
+    } else if (world.clickMode == CLICK_MODE.INFO &&
+	       mouseDownPos.x >= tileUnitsUIInfo.topLeftX &&
+	       mouseDownPos.y >= tileUnitsUIInfo.topLeftY) {
+      // First mousedown inside tile units display
+      console.log("DRAG INSIDE TILE UNITS DISPLAY");
+      const cornerPos1 = mouseDownPos;
+      const cornerPos2 = mouseUpPos;
+      const [ startX, endX ] = cornerPos1.x <= cornerPos2.x
+	? [ cornerPos1.x, cornerPos2.x ]
+	: [ cornerPos2.x, cornerPos1.x ];
+      const [ startY, endY ] = cornerPos1.y <= cornerPos2.y
+	    ? [ cornerPos1.y, cornerPos2.y ]
+	    : [ cornerPos2.y, cornerPos1.y ];
+
+      for (let x = Math.ceil(startX); x <= Math.floor(endX); x++) {
+	for (let y = Math.ceil(startY); y <= Math.floor(endY); y++) {
+	  if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
+	    const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
+	    if (possibleUnitInCell != undefined) {
+	      possibleUnitInCell.isSelected = true;
+	    }
+	  }
+
+	}
+      }
+    }
+  }
+
   function _onKeyDown(evt) {
     const KEY_1 = 49;
     const KEY_2 = 50;
@@ -118,8 +186,60 @@ function initializeCanvas(canvas0) {
   const rect = canvas.getBoundingClientRect();
   const root = document.documentElement;
   canvas.addEventListener("click", _onMouseClick);
+  canvas.addEventListener("mousedown", _onMouseDragStart);
+  canvas.addEventListener("mouseup", _onMouseDragEnd);
   document.addEventListener("keydown", _onKeyDown);
 }
+
+// Assumes that given pixel position is inside tile units display.
+function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
+  const posRelativeToTopLeft = {
+    x: pxPos.x - tileUnitsUIInfo.topLeftX,
+    y: pxPos.y - tileUnitsUIInfo.topLeftY
+  };
+
+  const maxPosRelativeToTopLeft = {
+    x: 1200 - tileUnitsUIInfo.topLeftX,
+    y: 680 - tileUnitsUIInfo.topLeftY,
+  };
+
+  // TODO(marvin): Generalise these constants to a struct, shared between the
+  // draw and this.
+  const l = 18;
+  const w = 24;
+  const dl = 4;
+  const dw = 4;
+
+  const flooredX = Math.ceil(posRelativeToTopLeft.x / (l + dl));
+  const remX = posRelativeToTopLeft.x % (l + dl);
+  const borderX = (remX <= l) ? 0 : 0.5;
+
+  const flooredY = Math.ceil(posRelativeToTopLeft.y / (w + dw));
+  const remY = posRelativeToTopLeft.y % (w + dw);
+  const borderY = (remY <= w) ? 0: 0.5;
+
+  return {
+    x: flooredX + borderX,
+    y: flooredY + borderY,
+  };
+}
+
+// TODO(marvin): Make executable test cases.
+// (5, 5) -> (0, 0)
+// (18, 24) -> (0, 0)
+// (19, 24) -> (0.5, 0)
+// (18, 25) -> (0, 0.5)
+// (19, 25) -> (0.5, 0.5)
+// (22, 28) -> (0.5, 0.5)
+
+// (23, 29) -> (1, 1)
+// (40, 52) -> (1, 1)
+// (51, 53) -> (1.5, 1.5)
+// (44, 56) -> (1.5, 1.5)
+// (45, 57) -> (2, 2)
+
+// (100, 436) -> (5, 16)
+
 
 // Observes the world from the logic module, ideally without changing it.
 // Assumes that initializeCanvas has been called.
@@ -139,6 +259,10 @@ function onDraw() {
 	canvasContext.fillStyle = "white";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
 
+	// TODO(marvin): Make a drawUnitTable function, generalizes the one used
+	// in drawing the unitsInTileDisplay as well. Apply the abstraction
+	// recipe.
+	
 	// A unit's anatomy:
 	// Qyyyy
 	//  yxxy
@@ -250,13 +374,10 @@ function onDraw() {
 
   if (world.clickMode == CLICK_MODE.INFO && world.mapTileSelected != null) {
     // Window to show units in the selected tile.
-    // NOTE(marvin): There will likely be overlaps with the existing walkable
-    // tile draw code. Opportunity for compression.
 
     // Pixel positions
-    const topLeftR = 0;
-    const topLeftC = 800;
     const tile = world.mapTileSelected;
+    tileUnitsInDisplay = [[]];  // 2D array
 
     if (Array.isArray(tile)) {
       const hasBlueOutline = true;
@@ -270,8 +391,8 @@ function onDraw() {
       // them.
       const l = 18;
       const w = 24;
-      const dl = l + 4;
-      const dw = w + 4;
+      const dl = 4;
+      const dw = 4;
 
       for (let i = 0; i < tile.length; i++) {
 	// Draw a unit, with rr, cc, l, w, dl, dw as accumulators.
@@ -281,10 +402,24 @@ function onDraw() {
 	if (cc >= 1200) {
 	  cc = 0;
 	  rr += dl;
+
+	  tileUnitsInDisplay.push([]);
 	}
 
 	const mainColorComponent = 155 + 100 * (unit.energy / 100);
 	const otherColorComponents = 255 - 255 * (unit.energy / 100);
+
+	if (unit.isSelected) {
+	  canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
+	  // Fill the entire cell.
+	  canvasContext.fillRect(
+	    tileUnitsUIInfo.topLeftX + cc,
+	    tileUnitsUIInfo.topLeftY + rr,
+	    l,
+	    w,
+	  );
+	  
+	}
 
 	if (unit.affiliation === AFFILIATION.YOURS) {
 	  canvasContext.fillStyle = `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`;
@@ -292,24 +427,24 @@ function onDraw() {
 	  canvasContext.fillStyle = `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
 	}
 
-	// IWASHERE: Copy over the unit draw code, but replace
-	// _drawRectangleInSubtile with regular draw rect.
-	// The constants would have to change as well... just eye ball it, the
-	// design is likely to change.
-
-	canvasContext.fillRect(topLeftC + cc + 4, topLeftR + rr, 16, 9);
-	canvasContext.fillRect(topLeftC + cc, topLeftR + rr + 12, 24, 20);
+	canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc + 4, tileUnitsUIInfo.topLeftY + rr, 16, 9);
+	canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc, tileUnitsUIInfo.topLeftY + rr + 12, 24, 20);
 
 	if (unit.isCarryingFood) {
 	  canvasContext.fillStyle = "orange";
-	  canvasContext.fillRect(topLeftC + cc + 8, topLeftR + rr + 16, 8, 8);
+	  canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc + 8, tileUnitsUIInfo.topLeftY + rr + 16, 8, 8);
 	}
+
+	tileUnitsInDisplay[tileUnitsInDisplay.length - 1].push(unit);
 
 	cc += dw;
       }
       
     } else if (tile.tag == TILE_TYPE.FOOD_STORAGE) {
       // TODO(marvin): Do the other cases.
+      // TODO(marvin): Create function Tile -> [List-of (Role,
+      // Units)]. Every tile should generalize list of units with their fields
+      // to just Role to units mapping.
     }
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
