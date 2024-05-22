@@ -10,7 +10,7 @@
 // DEPENDENCIES
 // ================================================================================
 // onTick() from logic.js
-// onDraw(), initializeCanvas() from draw.js
+// onDraw(), initializeDraw() from draw.js
 // document from The HTML DOM
 
 // ================================================================================
@@ -24,7 +24,8 @@ const FRAMES_PER_SECOND = 1;
 
 window.onload = function() {
   const canvas = document.getElementById('gameCanvas');
-  initializeCanvas(canvas);
+  initializeDraw(canvas);
+  initializeInput(canvas);
 
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.

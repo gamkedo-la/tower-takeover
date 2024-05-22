@@ -3,14 +3,9 @@
 // ================================================================================
 // Responsible for drawing the world using the HTML canvas API so that the
 // players can see the game, as well as reading user input from keyboard and
-// mouse. Furthermore, this module sometimes takes some liberties in calling the
-// module logic's functions, sometimes even changing the world state
-// directly. That's not ideal but it gets things running for now. Such liberties
-// should only be taken inside the input callback functions in
-// initializeCanvas. There will come a day where those callback functions are
-// defined else where.
-//
-// initializeCanvas(Canvas): Void
+// mouse.
+
+// initializeDraw(Canvas): Void
 // Initializes the canvas of the draw module. Ought to be called once prior to
 // the start of the event loop.
 //
@@ -21,11 +16,7 @@
 // ================================================================================
 // DEPENDENCIES
 // ================================================================================
-
-// world, selectBuildTile from logic.js
-
-// Draw code really shouldn't touch any logic functions, but we will take
-// convenience over clean design for now.
+// world from logic.js
 
 // ================================================================================
 // DATA DEFINITIONS
@@ -36,23 +27,7 @@
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
 
-let mouseX, mouseY;
-let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}
-
-// A BuildTileUIInfo is a (topLeftC: Number, topLeftR: Number, buildTiles:
-// [List-of TileType]) which represents
-// (top left column in logical positioning, top left row in logical
-// positioning).
-const buildTileUIInfo = {
-  topLeftC: 1,
-  topLeftR: 5,
-  buildTiles: world.buildTileOptions,
-}
-
-const tileUnitsUIInfo = {
-  topLeftX: 800,
-  topLeftY: 0,
-}
+let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
 
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
@@ -65,142 +40,21 @@ let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 // contains input handling as well as placement of GUI blocks.
 
 // Ought to be called in window.onload.
-function initializeCanvas(canvas0) {
+function initializeDraw(canvas0) {
   canvas = canvas0;
   canvasContext = canvas.getContext('2d');
-
-  function _onMouseClick(evt) {
-    mouseX = evt.clientX - rect.left - root.scrollLeft;
-    mouseY = evt.clientY - rect.top - root.scrollTop;
-
-    document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
-
-    if (world.clickMode == CLICK_MODE.INFO) {
-      // Check if the click happens inside a map tile.
-      for (let r = 0; r < world.grid.length; r++) {
-	for (let c = 0; c < world.grid[r].length; c++) {
-	  if (mouseY >= r * 32 &&
-	      mouseY <= (r + 1) * 32 &&
-	      mouseX >= c * 32 &&
-	      mouseX <= (c + 1) * 32) {
-	    selectMapTile(r, c);
-	  }
-	}
-      }
-    } else if (world.clickMode == CLICK_MODE.BUILD) {
-      // Check if the click happens to be inside a building select.
-      // If so, log the selected building.
-      // Deduce screen region from build tiles and log the tile type if click
-      // within a region. Otherwise, do nothing.
-      for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
-	if (mouseY >= buildTileUIInfo.topLeftR * 32 &&
-	    mouseY <= (buildTileUIInfo.topLeftR + 1) * 32 &&
-	    mouseX >= (buildTileUIInfo.topLeftC + i) * 32 &&
-	    mouseX <= (buildTileUIInfo.topLeftC + i + 1) * 32) {
-	  const buildTile = buildTileUIInfo.buildTiles[i];
-	  selectBuildTile(buildTile);
-	}
-      }
-
-      // Check if the click happens in a tile in the map.
-      // If so, changes the clicked tile to the selected build tile if not null.
-      // In any other situation, does nothing.
-      if (world.buildTileSelected != null) {
-	for (let r = 0; r < world.grid.length; r++) {
-	  for (let c = 0; c < world.grid[r].length; c++) {
-	    if (mouseY >= r * 32 &&
-		mouseY <= (r + 1) * 32 &&
-		mouseX >= c * 32 &&
-		mouseX <= (c + 1) * 32) {
-	      changeMapTile(r, c, world.buildTileSelected);
-	    }
-	  }
-	}
-      }
-    }
-  }
-
-  function _onMouseDragStart(evt) {
-    mouseX = evt.clientX - rect.left - root.scrollLeft;
-    mouseY = evt.clientY - rect.top - root.scrollTop;
-    mouseDownPos = {x: mouseX, y: mouseY};
-    clearSelectedUnits();
-  }
-
-  function _onMouseDragEnd(evt) {
-    mouseX = evt.clientX - rect.left - root.scrollLeft;
-    mouseY = evt.clientY - rect.top - root.scrollTop;
-    mouseUpPos = {x: mouseX, y: mouseY};
-
-    // If not drag, don't treat as drag.
-    if (mouseDownPos.x === mouseUpPos.x && mouseDownPos.y === mouseUpPos.y) {
-      return;
-    }
-
-    // Here, we evaluate the drag
-    if (mouseDownPos.x <= (world.grid[0].length + 1) * 32 &&
-        mouseDownPos.y <= (world.grid.length + 1) * 32) {
-      // First mousedown inside map
-      console.log("DRAG INSIDE MAP");
-    } else if (world.clickMode == CLICK_MODE.INFO &&
-	       mouseDownPos.x >= tileUnitsUIInfo.topLeftX &&
-	       mouseDownPos.y >= tileUnitsUIInfo.topLeftY) {
-      // First mousedown inside tile units display
-      console.log("DRAG INSIDE TILE UNITS DISPLAY");
-      const cornerPos1 = mouseDownPos;
-      const cornerPos2 = mouseUpPos;
-      const [ startX, endX ] = cornerPos1.x <= cornerPos2.x
-	? [ cornerPos1.x, cornerPos2.x ]
-	: [ cornerPos2.x, cornerPos1.x ];
-      const [ startY, endY ] = cornerPos1.y <= cornerPos2.y
-	    ? [ cornerPos1.y, cornerPos2.y ]
-	    : [ cornerPos2.y, cornerPos1.y ];
-
-      for (let x = Math.ceil(startX); x <= Math.floor(endX); x++) {
-	for (let y = Math.ceil(startY); y <= Math.floor(endY); y++) {
-	  if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
-	    const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
-	    if (possibleUnitInCell != undefined) {
-	      possibleUnitInCell.isSelected = true;
-	    }
-	  }
-
-	}
-      }
-    }
-  }
-
-  function _onKeyDown(evt) {
-    const KEY_1 = 49;
-    const KEY_2 = 50;
-
-    evt.preventDefault();
-
-    if (evt.keyCode == KEY_1) {
-      changeClickMode(CLICK_MODE.INFO);
-    } else if (evt.keyCode == KEY_2) {
-      changeClickMode(CLICK_MODE.BUILD);
-    }
-  }
-  
-  const rect = canvas.getBoundingClientRect();
-  const root = document.documentElement;
-  canvas.addEventListener("click", _onMouseClick);
-  canvas.addEventListener("mousedown", _onMouseDragStart);
-  canvas.addEventListener("mouseup", _onMouseDragEnd);
-  document.addEventListener("keydown", _onKeyDown);
 }
 
 // Assumes that given pixel position is inside tile units display.
 function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
   const posRelativeToTopLeft = {
-    x: pxPos.x - tileUnitsUIInfo.topLeftX,
-    y: pxPos.y - tileUnitsUIInfo.topLeftY
+    x: pxPos.x - unitsInTileUIInfo.topLeftX,
+    y: pxPos.y - unitsInTileUIInfo.topLeftY
   };
 
   const maxPosRelativeToTopLeft = {
-    x: 1200 - tileUnitsUIInfo.topLeftX,
-    y: 680 - tileUnitsUIInfo.topLeftY,
+    x: 1200 - unitsInTileUIInfo.topLeftX,
+    y: 680 - unitsInTileUIInfo.topLeftY,
   };
 
   // TODO(marvin): Generalise these constants to a struct, shared between the
@@ -242,7 +96,7 @@ function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
 
 
 // Observes the world from the logic module, ideally without changing it.
-// Assumes that initializeCanvas has been called.
+// Assumes that initializeDraw has been called.
 function onDraw() {
   // Draw background.
   canvasContext.fillStyle = "rgb(58, 37, 37)";
@@ -413,8 +267,8 @@ function onDraw() {
 	  canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
 	  // Fill the entire cell.
 	  canvasContext.fillRect(
-	    tileUnitsUIInfo.topLeftX + cc,
-	    tileUnitsUIInfo.topLeftY + rr,
+	    unitsInTileUIInfo.topLeftX + cc,
+	    unitsInTileUIInfo.topLeftY + rr,
 	    l,
 	    w,
 	  );
@@ -427,12 +281,12 @@ function onDraw() {
 	  canvasContext.fillStyle = `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
 	}
 
-	canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc + 4, tileUnitsUIInfo.topLeftY + rr, 16, 9);
-	canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc, tileUnitsUIInfo.topLeftY + rr + 12, 24, 20);
+	canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc + 4, unitsInTileUIInfo.topLeftY + rr, 16, 9);
+	canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc, unitsInTileUIInfo.topLeftY + rr + 12, 24, 20);
 
 	if (unit.isCarryingFood) {
 	  canvasContext.fillStyle = "orange";
-	  canvasContext.fillRect(tileUnitsUIInfo.topLeftX + cc + 8, tileUnitsUIInfo.topLeftY + rr + 16, 8, 8);
+	  canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc + 8, unitsInTileUIInfo.topLeftY + rr + 16, 8, 8);
 	}
 
 	tileUnitsInDisplay[tileUnitsInDisplay.length - 1].push(unit);
