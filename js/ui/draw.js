@@ -27,6 +27,7 @@
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
 
+
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
 // ================================================================================
@@ -99,7 +100,7 @@ function onDraw() {
   // Draw background.
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
-  
+
   // Drawing the tiles.
   for (let r = 0; r < world.grid.length; r++) {
     for (let c = 0; c < world.grid[r].length; c++) {
@@ -111,92 +112,7 @@ function onDraw() {
 	canvasContext.fillStyle = "white";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
 
-	// TODO(marvin): Make a drawUnitTable function, generalizes the one used
-	// in drawing the unitsInTileDisplay as well. Apply the abstraction
-	// recipe.
-	
-	// A unit's anatomy:
-	// Qyyyy
-	//  yxxy
-	//  yxxy
-	// yxxxxy
-	// yxooxy
-	// yxooxy
-	// yxxxxy
-	// yyyyyy
-
-	// o = food, x = body (ally or enemy color), y = outline,
-	// Q = top-left most pixel coordinate
-	// if no food and no outline, then they would just be x color.
-
-	const hasBlueOutline = true;
-
-	// Row and column position in pixels of the unit to be drawn within the
-	// tile.
-	let rr = 0;
-	let cc = 0;
-	// The length and width of a unit is 6x8, with a one pixel space between
-	// them.
-	let l = 8;
-	let w = 6;
-	let dl = l + 1;
-	let dw = w + 1;
-
-	for (let i = 0; i < tile.length; i++) {
-	  // Draw a unit, with rr, cc, l, w, dl, dw as accumulators.
-	  const unit = tile[i];
-	  if (cc >= 32) {
-	    cc = 0;
-	    rr += dl;
-	  }
-
-	  // Drawing strategy:
-	  // Let (c, r) be the top-left most pixel coordinate Q
-	  // - Draw everything as if everything is x.
-	  //   - Draw beginning at (c + 1, r), 4x3.
-	  //   - Draw beginning at (c, r + 3), 6x5.
-	  // - Draw food if it exists.
-	  //   - Draw beginning at (c + 2, r + 4), 2x2.
-	  // - Draw outline if it exists.
-	  //   - Draw beginning at (c + 1, r), 1x3.
-	  //   - Draw beginning at (c, r + 3), 1x5.
-	  //   - Draw beginning at (c + 1, r + 7), 4x1.
-	  //   - Draw beginning at (c + 5, r + 3), 1x5.
-	  //   - Draw beginning at (c + 4, r), 1x3.
-	  //   - Draw beginning at (c + 2, r), 2x1.
-
-	  const mainColorComponent = 155 + 100 * (unit.energy / 100);
-	  const otherColorComponents = 255 - 255 * (unit.energy / 100);
-	  // If yours, color green, if enemy, color red.
-	  if (unit.affiliation === AFFILIATION.YOURS) {
-	    canvasContext.fillStyle = `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`;
-	  } else if (unit.affiliation === AFFILIATION.ENEMY) {
-	    canvasContext.fillStyle = `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
-	  }
-
-	  // Draw everything as if x.
-	  _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr, 4, 3);
-	  _drawRectangleInSubtile(canvasContext, c, r, cc, rr + 3, 6, 5);
-
-	  // Draw food if it exists
-	  if (unit.isCarryingFood) {
-	    canvasContext.fillStyle = "orange";
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 2, rr + 4, 2, 2);
-	  }
-
-	  // Draw outline if it exists
-	  if (hasBlueOutline) {
-	    canvasContext.fillStyle = "blue";
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr, 1, 3);
-	    _drawRectangleInSubtile(canvasContext, c, r, cc, rr + 3, 1, 5);
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 1, rr + 7, 4, 1);
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 5, rr + 3, 1, 5);
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 4, rr, 1, 3);
-	    _drawRectangleInSubtile(canvasContext, c, r, cc + 2, rr, 2, 1);
-	  }
-	  
-	  cc += dw;
-	}
+	_drawUnitsTable(tile, 30, 24, 2, 2, c * 32, r * 32, 32);
       } else {
 	_drawTileTypeAtPos(tile.tag, c, r);
       }
@@ -229,69 +145,9 @@ function onDraw() {
 
     // Pixel positions
     const tile = world.mapTileSelected;
-    tileUnitsInDisplay = [[]];  // 2D array
 
     if (Array.isArray(tile)) {
-      const hasBlueOutline = true;
-
-      // Row and column position in pixels of the unit to be drawn within the
-      // window.
-      let rr = 0;
-      let cc = 0;
-
-      // The length and width of a units is 18x24, with 4 pixels space between
-      // them.
-      const l = 18;
-      const w = 24;
-      const dl = 4;
-      const dw = 4;
-
-      for (let i = 0; i < tile.length; i++) {
-	// Draw a unit, with rr, cc, l, w, dl, dw as accumulators.
-	const unit = tile[i];
-
-	// If off the screen, wrap around.
-	if (cc >= 1200) {
-	  cc = 0;
-	  rr += dl;
-
-	  tileUnitsInDisplay.push([]);
-	}
-
-	const mainColorComponent = 155 + 100 * (unit.energy / 100);
-	const otherColorComponents = 255 - 255 * (unit.energy / 100);
-
-	if (unit.isSelected) {
-	  canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
-	  // Fill the entire cell.
-	  canvasContext.fillRect(
-	    unitsInTileUIInfo.topLeftX + cc,
-	    unitsInTileUIInfo.topLeftY + rr,
-	    l,
-	    w,
-	  );
-	  
-	}
-
-	if (unit.affiliation === AFFILIATION.YOURS) {
-	  canvasContext.fillStyle = `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`;
-	} else if (unit.affiliation === AFFILIATION.ENEMY) {
-	  canvasContext.fillStyle = `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
-	}
-
-	canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc + 4, unitsInTileUIInfo.topLeftY + rr, 16, 9);
-	canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc, unitsInTileUIInfo.topLeftY + rr + 12, 24, 20);
-
-	if (unit.isCarryingFood) {
-	  canvasContext.fillStyle = "orange";
-	  canvasContext.fillRect(unitsInTileUIInfo.topLeftX + cc + 8, unitsInTileUIInfo.topLeftY + rr + 16, 8, 8);
-	}
-
-	tileUnitsInDisplay[tileUnitsInDisplay.length - 1].push(unit);
-
-	cc += dw;
-      }
-      
+      _drawUnitsTable(tile, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftY, tileUnitsInDisplay);
     } else if (tile.tag == TILE_TYPE.FOOD_STORAGE) {
       // TODO(marvin): Do the other cases.
       // TODO(marvin): Create function Tile -> [List-of (Role,
@@ -357,4 +213,84 @@ function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subt
     tileTopLeftR * 32 + subtileTopLeftR,
     width, height
   );
+}
+
+
+// Draws a 2D grid of units that are in the given tile, with each unit having a
+// vertical length l, width w, vertical gap dl, and horizontal gap dw, with the
+// grid having the top left (X, Y) px coordinates as topLeftX and topLeftY
+// respectively, and a total width of tableWidthPx.
+function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, refGrid = false) {
+  const maximumX = topLeftX + tableWidthPx;
+  if (refGrid) {
+    // Reset refGrid to its initial state, a 2D array with only one element,
+    // which is an empty array.
+    refGrid.length = 0;
+    refGrid.push([]);
+  }
+  
+  // Row and column position in px of the unit to be drawn.
+  let rr = 0;
+  let cc = 0;
+
+  for (const unit of units) {
+    if (cc >= maximumX) {
+      cc = 0;
+      rr += l + dl;
+
+      if (refGrid) {
+	refGrid.push([]);
+      }
+    }
+
+    _drawUnit(unit, topLeftX + cc, topLeftY + rr, l, w);
+
+    if (refGrid) {
+      refGrid[refGrid.length - 1].push(unit);
+    }
+    
+    cc += w + dw;
+  }
+}
+
+// A unit's (rough) anatomy:
+// Qyyyy
+//  yxxy
+//  yxxy
+// yxxxxy
+// yxooxy
+// yxooxy
+// yxxxxy
+// yyyyyy
+
+// o = food, x = body (ally or enemy color), y = outline,
+// Q = top-left most pixel coordinate
+// if no food and no outline, then they would just be x color.
+
+// Ideally, l should be divisible by 6, and l divisible by 8.
+function _drawUnit(unit, topLeftX, topLeftY, l, w) {
+  const mainColorComponent = 155 + 100 * (unit.energy / 100);
+  const otherColorComponents = 255 - 255 * (unit.energy / 100);
+
+  // Fill in the entire cell if light blue
+  if (unit.isSelected) {
+    canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
+    canvasContext.fillRect(topLeftX, topLeftY, l, w);
+  }
+
+  // The base (head + body)
+  canvasContext.fillStyle = (unit.affiliation === AFFILIATION.YOURS)
+    ? `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`
+    : `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
+  canvasContext.fillRect(topLeftX + (w / 8), topLeftY, (w / 4 * 3), l / 3);
+  canvasContext.fillRect(topLeftX, topLeftY + (l / 3) + 4, w, l / 3 * 2 - 4);
+
+  if (unit.isCarryingFood) {
+    canvasContext.fillStyle = "orange";
+    canvasContext.fillRect(
+      topLeftX + (w / 4),
+      topLeftY + l / 2 + 3,
+      w / 2,
+      l / 3 - 2);
+  }
 }
