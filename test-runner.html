@@ -6,16 +6,15 @@
   <link rel="stylesheet" href="style.css">
 </head>
 
-<body id="indexBody">
-  <canvas id="gameCanvas" width="1200" height="680"></canvas>
-
+<body>
   <script src="js/logic.js"></script>
   <script src="js/ui/gui-defs.js"></script>
   <script src="js/ui/input-constants.js"></script>
   <script src="js/ui/input.js"></script>
   <script src="js/ui/draw.js"></script>
-  <script src="js/main.js"></script>
-  <!-- TODO FINAL: Delete me -->
-  <p id="debugText" style="color: white;">(recent text display or temporary debut output)</p>
+  <script src="js/test-runner.js"></script>
+  <div style="overflow-y: scroll; ">
+    <p id="testOutput" style="color: white; text-align: left; font-size: 200%; ">Running tests...</p>
+    </div>
 </body>
 </html>

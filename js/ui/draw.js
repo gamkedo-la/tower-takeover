@@ -77,22 +77,6 @@ function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
   };
 }
 
-// TODO(marvin): Make executable test cases.
-// (5, 5) -> (0, 0)
-// (18, 24) -> (0, 0)
-// (19, 24) -> (0.5, 0)
-// (18, 25) -> (0, 0.5)
-// (19, 25) -> (0.5, 0.5)
-// (22, 28) -> (0.5, 0.5)
-
-// (23, 29) -> (1, 1)
-// (40, 52) -> (1, 1)
-// (51, 53) -> (1.5, 1.5)
-// (44, 56) -> (1.5, 1.5)
-// (45, 57) -> (2, 2)
-
-// (100, 436) -> (5, 16)
-
 
 // Observes the world from the logic module, ideally without changing it.
 // Assumes that initializeDraw has been called.
