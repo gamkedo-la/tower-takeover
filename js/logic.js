@@ -34,19 +34,134 @@
 // Represents the position in the world's grid, where the larger r is, the more
 // downward in the grid, and the larger c is, the more rightward in the grid.
 
+// A TileType is one of the following.
+// Represents the type of tile. Note that no tile on the map should have a type
+// of unassigned.
+const TILE_TYPE = Object.freeze({
+  UNASSIGNED: 0,
+  WALL: 1,
+  WALKABLE_TILE: 2,
+  FOOD_STORAGE: 3,
+  FOOD_FARM: 4,
+  CAPITAL: 5,
+  ENEMY_CAMP: 6,
+});
+
+// An ATile is a (tag: TileType, society: [Mapping Role (Nat, [List-of Unit])])
+// All tiles are abstract tiles, with the exception of WalkableTile which is
+// only an array and is guaranteed to only contain walkers.
+
 // A Tile is one of:
 // - Wall
 // - WalkableTile
 // - FoodStorage
 // - FoodFarm
+// - Capital
+// - EnemyCamp
 // Represents the type of tile that it is.
+// NOTE(marvin):
+// As of now, all derived tiles can only make a shallow copy of this
+// tile. structuredClone(), which is used to make deep copies does not work with
+// objects with methods defined. Currently, the abstract base tile does not
+// contain any fields with itself are objects that are require cloning. Thus,
+// shallow cloning will suffice.
+const ATILE = {
+  tag: TILE_TYPE.UNASSIGNED,  // Must be replaced by derived tile
+  society: new Map(),         // Must be replaced by derived tile
 
-// A Wall is a {tag: TileType}
+  feedAllUnitsButAttackers: function () {
+    // Does nothing by default.
+  }
+};
+
+const foodStorageMixin = {
+  foodStored: 0,
+  
+  feedAllUnitsButAttackers: function () {
+    for (const [role, {units}] of this.society) {
+      if (role === ROLE.ATTACKER) {
+	continue;
+      }
+
+      this.foodStored = _feedUnits(units, this.foodStored);
+    }
+  }
+}
+
+// TODO(marvin): Remove all uses of hasOwnProperty("pathUnitsQueues") and
+// replace with this mixin. Unlike foodStorageMixin, there's a lot more going
+// on.  The intersection with foodStorageMixin is interesting...
+const cyclicEndPointMixin = {
+  
+}
+/*
+  REFERENCE
+if (tile.hasOwnProperty('pathUnitsQueues')) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
+    }
+  }
+
+if (tile.hasOwnProperty("pathUnitsQueues")) {
+	  for (const pathUnitsQueue of tile.pathUnitsQueues) {
+	    // Resetting the unit.hasMovedInTick flag for PathUnitsQueue
+	    for (const unit of pathUnitsQueue.unitsQueue) {
+	      unit.hasMovedInTick = false;
+	    }
+	  }
+}
+
+if (tile.hasOwnProperty("pathUnitsQueues")) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths);
+    }
+}
+
+if (tile.hasOwnProperty("pathUnitsQueues")) {
+	for (const pathUnitsQueue of tile.pathUnitsQueues) {
+	  // Add unit to the right queue
+	  if (pathUnitsQueue.pathId === pathId) {
+	    pathUnitsQueue.unitsQueue.push(unit);
+	    break;
+	  }
+	}
+
+	if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
+	  tile.foodStored++;
+	  unit.isCarryingFood = false;
+	}	
+      }
+*/
+
+// A Role is one of:
+// - FARMER: 0
+// - SOLDIER: 1
+// - WALKER: 2
+// - QUEEN: 3
+// Represents a way to categorize units based on what they do.
+const ROLE = Object.freeze({
+  FARMER: 0,
+  SOLDIER: 1,
+  WALKER: 2,
+  QUEEN: 3,
+});
+
+// A Wall is an ATile that has no society.
 // Represents a tile type that cannot be walked into but can be replaced with
 // other tile types.
+// Wall prefab.
+const WALL_PREFAB = {...ATILE, tag: TILE_TYPE.WALL, society: new Map()}
 
-// A WalkableTile is a [Array-of Unit]
+// A WalkableTile is an ATile with walker and attacker roles in its society.
 // Represents a tile that may or may not have units traversing it.
+const WALKABLE_TILE_PREFAB = {
+  ...ATILE,
+  tag: TILE_TYPE.WALKABLE_TILE,
+  society: new Map([
+    [ROLE.WALKER, {capacity: Infinity, units: []}],
+    [ROLE.ATTACKER, {capacity: Infinity, units: []}],
+  ])
+}
 
 // A Unit is a {energy: Integer, affiliation: Affiliation, pathId: Integer,
 // indexInPath: Integer, direction: Direction, isCarryingFood: Boolean,
@@ -54,6 +169,7 @@
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
 // unit is not associated with any paths.
+
 
 // A Affiliation is one of:
 // - YOURS: 0,
@@ -76,48 +192,61 @@ const DIRECTION = Object.freeze({
   STATIONARY: 2,
 });
 
-// A TileType is one of:
-// - WALL: 0
-// - WALKABLE_TILE: 1
-// - FOOD_STORAGE: 2
-// - FOOD_FARM: 3
-// - CAPITAL: 4
-// - ENEMY_CAMP: 5
-// Represents the type of tile. Note that WalkableTile Tiles do not need the
-// TILE_TYPE to distinguish itself from the other cases.
-const TILE_TYPE = Object.freeze({
-  WALL: 0,
-  WALKABLE_TILE: 1,
-  FOOD_STORAGE: 2,
-  FOOD_FARM: 3,
-  CAPITAL: 4,
-  ENEMY_CAMP: 5,
-});
-
-// A FoodStorage is a {tag: TileType, foodStored: Integer, guards: [Array-of Unit],
+// A FoodStorage is a {tag: TileType, foodStored: Integer,
 // pathUnitsQueues: [Array-of PathUnitsQueue]}
-// Represents the amount of food contained, the guards, the paths it is on and
+// Represents the amount of food contained, the society of guards, the paths it is on and
 // the units waiting to be deployed on the path in order.
+const FOOD_STORAGE_PREFAB = Object.assign({
+  ...ATILE,
+  tag: TILE_TYPE.FOOD_STORAGE,
+  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
+		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
+  pathUnitsQueues: [],
+}, foodStorageMixin);
 
 // A PathUnitsQueue is a {pathId: Integer, unitsQueue: [Queue-of Units]}
 // Represents a queue of units to be deployed on the path.
 
-// A FoodFarm is a {tag: TileType, farmers: [Array-of Unit], guards: [Array-of Unit],
-// foodStored: Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
-// Represents the units working, the units standing guard, and the food stored.
+// A FoodFarm is a {tag: TileType, foodStored: Integer, pathUnitsQueues:
+// [Array-of PathUnitsQueue]}
+// Represents the society of farmers and guards, and the food stored.
+const FOOD_FARM_PREFAB = Object.assign({
+  ...ATILE,
+  tag: TILE_TYPE.FOOD_FARM,
+  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
+		    [ROLE.FARMER, {capacity: 20, units: []}],
+		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
+  pathUnitsQueues: [],
+}, foodStorageMixin);
 
 // A Capital is a {tag: TileType, isQueenAlive: Boolean, eggTimeGroups:
-// [Array-of EggTimeGroup], guards: [Array-of Unit], enemyUnits: [Array-of
-// Unit], foodStored: Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
+// [Array-of EggTimeGroup], foodStored: Integer, pathUnitsQueues: [Array-of
+// PathUnitsQueue]}
 // Represents the building in which eggs are laid and hatched into units.
+
+// TODO(capital): Finalise its design
+const CAPITAL_PREFAB = {
+  ...ATILE,
+  tag: TILE_TYPE.CAPITAL,
+  society: new Map([[ROLE.SOLDIER, {capacty: 20, units: []}],
+		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
+}
 
 // An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
 // Represents a group of eggs that have been laid for some number of ticks.
 
-// An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit], foodStored:
-// Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
+// An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit],
+// pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents that which holds enemies that want to walk to the capital to kill
 // the queen.
+// Note that soldier here refers to the player's units, and attacker refers to
+// the enemy's units.
+const ENEMY_CAMP_PREFAB = {
+  ...ATILE,
+  tag: TILE_TYPE.ENEMY_CAMP,
+  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
+		    [ROLE.ATTACKER, {capacity: 20, units: []}]])
+}
 
 // A ClickMode is one of:
 // - Info
@@ -128,11 +257,12 @@ const CLICK_MODE = Object.freeze({
   BUILD: 1,
 });
 
+
 // --------------------------------------------------------------------------------
 // INITIAL STATE
 // --------------------------------------------------------------------------------
-const wall = {tag: TILE_TYPE.WALL};
-const emptyWalkableTile = [];
+const wall = {...WALL_PREFAB};
+const emptyWalkableTile = _.cloneDeep(WALKABLE_TILE_PREFAB);
 const paths0 =  [{
   orderedPoss: [
     {r: 1, c: 1},
@@ -165,28 +295,32 @@ const foodStorageUnit = {
   direction: DIRECTION.FROM,
   indexInPath: 3,
 };
-const fsUnit1 = structuredClone(foodStorageUnit);
-const fsUnit2 = structuredClone(foodStorageUnit);
-const fsUnit3 = structuredClone(foodStorageUnit);
-const fsUnit4 = structuredClone(foodStorageUnit);
+const fsUnit1 = _.cloneDeep(foodStorageUnit);
+const fsUnit2 = _.cloneDeep(foodStorageUnit);
+const fsUnit3 = _.cloneDeep(foodStorageUnit);
+const fsUnit4 = _.cloneDeep(foodStorageUnit);
 
 const foodStorage = {
-  tag: TILE_TYPE.FOOD_STORAGE,
+  ..._.cloneDeep(FOOD_STORAGE_PREFAB),
   foodStored: 10,
-  guards: [],
   pathUnitsQueues: [{pathId: 0, unitsQueue: []}],
 };
-const unit1 = structuredClone(foodFarmUnit);
-const unit2 = structuredClone(foodFarmUnit);
-const unit3 = structuredClone(foodFarmUnit);
-const unit4 = structuredClone(foodFarmUnit);
+const unit1 = _.cloneDeep(foodFarmUnit);
+const unit2 = _.cloneDeep(foodFarmUnit);
+const unit3 = _.cloneDeep(foodFarmUnit);
+const unit4 = _.cloneDeep(foodFarmUnit);
 const foodFarm = {
-  tag: TILE_TYPE.FOOD_FARM,
-  farmers: [],
-  guards: [],
-  foodStored: 10,
+  ..._.cloneDeep(FOOD_FARM_PREFAB),
   pathUnitsQueues: [{pathId: 0, unitsQueue: [unit1, unit2, unit3, unit4]}],
 };
+foodFarm.society.set(ROLE.FARMER, {
+  capacity: 20,
+  units: [_.cloneDeep(foodFarmUnit), _.cloneDeep(foodFarmUnit), _.cloneDeep(foodFarmUnit), _.cloneDeep(foodFarmUnit)],
+});
+foodFarm.society.set(ROLE.SOLDIER, {
+  capacity: 20,
+  units: [_.cloneDeep(foodFarmUnit), _.cloneDeep(foodFarmUnit), ],
+});
 const singleUnit = {
   energy: 100,
   affiliation: AFFILIATION.YOURS,
@@ -199,17 +333,17 @@ const singleUnit = {
 };
 const singleUnit2 = {...singleUnit, indexInPath: 2};
 const capital = {
+  ..._.cloneDeep(CAPITAL_PREFAB),
   tag: TILE_TYPE.CAPITAL,
   isQueenAlive: true,
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
-  guards: [],
-  enemyUnits: [],
   foodStored: 1000,
   pathUnitsQueues: [],
 };
 const enemyUnit1 = {...singleUnit, affiliation: AFFILIATION.ENEMY, indexInPath: 0, direction: DIRECTION.TO};
-const enemyUnit2 = structuredClone(enemyUnit1);
+const enemyUnit2 = _.cloneDeep(enemyUnit1);
 const enemyCamp = {
+  ..._.cloneDeep(ENEMY_CAMP_PREFAB),
   tag: TILE_TYPE.ENEMY_CAMP,
   enemyUnits: [enemyUnit1],
   foodStored: 1000,
@@ -223,11 +357,15 @@ const buildTileOptions0 = [
   TILE_TYPE.FOOD_FARM,
 ];
 
+const walkableTile1 = _.cloneDeep(WALKABLE_TILE_PREFAB);
+const walkableTile2 = _.cloneDeep(WALKABLE_TILE_PREFAB);
+
+// TODO: A map generator that clones the stuff for you.
 const initialWorld = {
   grid: [
     [wall, wall, capital, wall],
-    [wall, foodFarm, [], wall],
-    [wall, wall, [], enemyCamp],
+    [wall, foodFarm, walkableTile1, wall],
+    [wall, wall, walkableTile2, enemyCamp],
     [wall, wall, foodStorage, wall],
   ],
   paths: paths0,
@@ -263,6 +401,11 @@ function selectMapTile(r, c) {
   world.mapTileSelected = world.grid[r][c];
 }
 
+function selectUnit(unit) {
+  unit.isSelected = true;
+  world.selectedUnits.push(unit);
+}
+
 function clearSelectedUnits() {
   for (const selectedUnit of world.selectedUnits) {
     selectedUnit.isSelected = false;
@@ -292,24 +435,13 @@ function changeMapTile(r, c, tileType) {
     // NOTE(marvin):
     // Not exactly sure if players should be able to do this... We can play it
     // by ear, and remove it as an option if it doesn't work out.
-    world.grid[r][c] = [];
+    world.grid[r][c] = _.cloneDeep(WALKABLE_TILE_PREFAB);
     break;
   case TILE_TYPE.FOOD_STORAGE:
-    world.grid[r][c] = {
-      tag: tileType,
-      foodStored: 0,
-      guards: [],
-      pathUnitsQueues: [],
-    };
+    world.grid[r][c] = _.cloneDeep(FOOD_STORAGE_PREFAB);
     break;
   case TILE_TYPE.FOOD_FARM:
-    world.grid[r][c] = {
-      tag: tileType,
-      farmers: [],
-      guards: [],
-      foodStored: 0,
-      pathUnitsQueues: [],
-    };
+    world.grid[r][c] = _.cloneDeep(FOOD_FARM_PREFAB);
     break;
   case TILE_TYPE.CAPITAL:
     console.log("Players shouldn't have access to building the capital.");
@@ -340,43 +472,44 @@ function _onTickUnitsEatAndDecay(world) {
 }
 
 function _onTickTileEatAndDecay(tile) {
-  if (Array.isArray(tile)) {
-    // Decay only, don't eat the food at hand.
-    for (const unit of tile) {
+  // TODO(marvin): Go through all units with negative energy/marked for clean up
+  // and remove them from the world.
+
+
+  // Decay without feeding.
+  for (const [role, {units}] of tile.society) {
+    for (const unit of units) {
       unit.energy--;
     }
-  } else if (tile.tag === TILE_TYPE.WALL) {
-    // Do nothing, there are no units inside a wall.
-  } else if (tile.tag === TILE_TYPE.FOOD_FARM) {
+  }
+
+  
+  if (tile.tag === TILE_TYPE.FOOD_FARM) {
     // Food farm should restore food first.
     tile.foodStored += 50;
+  }
 
-    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
-    tile.foodStored = _feedUnits(tile.farmers, tile.foodStored);
+  // TODO(marvin): Feed the queen.
+  tile.feedAllUnitsButAttackers();
+  
+  
 
-    for (const pathUnitsQueue of tile.pathUnitsQueues) {
-      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
-    }
-  } else if (tile.tag === TILE_TYPE.FOOD_STORAGE) {
-    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
-
-    for (const pathUnitsQueue of tile.pathUnitsQueues) {
-      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
-    }
-  } else if (tile.tag === TILE_TYPE.CAPITAL) {
-    // For now no definition for queen ants, so don't feed the queen for now.
-    tile.foodStored = _feedUnits(tile.guards, tile.foodStored);
-
-    for (const pathUnitsQueue of tile.pathUnitsQueues) {
-      tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
-    }
-  } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
-    tile.foodStored = _feedUnits(tile.enemyUnits, tile.foodStored);
-
+  // NOTE(marvin): Some kind of runtime polymorphism. As far as I am aware,
+  // there is no better way of doing this in javascript. What would be really
+  // nice is that I can assign properties/traits (not referring to programming
+  // terminolgy here, just in general) to the tiles. For example, food farm and
+  // food storage would have the "valid endpoint for a cyclic path"
+  // property. And there would be a way to define a polymorphic function for
+  // tiles with that property such that I can call the function on any given
+  // tile, and if it has that property, the special code for that tile would
+  // run. This is something akin to Clojure's multimethods, except that multiple
+  // of those methods can be invoked with a single function application.
+  if (tile.hasOwnProperty('pathUnitsQueues')) {
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
       tile.foodStored = _feedUnits(pathUnitsQueue.unitsQueue, tile.foodStored);
     }
   }
+
 }
 
 // ([Array-of Unit], Integer) -> Integer
@@ -415,35 +548,37 @@ function _onTickPaths(world) {
       const tile = world.grid[r][c];
 
       // Reset units in tile
-      if (Array.isArray(tile)) {
-	for (const unit of tile) {
+      if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
+	for (const unit of tile.society.get(ROLE.WALKER).units) {
 	  unit.hasMovedInTick = false;
 	}
       } else if (tile.tag == TILE_TYPE.WALL) {
 	// Do nothing.
       } else {
-	// Assume that tile has a pathUnitsQueues field
-	for (const pathUnitsQueue of tile.pathUnitsQueues) {
-	  // Resetting the unit.hasMovedInTick flag for PathUnitsQueue
-	  for (const unit of pathUnitsQueue.unitsQueue) {
-	    unit.hasMovedInTick = false;
+	if (tile.hasOwnProperty("pathUnitsQueues")) {
+	  for (const pathUnitsQueue of tile.pathUnitsQueues) {
+	    // Resetting the unit.hasMovedInTick flag for PathUnitsQueue
+	    for (const unit of pathUnitsQueue.unitsQueue) {
+	      unit.hasMovedInTick = false;
+	    }
 	  }
 	}
+	
       }
     }
   }
 }
 
 function _onTickTileInPaths(tile, worldGrid, worldPaths) {
-  if (Array.isArray(tile)) {
+  if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
     // Cannot use for...of loop because array will be modified.
-    for (let i = tile.length - 1; i >= 0; i--) {
-      _onTickUnitInPaths(tile[i], worldGrid, worldPaths);
+    const units = tile.society.get(ROLE.WALKER).units;
+    for (let i = units.length - 1; i >= 0; i--) {
+      _onTickUnitInPaths(units[i], worldGrid, worldPaths);
     }
-  } else if (tile.tag == TILE_TYPE.WALL) {
-    // Do nothing.
-  } else {
-    // Assume has the field pathUnitsQueues
+  }
+
+  if (tile.hasOwnProperty("pathUnitsQueues")) {
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
       _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths);
     }
@@ -500,8 +635,8 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
 // Removes the given unit on the given path ID from the given tile, if it
 // exists, taking food with the unit if the given tile is a food farm.
 function _removePathUnitFromTile(tile, unit, pathId) {
-  if (Array.isArray(tile)) {
-    _removeUnitFromUnits(tile, unit);
+  if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
+    _removeUnitFromUnits(tile.society.get(ROLE.WALKER).units, unit);
   } else if (tile.tag == TILE_TYPE.WALL) {
     // Do nothing.
     console.log("Illegal state: Adding path unit to a wall tile.");
@@ -545,8 +680,9 @@ function _removePathUnitFromTile(tile, unit, pathId) {
 // (Tile, Unit, Integer): Void
 // Adds the given unit in a path to the given tile with the given path ID.
 function _addPathUnitToTile(tile, unit, pathId) {
-  if (Array.isArray(tile)) {
-    tile.push(unit);
+  if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
+    const tileUnits = tile.society.get(ROLE.WALKER).units;
+    tileUnits.push(unit);
   } else if (tile.tag == TILE_TYPE.WALL) {
     // Do nothing, illegal state.
     console.log("Illegal state: Adding path unit to a wall tile.");
@@ -554,21 +690,23 @@ function _addPathUnitToTile(tile, unit, pathId) {
     // If enemy entering capital, then the enemy should not be added to the
     // pathUnitsQueues, but instead the enemyUnits
     if (tile.tag == TILE_TYPE.CAPITAL && unit.affiliation == AFFILIATION.ENEMY) {
-      tile.enemyUnits.push(unit);
+      tile.society.get(ROLE.ATTACKER).units.push(unit);
     } else {
-      // Assume has pathUnitsQueues field.
-      for (const pathUnitsQueue of tile.pathUnitsQueues) {
-	// Add unit to the right queue
-	if (pathUnitsQueue.pathId === pathId) {
-	  pathUnitsQueue.unitsQueue.push(unit);
-	  break;
+      if (tile.hasOwnProperty("pathUnitsQueues")) {
+	for (const pathUnitsQueue of tile.pathUnitsQueues) {
+	  // Add unit to the right queue
+	  if (pathUnitsQueue.pathId === pathId) {
+	    pathUnitsQueue.unitsQueue.push(unit);
+	    break;
+	  }
 	}
-      }
 
-      if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
-	tile.foodStored++;
-	unit.isCarryingFood = false;
+	if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
+	  tile.foodStored++;
+	  unit.isCarryingFood = false;
+	}	
       }
+      
     }
     
   }
@@ -608,52 +746,25 @@ function _onTickBattles(world) {
 
 function _onTickTileBattles(tile) {
   // For now, battles only occur in walkable tiles and the capital.
-  if (Array.isArray(tile)) {
-    const tileOriginalLength = tile.length;
-    let yourUnitsIndices = [];
-    let enemyUnitsIndices = [];
+  if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
+    let yourUnits = tile.society.get(ROLE.WALKER);
+    let enemyUnits = tile.society.get(ROLE.ATTACKER);
 
-    // Push smallest first, so that we pop the largest.
-    for (let i = 0; i < tile.length; i++) {
-      const unit = tile[i];
-      if (unit.affiliation === AFFILIATION.YOURS) {
-	yourUnitsIndices.push(i);
-      } else if (unit.affiliation === AFFILIATION.ENEMY) {
-	enemyUnitsIndices.push(i);
-      }
-    }
+    const numBattles = Math.min(yourUnits.length, enemyUnits.length);
 
-    const numBattles = Math.min(yourUnitsIndices.length, enemyUnitsIndices.length);
-
-    const tileNewLength = tileOriginalLength - (numBattles * 2);
-    for (let i = 0; i < numBattles; i++) {
-      const yourUnitIdx = yourUnitsIndices.pop();
-      const enemyUnitIdx = enemyUnitsIndices.pop();
-
-      tile[yourUnitIdx] = false;
-      tile[enemyUnitIdx] = false;
-    }
-
-    // Filter for non-falses
-    let currIdx = 0;
-    for (let i = 0; i < tileOriginalLength; i++) {
-      const unit = tile[i];
-
-      if (unit != false) {
-	tile[currIdx] = unit;
-	currIdx++;
-      }
-    }
-    tile.length = tileNewLength;
+    yourUnits.length -= numBattles;
+    enemyUnits.length -= numBattles;
   } else if (tile.tag === TILE_TYPE.CAPITAL) {
     // For now, only guards are used in battle. Potentially can use units in
     // queue.
-    while (tile.guards.length > 0 && tile.enemyUnits.length > 0) {
-      tile.guards.pop();
-      tile.enemyUnits.pop();
+    const guards = tile.society.get(ROLE.SOLDIER).units;
+    const enemies = tile.society.get(ROLE.ATTACKER).units;
+    while (guards.length > 0 && enemies.length > 0) {
+      guards.pop();
+      enemies.pop();
     }
 
-    if (tile.enemyUnits.length > tile.guards.length) {
+    if (enemies.length > guards.length) {
       tile.isQueenAlive = false;
     }
   }
@@ -688,7 +799,7 @@ function _onTickTileEggs(tile) {
 
       if (eggTimeGroup.ticksPassed >= 10) {
 	for (let i = 0; i < eggTimeGroup.eggs; i++) {
-	  tile.guards.push({
+	  tile.society.get(ROLE.SOLDIER).units.push({
 	    energy: 100,
 	    pathId: -1,
 	    indexInPath: -1,
@@ -719,5 +830,11 @@ function _removeUnitFromUnits(units, unitToRemove) {
     }
   }
   console.log("Warning: Didn't remove anything.");
+}
+
+// _getUnitsWithRole : Tile Role -> [List-of Unit]
+// Returns the units of the given role in the given tile.
+function _getUnitsWithRole(tile, role) {
+  return tile.society.get(role).units;
 }
 

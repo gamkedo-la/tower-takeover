@@ -14,6 +14,14 @@
 // DATA DEFINITIONS
 // ================================================================================
 
+
+const unitInTileUIInfo = {
+  l: 42,
+  w: 32,
+  dl: 4,
+  dw: 4,
+}
+
 // A BuildTileUIInfo is a (topLeftC: Number, topLeftR: Number, buildTiles:
 // [List-of TileType]) which represents
 // (top left column in logical positioning, top left row in logical

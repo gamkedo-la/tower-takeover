@@ -56,6 +56,22 @@ function initializeInput(canvas0) {
 	  }
 	}
       }
+
+      // Check if the click happens inside the tile in units display.
+
+      if (mouseX >= unitsInTileUIInfo.topLeftX &&
+	  mouseY >= unitsInTileUIInfo.topLeftY) {
+	// Normalize the values so that they are in logical position relative to
+	// the top left of the units in tile UI.
+	const x = Math.floor((mouseX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l);
+	const y = Math.floor((mouseY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w);
+	if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
+	  const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
+	  if (possibleUnitInCell != undefined) {
+	    selectUnit(possibleUnitInCell);
+	  }
+	}
+      }
     } else if (world.clickMode == CLICK_MODE.BUILD) {
       // Check if the click happens to be inside a building select.
       // If so, log the selected building.
@@ -125,12 +141,21 @@ function initializeInput(canvas0) {
 	    ? [ cornerPos1.y, cornerPos2.y ]
 	    : [ cornerPos2.y, cornerPos1.y ];
 
-      for (let x = Math.ceil(startX); x <= Math.floor(endX); x++) {
-	for (let y = Math.ceil(startY); y <= Math.floor(endY); y++) {
-	  if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
+      // Normalize the values so that they are in logical position relative to
+      // the top left of the units in tile UI.
+      const [nStartX, nEndX, nStartY, nEndY] = [
+	Math.floor((startX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l),
+	Math.floor((endX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l),
+	Math.floor((startY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w),
+	Math.floor((endY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w),
+      ]
+
+      for (let x = nStartX; x <= nEndX; x++) {
+	for (let y = nStartY; y <= nEndY; y++) {
+ 	  if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
 	    const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
 	    if (possibleUnitInCell != undefined) {
-	      possibleUnitInCell.isSelected = true;
+	      selectUnit(possibleUnitInCell);
 	    }
 	  }
 

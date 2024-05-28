@@ -22,7 +22,7 @@
 // DATA DEFINITIONS
 // ================================================================================
 
-// These two should only be set by initializeContext function.
+// These two should only be set by initializeDraw function.
 // They cannot be const because they are not initialized when the module gets
 // initialized as they have to wait for window.onload.
 let canvas, canvasContext;
@@ -30,13 +30,17 @@ let canvas, canvasContext;
 
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
+
+const roleToBgColor = new Map([
+  [ROLE.FARMER, 'rgb(255, 178, 102)'],
+  [ROLE.SOLDIER, 'rgb(51, 153, 255)'],
+  [ROLE.WALKER, 'rgb(51, 153, 255)'],
+  [ROLE.QUEEN, 'rgb(255, 255, 153)'],
+]);
+
 // ================================================================================
 // FUNCTIONS
 // ================================================================================
-
-// TODO(marvin): Move the input callback functions elsewhere. Still need access
-// to the view's data definitions. Perhaps have a module called UI, which
-// contains input handling as well as placement of GUI blocks.
 
 // Ought to be called in window.onload.
 function initializeDraw(canvas0) {
@@ -51,23 +55,13 @@ function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
     y: pxPos.y - unitsInTileUIInfo.topLeftY
   };
 
-  const maxPosRelativeToTopLeft = {
-    x: 1200 - unitsInTileUIInfo.topLeftX,
-    y: 680 - unitsInTileUIInfo.topLeftY,
-  };
+  const {l, w, dl, dw} = unitInTileUIInfo;
 
-  // TODO(marvin): Generalise these constants to a struct, shared between the
-  // draw and this.
-  const l = 18;
-  const w = 24;
-  const dl = 4;
-  const dw = 4;
-
-  const flooredX = Math.ceil(posRelativeToTopLeft.x / (l + dl));
+  const flooredX = Math.floor(posRelativeToTopLeft.x / (l + dl));
   const remX = posRelativeToTopLeft.x % (l + dl);
   const borderX = (remX <= l) ? 0 : 0.5;
 
-  const flooredY = Math.ceil(posRelativeToTopLeft.y / (w + dw));
+  const flooredY = Math.floor(posRelativeToTopLeft.y / (w + dw));
   const remY = posRelativeToTopLeft.y % (w + dw);
   const borderY = (remY <= w) ? 0: 0.5;
 
@@ -91,12 +85,12 @@ function onDraw() {
       const tile = world.grid[r][c];
 
       // Draw a tile, given row and column position.
-      if (Array.isArray(tile)) {
+      if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
 	// White square first, with units on top. Fit as many units as possible.
 	canvasContext.fillStyle = "white";
 	canvasContext.fillRect(c * 32, r * 32, 32, 32);
 
-	_drawUnitsTable(tile, 30, 24, 2, 2, c * 32, r * 32, 32);
+	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * 32, r * 32, 32);
       } else {
 	_drawTileTypeAtPos(tile.tag, c, r);
       }
@@ -130,14 +124,8 @@ function onDraw() {
     // Pixel positions
     const tile = world.mapTileSelected;
 
-    if (Array.isArray(tile)) {
-      _drawUnitsTable(tile, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftY, tileUnitsInDisplay);
-    } else if (tile.tag == TILE_TYPE.FOOD_STORAGE) {
-      // TODO(marvin): Do the other cases.
-      // TODO(marvin): Create function Tile -> [List-of (Role,
-      // Units)]. Every tile should generalize list of units with their fields
-      // to just Role to units mapping.
-    }
+    _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftY, tileUnitsInDisplay);
+
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
     // These are arbitrary values, tune them as necessary and potentially make
@@ -199,23 +187,42 @@ function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subt
   );
 }
 
+function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx) {
+  tileUnitsInDisplay.length = 0;
+  let currTopLeftY = 0;
+
+  for (const [role, {units}] of society) {
+    const bgColor = roleToBgColor.get(role);
+    currTopLeftY += _drawUnitsTable(units, l, w, dl, dw, topLeftX, currTopLeftY, tableWidthPx, bgColor, tileUnitsInDisplay);
+  }
+}
+
 
 // Draws a 2D grid of units that are in the given tile, with each unit having a
 // vertical length l, width w, vertical gap dl, and horizontal gap dw, with the
 // grid having the top left (X, Y) px coordinates as topLeftX and topLeftY
 // respectively, and a total width of tableWidthPx.
-function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, refGrid = false) {
-  const maximumX = topLeftX + tableWidthPx;
-  if (refGrid) {
-    // Reset refGrid to its initial state, a 2D array with only one element,
-    // which is an empty array.
-    refGrid.length = 0;
-    refGrid.push([]);
+// Returns the height of the table.
+function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, bgColor = false, refGrid = false) {
+  if (units.length === 0) {
+    return topLeftY;
   }
+  
+  const maximumX = topLeftX + tableWidthPx;
   
   // Row and column position in px of the unit to be drawn.
   let rr = 0;
   let cc = 0;
+
+  if (refGrid) {
+    refGrid.push([]);
+  }
+
+  if (bgColor) {
+    // Colours the entire row
+    canvasContext.fillStyle = bgColor;
+    canvasContext.fillRect(topLeftX, topLeftY, tableWidthPx, w)
+  }
 
   for (const unit of units) {
     if (cc >= maximumX) {
@@ -225,6 +232,13 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
       if (refGrid) {
 	refGrid.push([]);
       }
+
+      if (bgColor) {
+	// Colours the entire row
+	canvasContext.fillStyle = bgColor;
+	canvasContext.fillRect(topLeftX, topLeftY, tableWidthPx, w + dw)
+      }
+
     }
 
     _drawUnit(unit, topLeftX + cc, topLeftY + rr, l, w);
@@ -235,21 +249,9 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
     
     cc += w + dw;
   }
+
+  return rr + l + dl;
 }
-
-// A unit's (rough) anatomy:
-// Qyyyy
-//  yxxy
-//  yxxy
-// yxxxxy
-// yxooxy
-// yxooxy
-// yxxxxy
-// yyyyyy
-
-// o = food, x = body (ally or enemy color), y = outline,
-// Q = top-left most pixel coordinate
-// if no food and no outline, then they would just be x color.
 
 // Ideally, l should be divisible by 6, and l divisible by 8.
 function _drawUnit(unit, topLeftX, topLeftY, l, w) {
