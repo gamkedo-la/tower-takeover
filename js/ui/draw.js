@@ -88,9 +88,9 @@ function onDraw() {
       if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
 	// White square first, with units on top. Fit as many units as possible.
 	canvasContext.fillStyle = "white";
-	canvasContext.fillRect(c * 32, r * 32, 32, 32);
+	canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
 
-	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * 32, r * 32, 32);
+	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
       } else {
 	_drawTileTypeAtPos(tile.tag, c, r);
       }
@@ -110,8 +110,8 @@ function onDraw() {
       
       // Connect lines between the center of the tiles.
       canvasContext.beginPath();
-      canvasContext.moveTo(prevPos.c * 32 + 15, prevPos.r * 32 + 15);
-      canvasContext.lineTo(currPos.c * 32 + 15, currPos.r * 32 + 15);
+      canvasContext.moveTo(prevPos.c * squareLength + 15, prevPos.r * squareLength + 15);
+      canvasContext.lineTo(currPos.c * squareLength + 15, currPos.r * squareLength + 15);
       canvasContext.stroke();
 
       prevPos = currPos;
@@ -149,40 +149,40 @@ function onDraw() {
   }
 }
 
-// c and r are in terms of 32
+// c and r are in terms of squareLength
 function _drawTileTypeAtPos(tileType, c, r) {
   if (tileType === TILE_TYPE.WALKABLE_TILE) {
     // White square.
     canvasContext.fillStyle = "white";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   } else if (tileType === TILE_TYPE.WALL) {
     // Black square.
     canvasContext.fillStyle = "black";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   } else if (tileType === TILE_TYPE.FOOD_STORAGE) {
     // Blue square.
     canvasContext.fillStyle = "blue";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   } else if (tileType === TILE_TYPE.FOOD_FARM) {
     // Orange square.
     canvasContext.fillStyle = "orange";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   } else if (tileType === TILE_TYPE.CAPITAL) {
     // Green square.
     canvasContext.fillStyle = "green";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   } else if (tileType === TILE_TYPE.ENEMY_CAMP) {
     // Red square.
     canvasContext.fillStyle = "red";
-    canvasContext.fillRect(c * 32, r * 32, 32, 32);
+    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   }
 }
 
-// A subtile is a smaller tile within a grid of tiles in a 32x32 tile.
+// A subtile is a smaller tile within a grid of tiles in a squareLengthxsquareLength tile.
 function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subtileTopLeftC, subtileTopLeftR, width, height) {
   canvasContext.fillRect(
-    tileTopLeftC * 32 + subtileTopLeftC,
-    tileTopLeftR * 32 + subtileTopLeftR,
+    tileTopLeftC * squareLength + subtileTopLeftC,
+    tileTopLeftR * squareLength + subtileTopLeftR,
     width, height
   );
 }

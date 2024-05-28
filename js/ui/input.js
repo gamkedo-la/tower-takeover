@@ -48,10 +48,10 @@ function initializeInput(canvas0) {
       // Check if the click happens inside a map tile.
       for (let r = 0; r < world.grid.length; r++) {
 	for (let c = 0; c < world.grid[r].length; c++) {
-	  if (mouseY >= r * 32 &&
-	      mouseY <= (r + 1) * 32 &&
-	      mouseX >= c * 32 &&
-	      mouseX <= (c + 1) * 32) {
+	  if (mouseY >= r * squareLength &&
+	      mouseY <= (r + 1) * squareLength &&
+	      mouseX >= c * squareLength &&
+	      mouseX <= (c + 1) * squareLength) {
 	    selectMapTile(r, c);
 	  }
 	}
@@ -78,10 +78,10 @@ function initializeInput(canvas0) {
       // Deduce screen region from build tiles and log the tile type if click
       // within a region. Otherwise, do nothing.
       for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
-	if (mouseY >= buildTileUIInfo.topLeftR * 32 &&
-	    mouseY <= (buildTileUIInfo.topLeftR + 1) * 32 &&
-	    mouseX >= (buildTileUIInfo.topLeftC + i) * 32 &&
-	    mouseX <= (buildTileUIInfo.topLeftC + i + 1) * 32) {
+	if (mouseY >= buildTileUIInfo.topLeftR * squareLength &&
+	    mouseY <= (buildTileUIInfo.topLeftR + 1) * squareLength &&
+	    mouseX >= (buildTileUIInfo.topLeftC + i) * squareLength &&
+	    mouseX <= (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
 	  const buildTile = buildTileUIInfo.buildTiles[i];
 	  selectBuildTile(buildTile);
 	}
@@ -93,10 +93,10 @@ function initializeInput(canvas0) {
       if (world.buildTileSelected != null) {
 	for (let r = 0; r < world.grid.length; r++) {
 	  for (let c = 0; c < world.grid[r].length; c++) {
-	    if (mouseY >= r * 32 &&
-		mouseY <= (r + 1) * 32 &&
-		mouseX >= c * 32 &&
-		mouseX <= (c + 1) * 32) {
+	    if (mouseY >= r * squareLength &&
+		mouseY <= (r + 1) * squareLength &&
+		mouseX >= c * squareLength &&
+		mouseX <= (c + 1) * squareLength) {
 	      changeMapTile(r, c, world.buildTileSelected);
 	    }
 	  }
@@ -123,8 +123,8 @@ function initializeInput(canvas0) {
     }
 
     // Here, we evaluate the drag
-    if (mouseDownPos.x <= (world.grid[0].length + 1) * 32 &&
-	mouseDownPos.y <= (world.grid.length + 1) * 32) {
+    if (mouseDownPos.x <= (world.grid[0].length + 1) * squareLength &&
+	mouseDownPos.y <= (world.grid.length + 1) * squareLength) {
       // First mousedown inside map
       console.log("DRAG INSIDE MAP");
     } else if (world.clickMode == CLICK_MODE.INFO &&

@@ -14,6 +14,8 @@
 // DATA DEFINITIONS
 // ================================================================================
 
+// The length for one tile in the map.
+const squareLength = 64;
 
 const unitInTileUIInfo = {
   l: 42,
