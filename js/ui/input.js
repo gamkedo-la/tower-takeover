@@ -107,6 +107,19 @@ function initializeInput(canvas0) {
 	  }
 	}
       }
+    } else if (world.clickMode == CLICK_MODE.ONE_OFF_PATH) {
+      if (world.selectedUnits.length > 0) {
+	for (let r = 0; r < world.grid.length; r++) {
+	  for (let c = 0; c < world.grid[r].length; c++) {
+	    if (mouseY >= r * squareLength &&
+		mouseY <= (r + 1) * squareLength &&
+		mouseX >= c * squareLength &&
+		mouseX <= (c + 1) * squareLength) {
+	      directSelectedUnitsToOneOffPath(r, c);
+	    }
+	  }
+	}
+      }
     }
   }
 

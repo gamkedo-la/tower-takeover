@@ -12,6 +12,7 @@ window.onload = function() {
   const testOutputElement = document.getElementById("testOutput");
 
   const testFunctions = [
+    testGeneratePathOrderedPoss,
     testConvertPxPosToLogicalPosInTileUnitsDisplay,
   ];
   
@@ -39,7 +40,51 @@ window.onload = function() {
     }
   }
 
+  function testGeneratePathOrderedPoss() {
+    // We test with one grid only, which suffices for our purposes. It has a
+    // cycle inside.
+    // We don't need more clones because we aren't considering units.
+    const a = _.cloneDeep(WALL_PREFAB);
+    const b = _.cloneDeep(WALKABLE_TILE_PREFAB);
+    const grid0 = [
+      [a, a, b, a],
+      [b, b, b, b],
+      [b, a, b, a],
+      [b, b, b, a],
+    ];
 
+    _checkEqual(0, 2, 3, 2, [0, 2, 1, 2, 2, 2, 3, 2]);
+    _checkEqual(3, 2, 0, 2, [3, 2, 2, 2, 1, 2, 0, 2]);
+    _checkEqual(1, 1, 3, 2, [1, 1, 1, 2, 2, 2, 3, 2]);
+
+
+    // natList is a flat list of integers, where every pair of integers is a
+    // position. For example, [1, 5, 2, 6] corresopnds to [{r: 1, c: 5}, {r: 2,
+    // c: 6}].
+    function _checkEqual(r1, c1, r2, c2, natList) {
+      checkEqual(_generatePathOrderedPoss(grid0, r1, c1, r2, c2),
+		 _natListToPosList(natList));
+    }
+
+    // Maintains the order of positions.
+    function _natListToPosList(natList) {
+      // Every time it reaches a length of two, convert to a pos and empty the accumulator.
+      let posAccumulator = [];
+      let posList = [];
+
+      for (const nat of natList) {
+	posAccumulator.push(nat);
+
+	if (posAccumulator.length === 2) {
+	  const newPos = {r: posAccumulator[0], c: posAccumulator[1]};
+	  posList.push(newPos);
+	  posAccumulator = [];
+	}
+      }
+
+      return posList;
+    }
+  }
   
 
   function testConvertPxPosToLogicalPosInTileUnitsDisplay() {
