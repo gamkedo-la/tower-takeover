@@ -64,7 +64,9 @@ function _gameStart() {
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
-    onTick();
-    onDraw();
+    if(!gamePaused){
+      onTick();
+      onDraw();
+    }
   }, 1000/FRAMES_PER_SECOND);  
 }

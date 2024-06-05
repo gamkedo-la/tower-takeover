@@ -21,6 +21,7 @@
 // The position the mouse is currently at in pixel coordinates.
 let mouseX, mouseY;
 let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
+let gamePaused = false;
 
 // ================================================================================
 // FUNCTIONS
@@ -171,6 +172,9 @@ function initializeInput(canvas0) {
       changeClickMode(CLICK_MODE.INFO);
     } else if (evt.keyCode == KEY_2) {
       changeClickMode(CLICK_MODE.BUILD);
+    } else if (evt.keyCode == KEY_P){
+      // Toggle pause
+      gamePaused = !gamePaused;
     }
   }
 }
