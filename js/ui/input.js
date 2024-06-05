@@ -39,6 +39,10 @@ function initializeInput(canvas0) {
   document.addEventListener("keydown", _onKeyDown);
 
   function _onMouseClick(evt) {
+    if(gamePaused){
+      return;
+    }
+
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
 
@@ -107,6 +111,10 @@ function initializeInput(canvas0) {
   }
 
   function _onMouseDragStart(evt) {
+    if(gamePaused){
+      return;
+    }
+
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
     mouseDownPos = {x: mouseX, y: mouseY};
@@ -114,6 +122,10 @@ function initializeInput(canvas0) {
   }
 
   function _onMouseDragEnd(evt) {
+    if(gamePaused){
+      return;
+    }
+
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
     mouseUpPos = {x: mouseX, y: mouseY};
@@ -166,6 +178,10 @@ function initializeInput(canvas0) {
   }
 
   function _onKeyDown(evt) {
+    if(gamePaused && evt.keyCode != KEY_P){
+      return;
+    }
+
     evt.preventDefault();
 
     if (evt.keyCode == KEY_1) {
@@ -175,6 +191,7 @@ function initializeInput(canvas0) {
     } else if (evt.keyCode == KEY_P){
       // Toggle pause
       gamePaused = !gamePaused;
+      console.log("Game Paused")
     }
   }
 }
