@@ -73,10 +73,8 @@ function _gameStart() {
     {
       // Draw pause screen
       onDraw();
-      canvasContext.globalAlpha = 0.2;
-      canvasContext.fillStyle = "red";
-      canvasContext.fillRect(0, 0, canvas.width, canvas.height);
-      canvasContext.globalAlpha = 1.0;
+      
+      drawTintedRect(0.6, "black", 0, 0, canvas.width, canvas.height)
 
       // Draw Text box
       centerBox(canvas.width/2, canvas.height/2, 350, 100, "black")

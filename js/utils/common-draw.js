@@ -13,3 +13,10 @@ function centerBox(centerX, centerY, boxWidth, boxHeight, boxColor){
     canvasContext.fillStyle = boxColor;
     canvasContext.fillRect(centerX - boxWidth/2, centerY - boxHeight/2, boxWidth, boxHeight);
 }
+
+function drawTintedRect(opacity, color, cornerX, cornerY, width, height){
+    canvasContext.globalAlpha = opacity;
+    canvasContext.fillStyle = color;
+    canvasContext.fillRect(cornerX, cornerY, width, height);
+    canvasContext.globalAlpha = 1.0;
+}
