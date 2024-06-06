@@ -78,18 +78,10 @@ function _gameStart() {
       canvasContext.fillRect(0, 0, canvas.width, canvas.height);
       canvasContext.globalAlpha = 1.0;
 
-      var boxW = 350;
-      var boxH = 100;
-      canvasContext.fillStyle = "black";
-      canvasContext.fillRect(canvas.width/2 - boxW/2, canvas.height/2 - boxH/2, boxW, boxH);
-      canvasContext.fillStyle = "white";
-      var alignWas = canvasContext.textAlign;
-      canvasContext.textAlign = "center";
-      var fontWas = canvasContext.font;
-      canvasContext.font = "30px Arial"
-      canvasContext.fillText("Press P to unpause", canvas.width/2, canvas.height/2);
-      canvasContext.textAlign = canvasContext.textAlign;
-      canvasContext.font = fontWas;
+      // Draw Text box
+      centerBox(canvas.width/2, canvas.height/2, 350, 100, "black")
+      // Draw Text
+      centerText("Press P to unpause", canvas.width/2, canvas.height/2, "white", "30")
     }
   }, 1000/FRAMES_PER_SECOND);  
 }
