@@ -29,7 +29,8 @@ window.onload = function() {
 
   _prepareGameStart(_gameStart);
 
-  _gameStart();
+  // Called by prepareGameStart, when it was also called here, setInterval got hit twice
+  // _gameStart();
 }
 
 // NOTE(marvin): Consider moving all this to its own file.
@@ -67,6 +68,15 @@ function _gameStart() {
     if(!gamePaused){
       onTick();
       onDraw();
+    }
+    else
+    {
+      // Draw pause screen
+      onDraw();
+      canvasContext.globalAlpha = 0.2;
+      canvasContext.fillStyle = "red";
+      canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+      canvasContext.globalAlpha = 1.0;
     }
   }, 1000/FRAMES_PER_SECOND);  
 }
