@@ -173,11 +173,12 @@ const WALKABLE_TILE_PREFAB = {
 }
 
 // A Unit is a {energy: Integer, affiliation: Affiliation, pathId: Integer,
-// indexInPath: Integer, direction: Direction, isCarryingFood: Boolean,
-// hasMovedInTick: Boolean, isSelected: Boolean }
+// indexInPath: Integer, oneOffPath: [U OneOffPath false], direction: Direction, isCarryingFood: Boolean,
+// hasMovedInTick: Boolean, isSelected: Boolean, pos: Pos }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
-// unit is not associated with any paths.
+// unit is not associated with any paths. The pos must be initialized along with
+// the unit's position in the world grid, and continue to remain in sync.
 
 
 // A Affiliation is one of:
@@ -296,6 +297,7 @@ const foodFarmUnit = {
   affiliation: AFFILIATION.YOURS,
   pathId: 0,
   indexInPath: 0,
+  oneOffPath: false,
   direction: DIRECTION.TO,
   isCarryingFood: false,
   hasMovedInTick: false,
@@ -337,6 +339,7 @@ const singleUnit = {
   affiliation: AFFILIATION.YOURS,
   pathId: 0,
   indexInPath: 1,
+  oneOffPath: false,
   direction: DIRECTION.FROM,
   isCarryingFood: false,
   hasMovedInTick: false,
@@ -376,7 +379,7 @@ const initialWorld = {
   grid: [
     [wall, wall, capital, wall],
     [wall, foodFarm, walkableTile1, wall],
-    [wall, wall, walkableTile2, enemyCamp],
+    [wall, wall, walkableTile2, wall],
     [wall, wall, foodStorage, wall],
   ],
   paths: paths0,
@@ -398,6 +401,7 @@ var world = initialWorld;
 let count = 0;
 
 function onTick() {
+  _updateUnitPos(world);  // Very safe at the cost of performance
   _onTickUnitsEatAndDecay(world);
   _onTickBattles(world);
   _onTickPaths(world);
@@ -489,13 +493,32 @@ function directSelectedUnitsToOneOffPath(r, c) {
     }
 
     unit.indexInPath = 0;
+    unit.oneOffPath = oneOffPaths.get(unit.pos);
+    unit.direction = DIRECTION.TO;
   }
 
   // Add generated oneOffPaths to the world.oneOffPaths. If a oneOffPath already
   // exists, then add the new number of units to that oneOffPaths.
   for (const [pos, path] of oneOffPaths) {
-    addOneOffPath(world, pos, {r: r, c: c}, path);
+    _addOneOffPath(world, pos, {r: r, c: c}, path);
   }
+}
+
+function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
+  // An existing oneOffPath can be identified by having the same fromPos and
+  // toPos (the path-finding algorithm is deterministic).
+  for (const oneOffPath of world.oneOffPaths) {
+    const currFromPos = oneOffPath.orderedPoss[0];
+    const currToPos = oneOffPath.orderedPoss[oneOffPath.orderedPoss.length - 1];
+
+    if (fromPos.r === currFromPos.r && fromPos.c === currFromPos.c &&
+        toPos.r === currToPos.r && toPos.c === currToPos.c) {
+      oneOffPath.numFollowers += newOneOffPath.numFollowers;
+      return;
+    }
+  }
+
+  world.oneOffPaths.push(newOneOffPath);
 }
 
 // [2D-array-of Tile], Nat, Nat, Nat, Nat -> [Array-of Pos]
@@ -673,6 +696,35 @@ function _generatePathOrderedPoss(grid, r1, c1, r2, c2) {
   }
 }
 
+// Keeps the unit's pos field in sync with its actual position in the world
+// grid.
+function _updateUnitPos(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+
+      _updateUnitPosInTile(tile, r, c);
+    }
+  }
+}
+
+function _updateUnitPosInTile(tile, r, c) {
+  for (const [role, {units}] of tile.society) {
+    for (const unit of units) {
+      unit.pos = {r: r, c: c};
+    }
+  }
+
+  if (tile.hasOwnProperty('pathUnitsQueues')) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      for (const unit of pathUnitsQueue.unitsQueue) {
+	unit.pos = {r: r, c: c};
+      }
+    }
+  }
+  
+}
+
 // --------------------------------------------------------------------------------
 // EAT AND DECAY FUNCTIONS
 // --------------------------------------------------------------------------------
@@ -814,9 +866,17 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   // with the given direction, if it is moving.
   if (unit.hasMovedInTick) {
     return;
-  }  
+  }
 
-  const path = worldPaths[unit.pathId];
+  // TODO(marvin): The code currently makes a distinction between oneOffPath and
+  // cyclic path, and it doesn't help that the data structures between the two
+  // are so different. Strive to make them the same. `oneOffPath` is more
+  // correct. For now, if statements are in place to differentiate between the
+  // two cases. If a unit is in both a oneOffPath and cyclicPath, oneOffPath
+  // takes precedences.
+
+  const isOneOffPath = unit.oneOffPath;
+  const path = isOneOffPath ? unit.oneOffPath.orderedPoss : worldPaths[unit.pathId];
 
   let newIndexInPath = unit.indexInPath;
   if (unit.direction == DIRECTION.TO) {
@@ -837,14 +897,21 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   _removePathUnitFromTile(tileToMoveFrom, unit, unit.pathId);
   _addPathUnitToTile(tileToMoveTo, unit, unit.pathId);
 
+  unit.pos = posToMoveTo;
+
   // Update unit's fields.
   unit.indexInPath = newIndexInPath;
 
-  // Change unit's direction if arrive at either end of the path.
-  if (unit.indexInPath === path.lastIndex) {
-    unit.direction = DIRECTION.FROM;
-  } else if (unit.indexInPath === 0) {
-    unit.direction = DIRECTION.TO;
+  if (isOneOffPath) {
+    unit.oneOffPath.numFollowers--;
+    unit.oneOffPath = false;
+  } else {
+    // Change unit's direction if arrive at either end of the path.
+    if (unit.indexInPath === path.lastIndex) {
+      unit.direction = DIRECTION.FROM;
+    } else if (unit.indexInPath === 0) {
+      unit.direction = DIRECTION.TO;
+    }
   }
 
   unit.hasMovedInTick = true;
