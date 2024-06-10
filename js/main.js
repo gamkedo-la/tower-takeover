@@ -75,16 +75,18 @@ function _gameStart() {
   setInterval(function() {
     onDraw();
 
-    // console.log(frame);
     // The game logic update should happen every few frames instead of every frame
     if(!gamePaused && (frame % (FRAMES_PER_SECOND/GAME_LOGIC_FRAMES_PER_SECOND) < 1)){
       onTick();
-      console.log(new Date)
+
+      // Reset frame variable to avoid an infinite counter
       if(frame >= FRAMES_PER_SECOND){
         frame = (frame - FRAMES_PER_SECOND);
       }
     }
-    frame++
+    if(!gamePaused){
+      frame++;
+    }
 
     if(gamePaused){
       // Pause Screen
