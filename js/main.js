@@ -16,7 +16,8 @@
 // ================================================================================
 // CONSTANTS
 // ================================================================================
-const FRAMES_PER_SECOND = 1;
+const FRAMES_PER_SECOND = 10;
+const GAME_LOGIC_FRAME_DELAY = 10;
 
 // ================================================================================
 // IMPLEMENTATION
@@ -59,27 +60,29 @@ function _prepareGameStart(callback) {
   }
 }
 
+let frame = 0;
+
 // This has to be a separate function so that we can pass it into the preStart
 // function as a callback.
 function _gameStart() {
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
-    if(!gamePaused){
-      onTick();
-      onDraw();
-    }
-    else
-    {
-      // Draw pause screen
-      onDraw();
-      
-      drawTintedRect(0.6, "black", 0, 0, canvas.width, canvas.height)
+    onDraw();
 
-      // Draw Text box
+    // The game logic update should happen every few frames instead of every frame
+    if(!gamePaused && (frame % GAME_LOGIC_FRAME_DELAY == 0)){
+      onTick();
+      // console.log(new Date);
+    }
+
+    if(gamePaused){
+      // Pause Screen
+      drawTintedRect(0.6, "black", 0, 0, canvas.width, canvas.height)
       centerBox(canvas.width/2, canvas.height/2, 350, 100, "black")
-      // Draw Text
       centerText("Press P to unpause", canvas.width/2, canvas.height/2, "white", "30")
     }
+
+    frame++;
   }, 1000/FRAMES_PER_SECOND);  
 }
