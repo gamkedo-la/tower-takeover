@@ -61,8 +61,6 @@ function _prepareGameStart(callback) {
 }
 
 let frame = 1;
-let frameTimestamp = "";
-let framesThisTimestamp = 0;
 
 // This has to be a separate function so that we can pass it into the preStart
 // function as a callback.
