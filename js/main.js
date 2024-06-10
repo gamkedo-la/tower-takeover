@@ -60,20 +60,31 @@ function _prepareGameStart(callback) {
   }
 }
 
-let frame = 0;
+let frame = 1;
+let frameTimestamp = "";
+let framesThisTimestamp = 0;
 
 // This has to be a separate function so that we can pass it into the preStart
 // function as a callback.
 function _gameStart() {
+  // Run first onTick
+  onTick();
+
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
     onDraw();
 
+    // console.log(frame);
     // The game logic update should happen every few frames instead of every frame
     if(!gamePaused && (frame % (FRAMES_PER_SECOND/GAME_LOGIC_FRAMES_PER_SECOND) < 1)){
       onTick();
+      console.log(new Date)
+      if(frame >= FRAMES_PER_SECOND){
+        frame = (frame - FRAMES_PER_SECOND);
+      }
     }
+    frame++
 
     if(gamePaused){
       // Pause Screen
@@ -82,6 +93,5 @@ function _gameStart() {
       centerText("Press P to unpause", canvas.width/2, canvas.height/2, "white", "30")
     }
 
-    frame++;
   }, 1000/FRAMES_PER_SECOND);  
 }
