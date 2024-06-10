@@ -17,7 +17,7 @@
 // CONSTANTS
 // ================================================================================
 const FRAMES_PER_SECOND = 10;
-const GAME_LOGIC_FRAME_DELAY = 10;
+const GAME_LOGIC_FRAMES_PER_SECOND = 1;
 
 // ================================================================================
 // IMPLEMENTATION
@@ -71,9 +71,8 @@ function _gameStart() {
     onDraw();
 
     // The game logic update should happen every few frames instead of every frame
-    if(!gamePaused && (frame % GAME_LOGIC_FRAME_DELAY == 0)){
+    if(!gamePaused && (frame % (FRAMES_PER_SECOND/GAME_LOGIC_FRAMES_PER_SECOND) < 1)){
       onTick();
-      // console.log(new Date);
     }
 
     if(gamePaused){
