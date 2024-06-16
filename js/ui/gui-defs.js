@@ -18,7 +18,7 @@
 const squareLength = 64;
 
 const unitInTileUIInfo = {
-  l: 42,
+  l: 42, // Really should be called "h" for height.
   w: 32,
   dl: 4,
   dw: 4,

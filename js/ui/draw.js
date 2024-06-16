@@ -36,6 +36,8 @@ const roleToBgColor = new Map([
   [ROLE.SOLDIER, 'rgb(51, 153, 255)'],
   [ROLE.WALKER, 'rgb(51, 153, 255)'],
   [ROLE.QUEEN, 'rgb(255, 255, 153)'],
+  [ROLE.ATTACKER, 'rgb(0, 0, 0)'],  // Enemies will be red, so the background
+				    // shouldn't be
 ]);
 
 // ================================================================================
@@ -124,7 +126,7 @@ function onDraw() {
     // Pixel positions
     const tile = world.mapTileSelected;
 
-    _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftY, tileUnitsInDisplay);
+    _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
@@ -185,7 +187,7 @@ function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subt
   );
 }
 
-function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx) {
+function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, tileUnitsInDisplay) {
   tileUnitsInDisplay.length = 0;
   let currTopLeftY = 0;
 
@@ -219,11 +221,12 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
   if (bgColor) {
     // Colours the entire row
     canvasContext.fillStyle = bgColor;
-    canvasContext.fillRect(topLeftX, topLeftY, tableWidthPx, w)
+    canvasContext.fillRect(topLeftX + cc, topLeftY + rr, tableWidthPx, w)
   }
 
   for (const unit of units) {
-    if (cc >= maximumX) {
+    // Reset if putting the current unit into the current row will go past maximumX.
+    if (topLeftX + cc + unitInTileUIInfo.w >= maximumX) {
       cc = 0;
       rr += l + dl;
 
@@ -234,7 +237,7 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
       if (bgColor) {
 	// Colours the entire row
 	canvasContext.fillStyle = bgColor;
-	canvasContext.fillRect(topLeftX, topLeftY, tableWidthPx, w + dw)
+	canvasContext.fillRect(topLeftX + cc, topLeftY + rr, tableWidthPx, w + dw)
       }
 
     }
