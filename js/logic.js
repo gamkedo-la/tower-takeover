@@ -212,6 +212,7 @@ const UNIT_PREFAB = {
   isCarryingFood: false,
   hasMovedInTick: false,
   isSelected: false,
+  role: ROLE.WALKER,
 }
 
 // A FoodStorage is a {tag: TileType, foodStored: Integer,
@@ -387,8 +388,7 @@ const buildTileOptions0 = [
 const walkableTile1 = _.cloneDeep(WALKABLE_TILE_PREFAB);
 const walkableTile2 = _.cloneDeep(WALKABLE_TILE_PREFAB);
 
-// TODO: A map generator that clones the stuff for you.
-const initialWorld = {
+const initialWorldOld = {
   grid: [
     [wall, wall, capital, wall],
     [wall, foodFarm, walkableTile1, wall],
@@ -396,6 +396,7 @@ const initialWorld = {
     [wall, wall, foodStorage, wall],
   ],
   paths: paths0,
+  oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,
   clickMode: CLICK_MODE.INFO,
@@ -432,12 +433,12 @@ if (initialTileTypes.length % initialTileTypesRowLength != 0) {
 // Note that row and col position counts from 0. Row counts from top to bottom,
 // and col counts from left to right.
 const initialPosToSociety = [
-  5, 0, [ROLE.SOLDIER, 10, ROLE.FARMER, 5, ROLE.ATTACKER, 15],
-  5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
-  1, 2, [ROLE.SOLDIER, 10, ROLE.ATTACKER, 2],
-  6, 2, [ROLE.SOLDIER, 5, ROLE.ATTACKER, 15],
-  3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
-  3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
+  5, 0, [ROLE.SOLDIER, 5],
+  // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
+  // 1, 2, [ROLE.SOLDIER, 10, ROLE.ATTACKER, 2],
+  // 6, 2, [ROLE.SOLDIER, 5, ROLE.ATTACKER, 15],
+  // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
+  // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
 ];
 
 if (initialPosToSociety.length % 3 != 0) {
@@ -488,7 +489,9 @@ function _addSocietyToInitialTiles(tiles, society) {
 
 	const societyRole = tile.society.get(role);
 	for (let c = 0; c < count; c++) {
-	  societyRole.units.push(_.cloneDeep(UNIT_PREFAB));
+	  const unitToAdd = _.cloneDeep(UNIT_PREFAB);
+	  unitToAdd.role = role;
+	  societyRole.units.push(unitToAdd);
 	}
 
 	currItem = [];
@@ -552,9 +555,10 @@ function _initialTileTypesToTiles(tileTypes) {
   
 }
 
-const initialWorldWithBuilder = {
+const initialWorld = {
   grid: _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety),
   paths: [],
+  oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,
   clickMode: CLICK_MODE.INFO,
@@ -578,6 +582,18 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
+  _onTickPurgeUnfollowedPaths(world);
+}
+
+// Currently works with oneOff paths only.
+function _onTickPurgeUnfollowedPaths(world) {
+  // Can't use for...of because mutating the array.
+  for (let i = world.oneOffPaths.length - 1; i >= 0; i--) {
+    const currOneOffPath = world.oneOffPaths[i];
+    if (currOneOffPath.numFollowers <= 0) {
+      world.oneOffPaths.splice(i, 1);
+    }
+  }
 }
 
 function selectBuildTile(tileType) {
@@ -666,6 +682,7 @@ function directSelectedUnitsToOneOffPath(r, c) {
 
     unit.indexInPath = 0;
     unit.oneOffPath = oneOffPaths.get(unit.pos);
+    unit.pathId = null;
     unit.direction = DIRECTION.TO;
   }
 
@@ -775,9 +792,6 @@ function _generatePathOrderedPoss(grid, r1, c1, r2, c2) {
 
       const samePosFInOpenListIndex = _getSamePosNodeIndex(openList, successor);
       const samePosFInClosedListIndex = _getSamePosNodeIndex(closedList, successor);
-
-      console.log(closedList);
-      console.log(samePosFInClosedListIndex);
 
       if (samePosFInClosedListIndex && closedList[samePosFInClosedListIndex].f < successor.f) {
 	// If there is an easier way to get to the successor, then we shouldn't
@@ -1021,6 +1035,12 @@ function _onTickTileInPaths(tile, worldGrid, worldPaths) {
     }
   }
 
+  for (const [role, {units}] of tile.society) {
+    for (const unit of units) {
+      _onTickUnitInPaths(unit, worldGrid, worldPaths);
+    }
+  }
+
   if (tile.hasOwnProperty("pathUnitsQueues")) {
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
       _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths);
@@ -1044,7 +1064,7 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   // walkable tiles that aren't moving... Though it doesn't really make sense
   // why units with the role "walker" aren't walking. There's got to be a better
   // way to model them.
-  if (!unit.isOneOffPath && unit.pathId == null) {
+  if (!(unit.oneOffPath) && unit.pathId == null) {
     return;
   }
 
@@ -1056,7 +1076,7 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   // takes precedences.
 
   const isOneOffPath = unit.oneOffPath;
-  const path = isOneOffPath ? unit.oneOffPath.orderedPoss : worldPaths[unit.pathId];
+  const path = isOneOffPath ? unit.oneOffPath : worldPaths[unit.pathId];
 
   let newIndexInPath = unit.indexInPath;
   if (unit.direction == DIRECTION.TO) {
@@ -1071,11 +1091,20 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   const posToMoveFrom = path.orderedPoss[unit.indexInPath];
   const posToMoveTo = path.orderedPoss[newIndexInPath];
 
+  if (isOneOffPath) {
+    console.log("FROM/TO: ", posToMoveFrom, posToMoveTo);
+  }
+
   const tileToMoveFrom = worldGrid[posToMoveFrom.r][posToMoveFrom.c];
   const tileToMoveTo = worldGrid[posToMoveTo.r][posToMoveTo.c];
 
-  _removePathUnitFromTile(tileToMoveFrom, unit, unit.pathId);
-  _addPathUnitToTile(tileToMoveTo, unit, unit.pathId);
+  if (isOneOffPath) {
+    _removePathUnitFromTile_OneOff(tileToMoveFrom, unit, unit.oneOffPath);
+    _addPathUnitToTile_OneOff(tileToMoveTo, unit, unit.oneOffPath);
+  } else {
+    _removePathUnitFromTile(tileToMoveFrom, unit, unit.pathId);
+    _addPathUnitToTile(tileToMoveTo, unit, unit.pathId);    
+  }
 
   unit.pos = posToMoveTo;
 
@@ -1083,8 +1112,11 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   unit.indexInPath = newIndexInPath;
 
   if (isOneOffPath) {
-    unit.oneOffPath.numFollowers--;
-    unit.oneOffPath = false;
+    if (unit.indexInPath === path.lastIndex) {
+      // One off paths with no followers will be purged on a different pass.
+      unit.oneOffPath.numFollowers--;
+      unit.oneOffPath = false;
+    }
   } else {
     // Change unit's direction if arrive at either end of the path.
     if (unit.indexInPath === path.lastIndex) {
@@ -1097,6 +1129,34 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   unit.hasMovedInTick = true;
 }
 
+function _removePathUnitFromTile_OneOff(tile, unit) {
+  // Cases
+  // - Unit leaving from origin tile.
+  //   - If in cyclic path, remove from path in units queue.
+  //   - If any other role, just remove from the unit's role.
+  // - Unit leaving from in-between tiles.
+  //   - Remove from walker role.
+
+  // Unit's role is what its role is in every situation except in a cyclic path
+  // waiting at an endpoint, in which case, it should have ROLE.WALKER, but it
+  // is not in the society map's ROLE.WALKER. This is not a good idea, but we
+  // can fix this later.
+
+  
+  if (unit.pathId && tile.tag !== TILE_TYPE.WALKABLE_TILE) {
+    for (const pathUnitsQueue of tile.pathUnitsQueues) {
+      // Remove the given unit from the given pathUnitsQueue of the given pathId.
+      if (pathUnitsQueue.pathId == pathId) {
+	_removeUnitFromUnits(pathUnitsQueue.unitsQueue, unit);
+	break;
+      }
+    }
+  } else {
+    console.log(unit.role, tile);
+    _removeUnitFromUnits(tile.society.get(unit.role).units, unit);
+  }
+}
+
 // (Tile, Unit, Integer): Void
 // Removes the given unit on the given path ID from the given tile, if it
 // exists, taking food with the unit if the given tile is a food farm.
@@ -1105,7 +1165,7 @@ function _removePathUnitFromTile(tile, unit, pathId) {
     _removeUnitFromUnits(tile.society.get(ROLE.WALKER).units, unit);
   } else if (tile.tag == TILE_TYPE.WALL) {
     // Do nothing.
-    console.log("Illegal state: Adding path unit to a wall tile.");
+    console.log("Illegal state: Removing path unit from a wall tile.");
   } else if (tile.tag == TILE_TYPE.FOOD_STORAGE) {
     for (const pathUnitsQueue of tile.pathUnitsQueues) {
       // Remove the given unit from the given pathUnitsQueue of the given pathId.
@@ -1143,12 +1203,59 @@ function _removePathUnitFromTile(tile, unit, pathId) {
   }
 }
 
+function _addPathUnitToTile_OneOff(tile, unit) {
+  if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
+    const tileUnits = tile.society.get(ROLE.WALKER).units;
+    tileUnits.push(unit);
+    unit.role = ROLE.WALKER;
+  } else if (tile.tag == TILE_TYPE.WALL) {
+    // Do nothing, illegal state.
+    console.log("Illegal state: Adding path unit to a wall tile.");
+  } else {
+    if (tile.tag == TILE_TYPE.CAPITAL && unit.affiliation == AFFILIATION.ENEMY) {
+      tile.society.get(ROLE.ATTACKER).units.push(unit);
+      unit.role = ROLE.ATTACKER;
+    } else {
+      // Entering the endpoint tile. As of now, players cannot choose which role
+      // the unit will be in, so we just pick one based on a priority.
+
+      _getSocietyRoleUnitsToJoin(tile).push(unit);
+      unit.role = ROLE.WALKER;
+
+      if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
+	tile.foodStored++;
+	unit.isCarryingFood = false;
+      }
+    }
+    
+  }
+}
+
+// Tile -> [Arrayof Unit]
+function _getSocietyRoleUnitsToJoin(tile) {
+  const societyRolesPriority = [
+    ROLE.FARMER,
+    ROLE.SOLDIER,
+    ROLE.WALKER,
+    ROLE.QUEEN,
+  ];
+
+  for (const role of societyRolesPriority) {
+    if (tile.society.has(role)) {
+      return tile.society.get(role).units;
+    }
+  }
+
+  console.error("Tile did not have a role it could give.");
+}
+
 // (Tile, Unit, Integer): Void
 // Adds the given unit in a path to the given tile with the given path ID.
 function _addPathUnitToTile(tile, unit, pathId) {
   if (tile.tag == TILE_TYPE.WALKABLE_TILE) {
     const tileUnits = tile.society.get(ROLE.WALKER).units;
     tileUnits.push(unit);
+    unit.role = ROLE.WALKER;
   } else if (tile.tag == TILE_TYPE.WALL) {
     // Do nothing, illegal state.
     console.log("Illegal state: Adding path unit to a wall tile.");
@@ -1157,12 +1264,14 @@ function _addPathUnitToTile(tile, unit, pathId) {
     // pathUnitsQueues, but instead the enemyUnits
     if (tile.tag == TILE_TYPE.CAPITAL && unit.affiliation == AFFILIATION.ENEMY) {
       tile.society.get(ROLE.ATTACKER).units.push(unit);
+      unit.role = ROLE.ATTACKER;
     } else {
       if (tile.hasOwnProperty("pathUnitsQueues")) {
 	for (const pathUnitsQueue of tile.pathUnitsQueues) {
 	  // Add unit to the right queue
 	  if (pathUnitsQueue.pathId === pathId) {
 	    pathUnitsQueue.unitsQueue.push(unit);
+	    unit.role = ROLE.WALKER;
 	    break;
 	  }
 	}

@@ -50,7 +50,19 @@ function initializeInput(canvas0) {
     // CLEANUP(marvin): Remove debug line before ship.
     document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
 
-    if (world.clickMode == CLICK_MODE.INFO) {
+    if (world.selectedUnits.length > 0) {
+      for (let r = 0; r < world.grid.length; r++) {
+	for (let c = 0; c < world.grid[r].length; c++) {
+	  if (mouseY >= r * squareLength &&
+	      mouseY <= (r + 1) * squareLength &&
+	      mouseX >= c * squareLength &&
+	      mouseX <= (c + 1) * squareLength) {
+	    directSelectedUnitsToOneOffPath(r, c);
+	    clearSelectedUnits();
+	  }
+	}
+      }
+    } else if (world.clickMode == CLICK_MODE.INFO) {
       // Check if the click happens inside a map tile.
       for (let r = 0; r < world.grid.length; r++) {
 	for (let c = 0; c < world.grid[r].length; c++) {
@@ -108,19 +120,6 @@ function initializeInput(canvas0) {
 	  }
 	}
       }
-    } else if (world.clickMode == CLICK_MODE.ONE_OFF_PATH) {
-      if (world.selectedUnits.length > 0) {
-	for (let r = 0; r < world.grid.length; r++) {
-	  for (let c = 0; c < world.grid[r].length; c++) {
-	    if (mouseY >= r * squareLength &&
-		mouseY <= (r + 1) * squareLength &&
-		mouseX >= c * squareLength &&
-		mouseX <= (c + 1) * squareLength) {
-	      directSelectedUnitsToOneOffPath(r, c);
-	    }
-	  }
-	}
-      }
     }
   }
 
@@ -132,7 +131,9 @@ function initializeInput(canvas0) {
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
     mouseDownPos = {x: mouseX, y: mouseY};
-    clearSelectedUnits();
+    // TODO: Unselect units only if the user click on an invalid tile or outside
+    // of map. 
+    // clearSelectedUnits();
   }
 
   function _onMouseDragEnd(evt) {
