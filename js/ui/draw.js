@@ -253,8 +253,8 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
 
 // Ideally, l should be divisible by 6, and l divisible by 8.
 function _drawUnit(unit, topLeftX, topLeftY, l, w) {
-  const mainColorComponent = 155 + 100 * (unit.energy / 100);
-  const otherColorComponents = 255 - 255 * (unit.energy / 100);
+  const mainColorComponent = 255;
+  const otherColorComponents = 200 - 200 * (unit.energy / 100);
 
   // Fill in the entire cell if light blue
   if (unit.isSelected) {
@@ -266,6 +266,7 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
   canvasContext.fillStyle = (unit.affiliation === AFFILIATION.YOURS)
     ? `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`
     : `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
+
   canvasContext.fillRect(topLeftX + (w / 8), topLeftY, (w / 4 * 3), l / 3);
   canvasContext.fillRect(topLeftX, topLeftY + (l / 3) + 4, w, l / 3 * 2 - 4);
 
