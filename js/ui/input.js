@@ -22,6 +22,7 @@
 let mouseX, mouseY;
 let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
 let gamePaused = false;
+let gameMuted = false;
 
 // ================================================================================
 // FUNCTIONS
@@ -205,6 +206,10 @@ function initializeInput(canvas0) {
       // Toggle pause
       gamePaused = !gamePaused;
       console.log("Game Paused")
+    } else if (evt.keyCode == KEY_M) {
+      // Toggle mute
+      gameMuted = !gameMuted;
+      console.log(gameMuted ? "Game audio muted" : "Game audio unmuted")
     }
   }
 }

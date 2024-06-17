@@ -34,7 +34,9 @@ const nameToAudio = new Map(
 // playSFX : String -> Void
 // Plays the sound effect with the given name.
 function playSFX(name) {
-  const audio = nameToAudio.get(name);
-  audio.currentTime = 0;
-  audio.play();
+  if (!gameMuted) {
+    const audio = nameToAudio.get(name);
+    audio.currentTime = 0;
+    audio.play();
+  }
 }
