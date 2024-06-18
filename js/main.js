@@ -39,8 +39,10 @@ const rootImagesFolder = "images/";
 let tileTypeToImage = new Map();
 
 function _prepareGameStart(callback) {
+  // TODO: tileImages array should be somewhere in the ui directory.
   const tileImages = [
     {tileType: TILE_TYPE.FOOD_STORAGE, filename: "foodStorage.png"},
+    {tileType: TILE_TYPE.FOOD_FARM, filename: "farm.png"},
   ];
 
   let numImagesLeftToLoad = tileImages.length;

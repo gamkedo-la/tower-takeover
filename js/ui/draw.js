@@ -164,9 +164,7 @@ function _drawTileTypeAtPos(tileType, c, r) {
   } else if (tileType === TILE_TYPE.FOOD_STORAGE) {
     canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.FOOD_STORAGE), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.FOOD_FARM) {
-    // Orange square.
-    canvasContext.fillStyle = "orange";
-    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.FOOD_FARM), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.CAPITAL) {
     // Green square.
     canvasContext.fillStyle = "green";
