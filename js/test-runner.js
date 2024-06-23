@@ -62,7 +62,7 @@ window.onload = function() {
     // position. For example, [1, 5, 2, 6] corresopnds to [{r: 1, c: 5}, {r: 2,
     // c: 6}].
     function _checkEqual(r1, c1, r2, c2, natList) {
-      checkEqual(_generatePathOrderedPoss(grid0, r1, c1, r2, c2),
+      checkEqual(generatePathOrderedPoss(grid0, r1, c1, r2, c2),
 		 _natListToPosList(natList));
     }
 
