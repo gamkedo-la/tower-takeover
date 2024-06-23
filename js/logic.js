@@ -1091,10 +1091,6 @@ function _onTickUnitInPaths(unit, worldGrid, worldPaths) {
   const posToMoveFrom = path.orderedPoss[unit.indexInPath];
   const posToMoveTo = path.orderedPoss[newIndexInPath];
 
-  if (isOneOffPath) {
-    console.log("FROM/TO: ", posToMoveFrom, posToMoveTo);
-  }
-
   const tileToMoveFrom = worldGrid[posToMoveFrom.r][posToMoveFrom.c];
   const tileToMoveTo = worldGrid[posToMoveTo.r][posToMoveTo.c];
 
@@ -1152,7 +1148,6 @@ function _removePathUnitFromTile_OneOff(tile, unit) {
       }
     }
   } else {
-    console.log(unit.role, tile);
     _removeUnitFromUnits(tile.society.get(unit.role).units, unit);
   }
 }
