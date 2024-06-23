@@ -46,19 +46,34 @@ function _prepareGameStart(callback) {
   ];
 
   let numImagesLeftToLoad = tileImages.length;
+  let shouldCallCallback = false;
 
   for (const tileImage of tileImages) {
     const imgElement = document.createElement("img");
-    imgElement.onload = function () {
-      numImagesLeftToLoad--;
 
+    // If the image element is cached, no need for onload.
+    if (imgElement.complete) {
+      numImagesLeftToLoad--;
       if (numImagesLeftToLoad === 0) {
-	callback();
+	shouldCallCallback = true;
+      }
+    } else {
+      imgElement.onload = function () {
+	numImagesLeftToLoad--;
+
+	if (numImagesLeftToLoad === 0) {
+	  callback();
+	}
       }
     }
+
     imgElement.src = rootImagesFolder + tileImage.filename;
 
     tileTypeToImage.set(tileImage.tileType, imgElement);
+
+    if (shouldCallCallback) {
+      callback();
+    }
   }
 }
 
