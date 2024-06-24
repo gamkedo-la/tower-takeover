@@ -149,6 +149,13 @@ function onDraw() {
 			   selectedBuildTileTopLeftC);
     }
   }
+
+  if (mouseDownPos) {
+    canvasContext.save();
+    canvasContext.strokeStyle = 'black';
+    canvasContext.strokeRect(mouseDownPos.x, mouseDownPos.y, mouseX - mouseDownPos.x, mouseY - mouseDownPos.y);
+    canvasContext.restore();
+  }
 }
 
 // c and r are in terms of squareLength

@@ -206,4 +206,3 @@ function _removeUnitFromUnits(units, unitToRemove) {
 function _getUnitsWithRole(tile, role) {
   return tile.society.get(role).units;
 }
-

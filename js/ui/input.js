@@ -36,6 +36,7 @@ function initializeInput(canvas0) {
 
   canvas.addEventListener("click", _onMouseClick);
   canvas.addEventListener("mousedown", _onMouseDragStart);
+  canvas.addEventListener("mousemove", _onMouseDragUpdate);
   canvas.addEventListener("mouseup", _onMouseDragEnd);
   document.addEventListener("keydown", _onKeyDown);
 
@@ -52,43 +53,43 @@ function initializeInput(canvas0) {
 
     if (world.selectedUnits.length > 0) {
       for (let r = 0; r < world.grid.length; r++) {
-	for (let c = 0; c < world.grid[r].length; c++) {
-	  if (mouseY >= r * squareLength &&
-	      mouseY <= (r + 1) * squareLength &&
-	      mouseX >= c * squareLength &&
-	      mouseX <= (c + 1) * squareLength) {
-	    directSelectedUnitsToOneOffPath(r, c);
-	    clearSelectedUnits();
-	  }
-	}
+        for (let c = 0; c < world.grid[r].length; c++) {
+          if (mouseY >= r * squareLength &&
+              mouseY <= (r + 1) * squareLength &&
+              mouseX >= c * squareLength &&
+              mouseX <= (c + 1) * squareLength) {
+            directSelectedUnitsToOneOffPath(r, c);
+            clearSelectedUnits();
+          }
+        }
       }
     } else if (world.clickMode == CLICK_MODE.INFO) {
       // Check if the click happens inside a map tile.
       for (let r = 0; r < world.grid.length; r++) {
-	for (let c = 0; c < world.grid[r].length; c++) {
-	  if (mouseY >= r * squareLength &&
-	      mouseY <= (r + 1) * squareLength &&
-	      mouseX >= c * squareLength &&
-	      mouseX <= (c + 1) * squareLength) {
-	    selectMapTile(r, c);
-	  }
-	}
+        for (let c = 0; c < world.grid[r].length; c++) {
+          if (mouseY >= r * squareLength &&
+              mouseY <= (r + 1) * squareLength &&
+              mouseX >= c * squareLength &&
+              mouseX <= (c + 1) * squareLength) {
+            selectMapTile(r, c);
+          }
+        }
       }
 
       // Check if the click happens inside the tile in units display.
 
       if (mouseX >= unitsInTileUIInfo.topLeftX &&
-	  mouseY >= unitsInTileUIInfo.topLeftY) {
-	// Normalize the values so that they are in logical position relative to
-	// the top left of the units in tile UI.
-	const x = Math.floor((mouseX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l);
-	const y = Math.floor((mouseY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w);
-	if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
-	  const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
-	  if (possibleUnitInCell != undefined) {
-	    selectUnit(possibleUnitInCell);
-	  }
-	}
+        mouseY >= unitsInTileUIInfo.topLeftY) {
+        // Normalize the values so that they are in logical position relative to
+        // the top left of the units in tile UI.
+        const x = Math.floor((mouseX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l);
+        const y = Math.floor((mouseY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w);
+        if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
+          const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
+          if (possibleUnitInCell != undefined) {
+            selectUnit(possibleUnitInCell);
+          }
+        }
       }
     } else if (world.clickMode == CLICK_MODE.BUILD) {
       // Check if the click happens to be inside a building select.
@@ -96,31 +97,33 @@ function initializeInput(canvas0) {
       // Deduce screen region from build tiles and log the tile type if click
       // within a region. Otherwise, do nothing.
       for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
-	if (mouseY >= buildTileUIInfo.topLeftR * squareLength &&
-	    mouseY <= (buildTileUIInfo.topLeftR + 1) * squareLength &&
-	    mouseX >= (buildTileUIInfo.topLeftC + i) * squareLength &&
-	    mouseX <= (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
-	  const buildTile = buildTileUIInfo.buildTiles[i];
-	  selectBuildTile(buildTile);
-	}
+        if (mouseY >= buildTileUIInfo.topLeftR * squareLength &&
+            mouseY <= (buildTileUIInfo.topLeftR + 1) * squareLength &&
+            mouseX >= (buildTileUIInfo.topLeftC + i) * squareLength &&
+            mouseX <= (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
+          const buildTile = buildTileUIInfo.buildTiles[i];
+          selectBuildTile(buildTile);
+        }
       }
 
       // Check if the click happens in a tile in the map.
       // If so, changes the clicked tile to the selected build tile if not null.
       // In any other situation, does nothing.
       if (world.buildTileSelected != null) {
-	for (let r = 0; r < world.grid.length; r++) {
-	  for (let c = 0; c < world.grid[r].length; c++) {
-	    if (mouseY >= r * squareLength &&
-		mouseY <= (r + 1) * squareLength &&
-		mouseX >= c * squareLength &&
-		mouseX <= (c + 1) * squareLength) {
-	      changeMapTile(r, c, world.buildTileSelected);
-	    }
-	  }
-	}
+        for (let r = 0; r < world.grid.length; r++) {
+          for (let c = 0; c < world.grid[r].length; c++) {
+            if (mouseY >= r * squareLength &&
+                mouseY <= (r + 1) * squareLength &&
+                mouseX >= c * squareLength &&
+                mouseX <= (c + 1) * squareLength) {
+              changeMapTile(r, c, world.buildTileSelected);
+            }
+          }
+        }
       }
     }
+
+    mouseDownPos = null;
   }
 
   function _onMouseDragStart(evt) {
@@ -134,6 +137,11 @@ function initializeInput(canvas0) {
     // TODO: Unselect units only if the user click on an invalid tile or outside
     // of map. 
     // clearSelectedUnits();
+  }
+
+  function _onMouseDragUpdate(evt) {
+    mouseX = evt.clientX - rect.left - root.scrollLeft;
+    mouseY = evt.clientY - rect.top - root.scrollTop;
   }
 
   function _onMouseDragEnd(evt) {
@@ -190,6 +198,7 @@ function initializeInput(canvas0) {
 	}
       }
     }
+    mouseDownPos = null;
   }
 
   function _onKeyDown(evt) {
