@@ -32,6 +32,7 @@ function onTick() {
   _onTickPaths(world);
   _onTickEggs(world);
   _onTickPurgeUnfollowedPaths(world);
+  _onTickDestroyTiles(world);
 }
 
 // ================================================================================
@@ -205,4 +206,29 @@ function _removeUnitFromUnits(units, unitToRemove) {
 // Returns the units of the given role in the given tile.
 function _getUnitsWithRole(tile, role) {
   return tile.society.get(role).units;
+}
+
+// Removes any tiles that meet the destroy criteria
+// TODO: Move to separate file/abstraction if this grows larger than enemy camps
+function _onTickDestroyTiles(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+      _onTickDestroyTile(r, c, tile);
+    }
+  }
+}
+
+function _onTickDestroyTile(r, c, tile) {
+  if(tile.tag === TILE_TYPE.ENEMY_CAMP) {
+    const enemyUnits = tile.society.get(ROLE.ATTACKER).units;
+    if(enemyUnits.length === 0) {
+      console.log(`All enemy units destroyed in enemy camp [${r},${c}] - changing to walkable tile`);
+      // Destroy the enemy camp by changing it to a walkable tile
+      changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE);
+    }
+    // else {
+    //   console.log(`${enemyUnits.length} remain in enemy camp[${r},${c}]`);
+    // }
+  }
 }
