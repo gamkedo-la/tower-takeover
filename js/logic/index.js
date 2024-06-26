@@ -221,14 +221,11 @@ function _onTickDestroyTiles(world) {
 
 function _onTickDestroyTile(r, c, tile) {
   if(tile.tag === TILE_TYPE.ENEMY_CAMP) {
-    const enemyUnits = tile.society.get(ROLE.ATTACKER).units;
-    if(enemyUnits.length === 0) {
+    const hasAnyUnits = tile.society.values().some(society => society.units?.length > 0);
+    if(!hasAnyUnits) {
       console.log(`All enemy units destroyed in enemy camp [${r},${c}] - changing to walkable tile`);
       // Destroy the enemy camp by changing it to a walkable tile
       changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE);
     }
-    // else {
-    //   console.log(`${enemyUnits.length} remain in enemy camp[${r},${c}]`);
-    // }
   }
 }
