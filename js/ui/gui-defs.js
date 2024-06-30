@@ -30,7 +30,7 @@ const unitInTileUIInfo = {
 // positioning, tile types the user can build).
 const buildTileUIInfo = {
   topLeftC: 1,
-  topLeftR: 5,
+  topLeftR: 8,
   buildTiles: world.buildTileOptions,
 }
 
