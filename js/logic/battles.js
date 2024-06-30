@@ -17,7 +17,7 @@ function _onTickBattles(world) {
 // ================================================================================
 
 function _onTickTileBattles(tile) {
-  // For now, battles only occur in walkable tiles and the capital.
+  // For now, battles only occur in walkable tiles, the capital and enemy camps.
   if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
     let yourUnits = tile.society.get(ROLE.WALKER);
     let enemyUnits = tile.society.get(ROLE.ATTACKER);
@@ -39,5 +39,13 @@ function _onTickTileBattles(tile) {
     if (enemies.length > guards.length) {
       tile.isQueenAlive = false;
     }
+  } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
+    const yourUnits = tile.society.get(ROLE.SOLDIER).units;
+    const enemyUnits = tile.society.get(ROLE.ATTACKER).units;
+
+    const numBattles = Math.min(yourUnits.length, enemyUnits.length);
+
+    yourUnits.length -= numBattles;
+    enemyUnits.length -= numBattles;
   }
 }
