@@ -20,6 +20,11 @@ const soundFolderRoot = "sound/";
 const nameToFilePath = [
   ["building_built", "building_built.mp3"],
   ["building_denied", "building_denied.mp3"],
+  ["building_destroyed", "Sx_Building_Destroy.wav"],
+  ["path_drawn", "Sx_Path_Draw.wav"],
+  ["button_click_fail", "Sx_UI_Button_ClickFAIL.wav"],
+  ["button_click_ok", "Sx_UI_Button_ClickOK.wav"],
+  ["button_hover", "Sx_UI_Button_Hover.wav"],
 ];
 
 const nameToAudio = new Map(
