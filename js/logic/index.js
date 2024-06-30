@@ -65,8 +65,9 @@ function changeClickMode(clickMode) {
 }
 
 // Changes the map tile in the given position row r and column c, to the given
-// tile type.
-function changeMapTile(r, c, tileType) {
+// tile type. If gameCommand is true, that building denied is overriden. If
+// gameCommand is false, then it is a player request, which can be denied.
+function changeMapTile(r, c, tileType, gameCommand = false) {
   // These local variables are responsible for making the appropriate sound
   // effect. You can see the control flow at the bottom of this function. Change
   // these booleans inside the switch case as per the rules of the game, and the
@@ -90,9 +91,9 @@ function changeMapTile(r, c, tileType) {
     // walkable tiles.
     const currTileTypeToReplace = world.grid[r][c].tag;
 
-    if (currTileTypeToReplace === TILE_TYPE.WALL ||
-        currTileTypeToReplace === TILE_TYPE.WALKABLE_TILE ||
-        currTileTypeToReplace === TILE_TYPE.ENEMY_CAMP) {
+    if (!gameCommand && (currTileTypeToReplace === TILE_TYPE.WALL ||
+			 currTileTypeToReplace === TILE_TYPE.WALKABLE_TILE ||
+			 currTileTypeToReplace === TILE_TYPE.ENEMY_CAMP)) {
       buildingDenied = true;
     } else {
       world.grid[r][c] = _.cloneDeep(WALKABLE_TILE_PREFAB);
@@ -250,7 +251,7 @@ function _onTickDestroyTile(r, c, tile) {
     if(!hasAnyUnits) {
       console.log(`All enemy units destroyed in enemy camp [${r},${c}] - changing to walkable tile`);
       // Destroy the enemy camp by changing it to a walkable tile
-      changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE);
+      changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE, true);
     }
   }
 }
