@@ -67,6 +67,13 @@ function changeClickMode(clickMode) {
 // Changes the map tile in the given position row r and column c, to the given
 // tile type.
 function changeMapTile(r, c, tileType) {
+  // These local variables are responsible for making the appropriate sound
+  // effect. You can see the control flow at the bottom of this function. Change
+  // these booleans inside the switch case as per the rules of the game, and the
+  // right SFX should just play.
+  let buildingDenied = false;
+  let buildingDestroyed = false;
+  
   // If the tile contains units, they will just disappear.
   // TODO(ID: 1): Kill units inside tiles that get destroyed. Do this when the kill
   // code is written.
@@ -78,10 +85,20 @@ function changeMapTile(r, c, tileType) {
     world.grid[r][c] = {tag: tileType};
     break;
   case TILE_TYPE.WALKABLE_TILE:
-    // NOTE(marvin):
-    // Not exactly sure if players should be able to do this... We can play it
-    // by ear, and remove it as an option if it doesn't work out.
-    world.grid[r][c] = _.cloneDeep(WALKABLE_TILE_PREFAB);
+    // Building a walkable tile is equivalent to destroying a player
+    // infrastructure, so it's not going to work on enemy camps, walls and
+    // walkable tiles.
+    const currTileTypeToReplace = world.grid[r][c].tag;
+
+    if (currTileTypeToReplace === TILE_TYPE.WALL ||
+        currTileTypeToReplace === TILE_TYPE.WALKABLE_TILE ||
+        currTileTypeToReplace === TILE_TYPE.ENEMY_CAMP) {
+      buildingDenied = true;
+    } else {
+      world.grid[r][c] = _.cloneDeep(WALKABLE_TILE_PREFAB);
+      buildingDestroyed = true;
+    }
+    
     break;
   case TILE_TYPE.FOOD_STORAGE:
     world.grid[r][c] = _.cloneDeep(FOOD_STORAGE_PREFAB);
@@ -97,6 +114,14 @@ function changeMapTile(r, c, tileType) {
     break;
   default:
     console.log("Unrecognized tile type:", tileType);
+  }
+
+  if (buildingDenied) {
+    playSFX("building_denied");
+  } else if (buildingDestroyed) {
+    playSFX("building_destroyed");
+  } else {
+    playSFX("building_built");
   }
 }
 
