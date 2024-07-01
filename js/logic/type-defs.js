@@ -10,23 +10,33 @@
 // DATA DEFINITIONS
 // ================================================================================
 
-// TODO(marvin): The `paths` variable needs to be renamed to `cyclicPaths`, so
-// one off and cyclic paths are not confused.
-
-// A World is a {grid: [2D-array-of Tile], paths: [Array-of CyclicPath],
+// A World is a {grid: [2D-array-of Tile], cyclicPaths: [Array-of CyclicPath],
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
 // Null], clickMode: ClickMode, selectedUnits: [Array-of Unit], oneOffPaths:
 // [Array-of OneOffPath]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid.
 
-// A CyclicPath is a {orderedPoss: [Array-of Pos], lastIndex: Integer}
+// A PathType is one of:
+// - ONE_OFF
+// - CYCLIC
+const PATH_TYPE = Object.freeze({
+  ONE_OFF: 0,
+  CYCLIC: 1,
+});
+
+// A Path is one of:
+// - OneOffPath
+// - CyclicPath
+// Represents an origin and destination and the positions in between them for units to traverse.
+
+// A CyclicPath is a {tag: PathType, orderedPoss: [Array-of Pos], lastIndex: Integer}
 // Represents an ordered list of positions from source to destination which
 // units traverse, and the lastIndex ought to be the length of the orderedPoss
 // minus one. The Pos corresponds to the row and column of the world
 // grid. Assume that the length of orderedPoss is at least two.
 
-// A OneOffPath is a {orderedPoss: [Array-of Pos], numFollowers: Integer}
+// A OneOffPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers: Integer}
 // Represents a path that a set of units take (the nunmber of which is
 // followers) to reach a destination. Ought to not exist when followers is 0.
 
@@ -185,8 +195,8 @@ const DIRECTION = Object.freeze({
   STATIONARY: 2,
 });
 
-// A Unit is a {energy: Integer, affiliation: Affiliation, pathId: Integer,
-// indexInPath: Integer, oneOffPath: [U OneOffPath false], direction: Direction, isCarryingFood: Boolean,
+// A Unit is a {energy: Integer, affiliation: Affiliation,
+// indexInPath: Integer, path: [U Path false], direction: Direction, isCarryingFood: Boolean,
 // hasMovedInTick: Boolean, isSelected: Boolean, pos: Pos }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
@@ -196,9 +206,8 @@ const DIRECTION = Object.freeze({
 const UNIT_PREFAB = {
   energy: 100,
   affiliation: AFFILIATION.YOURS,
-  pathId: null,
   indexInPath: 0,
-  oneOffPath: false,
+  path: false,
   direction: DIRECTION.TO,
   isCarryingFood: false,
   hasMovedInTick: false,
@@ -218,7 +227,7 @@ const FOOD_STORAGE_PREFAB = Object.assign({
   pathUnitsQueues: [],
 }, foodStorageMixin);
 
-// A PathUnitsQueue is a {pathId: Integer, unitsQueue: [Queue-of Units]}
+// A PathUnitsQueue is a {path: Path, unitsQueue: [Array-of Units]}
 // Represents a queue of units to be deployed on the path.
 
 // A FoodFarm is a {tag: TileType, foodStored: Integer, pathUnitsQueues:
@@ -279,7 +288,7 @@ const CLICK_MODE = Object.freeze({
 // ================================================================================
 
 function _unitEquals(unit1, unit2) {
-  return unit1.energy === unit2.energy && unit1.pathId === unit2.pathId &&
-    unit1.indexInPath === unit2.indexInPath && unit1.direction === unit2.direction &&
-    unit1.isCarryingFood === unit2.isCarryingFood;
+  return unit1.energy === unit2.energy && unit1.path === unit2.path
+      unit1.indexInPath === unit2.indexInPath && unit1.direction === unit2.direction &&
+      unit1.isCarryingFood === unit2.isCarryingFood;
 }

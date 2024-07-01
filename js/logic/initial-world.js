@@ -27,6 +27,7 @@
 const wall = {...WALL_PREFAB};
 const emptyWalkableTile = _.cloneDeep(WALKABLE_TILE_PREFAB);
 const paths0 =  [{
+  tag: PATH_TYPE.CYCLIC,
   orderedPoss: [
     {r: 1, c: 1},
     {r: 1, c: 2},
@@ -35,6 +36,7 @@ const paths0 =  [{
   ],
   lastIndex: 3,
 }, {
+  tag: PATH_TYPE.CYCLIC,
   orderedPoss: [
     {r: 2, c: 3},
     {r: 2, c: 2},
@@ -132,7 +134,7 @@ const initialWorldOld = {
     [wall, wall, walkableTile2, wall],
     [wall, wall, foodStorage, wall],
   ],
-  paths: paths0,
+  cyclicPaths: paths0,
   oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,
@@ -296,7 +298,7 @@ function _initialTileTypesToTiles(tileTypes) {
 
 const initialWorld = {
   grid: _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety),
-  paths: [],
+  cyclicPaths: [],
   oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
   buildTileSelected: null,

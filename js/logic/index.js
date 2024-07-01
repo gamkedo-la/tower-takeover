@@ -144,14 +144,14 @@ function directSelectedUnitsToOneOffPath(r, c) {
       oneOffPaths.get(unit.pos).numFollowers++;
     } else {
       oneOffPaths.set(unit.pos, {
+	tag: PATH_TYPE.ONE_OFF,
 	orderedPoss: generatePathOrderedPoss(world.grid, unit.pos.r, unit.pos.c, r, c),
 	numFollowers: 1,
       });
     }
 
     unit.indexInPath = 0;
-    unit.oneOffPath = oneOffPaths.get(unit.pos);
-    unit.pathId = null;
+    unit.path = oneOffPaths.get(unit.pos);
     unit.direction = DIRECTION.TO;
   }
 
@@ -232,6 +232,16 @@ function _removeUnitFromUnits(units, unitToRemove) {
 // Returns the units of the given role in the given tile.
 function _getUnitsWithRole(tile, role) {
   return tile.society.get(role).units;
+}
+
+
+// Tile Role Unit -> Void
+// Adds the given the given unit into the given tile with the given role in its
+// society. Ensures that the unit's role is in sync with the role units array it
+// is in. Errors if the role in the tile doesn't exist.
+function _addUnitToRole(tile, role, unit) {
+  _getUnitsWithRole(tile, role).push(unit);
+  unit.role = role;
 }
 
 // Removes any tiles that meet the destroy criteria

@@ -100,7 +100,7 @@ function onDraw() {
   }
 
   // Drawing the paths.
-  for (const path of world.paths) {
+  for (const path of world.cyclicPaths) {
     // Drawing a single path.
     canvasContext.strokeStyle = "black";
     canvasContext.lineWidth = 1;
