@@ -36,7 +36,8 @@ const PATH_TYPE = Object.freeze({
 // minus one. The Pos corresponds to the row and column of the world
 // grid. Assume that the length of orderedPoss is at least two.
 
-// A OneOffPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers: Integer}
+// A OneOffPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
+// Integer, lastIndex: Integer}
 // Represents a path that a set of units take (the nunmber of which is
 // followers) to reach a destination. Ought to not exist when followers is 0.
 

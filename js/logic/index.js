@@ -143,10 +143,12 @@ function directSelectedUnitsToOneOffPath(r, c) {
     if (oneOffPaths.has(unit.pos)) {
       oneOffPaths.get(unit.pos).numFollowers++;
     } else {
+      const orderedPoss = generatePathOrderedPoss(world.grid, unit.pos.r, unit.pos.c, r, c);
       oneOffPaths.set(unit.pos, {
 	tag: PATH_TYPE.ONE_OFF,
-	orderedPoss: generatePathOrderedPoss(world.grid, unit.pos.r, unit.pos.c, r, c),
+	orderedPoss: orderedPoss,
 	numFollowers: 1,
+	lastIndex: orderedPoss.length - 1,
       });
     }
 
