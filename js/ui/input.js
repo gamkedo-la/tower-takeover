@@ -33,6 +33,7 @@ function initializeInput(canvas0) {
   const canvas = canvas0;
   const rect = canvas.getBoundingClientRect();
   const root = document.documentElement;
+  var firstClickEver = true;
 
   canvas.addEventListener("click", _onMouseClick);
   canvas.addEventListener("mousedown", _onMouseDragStart);
@@ -41,9 +42,18 @@ function initializeInput(canvas0) {
   document.addEventListener("keydown", _onKeyDown);
 
   function _onMouseClick(evt) {
+    if (firstClickEver) {
+        firstClickEver = false;
+        playSFX("ambient_sound_loop",0.5,true);
+    }
+
     if(gamePaused){
+      playSFX("button_click_fail");
       return;
     }
+
+    // TODO: play different sounds below depending on result
+    playSFX("button_click_ok");
 
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;

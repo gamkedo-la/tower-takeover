@@ -25,6 +25,8 @@ const nameToFilePath = [
   ["button_click_fail", "Sx_UI_Button_ClickFAIL.wav"],
   ["button_click_ok", "Sx_UI_Button_ClickOK.wav"],
   ["button_hover", "Sx_UI_Button_Hover.wav"],
+  ["button_hover", "Sx_UI_Button_Hover.wav"],
+  ["ambient_sound_loop", "ambient_sound_loop.mp3"]
 ];
 
 const nameToAudio = new Map(
@@ -38,10 +40,16 @@ const nameToAudio = new Map(
 
 // playSFX : String -> Void
 // Plays the sound effect with the given name.
-function playSFX(name) {
+function playSFX(name,vol=1,loop=false) {
   if (!gameMuted) {
     const audio = nameToAudio.get(name);
-    audio.currentTime = 0;
-    audio.play();
+    if (audio) {
+        audio.currentTime = 0;
+        audio.volume = vol;
+        audio.loop = loop;
+        audio.play();
+    } else {
+      console.error("unknown sound: "+name);
+    }
   }
 }
