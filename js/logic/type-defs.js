@@ -30,7 +30,8 @@ const PATH_TYPE = Object.freeze({
 // - CyclicPath
 // Represents an origin and destination and the positions in between them for units to traverse.
 
-// A CyclicPath is a {tag: PathType, orderedPoss: [Array-of Pos], lastIndex: Integer}
+// A CyclicPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
+// Nat, lastIndex: Integer}
 // Represents an ordered list of positions from source to destination which
 // units traverse, and the lastIndex ought to be the length of the orderedPoss
 // minus one. The Pos corresponds to the row and column of the world
@@ -197,23 +198,28 @@ const DIRECTION = Object.freeze({
 });
 
 // A Unit is a {energy: Integer, affiliation: Affiliation,
-// indexInPath: Integer, path: [U Path false], direction: Direction, isCarryingFood: Boolean,
-// hasMovedInTick: Boolean, isSelected: Boolean, pos: Pos }
+// indexInPath: [U Natural false], path: [U Path false], direction: Direction, isCarryingFood: Boolean,
+// hasMovedInTick: Boolean, isSelected: Boolean, pos: Pos, cyclicPathToJoin: [U
+// CyclicPath false], indexInPathToJoin: [U Natural false] }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
 // unit is not associated with any paths. The pos must be initialized along with
-// the unit's position in the world grid, and continue to remain in sync.
+// the unit's position in the world grid, and continue to remain in sync. If
+// indexInPath is false but path is not false, then the unit is walking towards
+// the path but they are not there yet.
 
 const UNIT_PREFAB = {
   energy: 100,
   affiliation: AFFILIATION.YOURS,
-  indexInPath: 0,
+  indexInPath: false,
   path: false,
   direction: DIRECTION.TO,
   isCarryingFood: false,
   hasMovedInTick: false,
   isSelected: false,
   role: ROLE.WALKER,
+  pathToJoin: false,
+  indexInPathToJoin: false,
 }
 
 // A FoodStorage is a {tag: TileType, foodStored: Integer,

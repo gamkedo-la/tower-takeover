@@ -130,7 +130,13 @@ function changeMapTile(r, c, tileType, gameCommand = false) {
 // Sends the selected units off a to a one-off path to the given map position
 // row r and column c. Updates the world data definition only.
 function directSelectedUnitsToOneOffPath(r, c) {
-  // Generating all the needed oneOffPaths, and also set each unit's initial
+  _directUnitsToOneOffPath(world.selectedUnits, r, c);
+}
+
+// [Listof Unit] Nat Nat -> Void
+// Pulled out from directSelectUnitsToOneOffPath so that directSelectedUnitsToCyclicPath can use this to get units that are not on the cyclic path to walk to the cyclic path.
+function _directUnitsToOneOffPath(units, r, c) {
+    // Generating all the needed oneOffPaths, and also set each unit's initial
   // pathIndex to 0.
 
   // NOTE(marvin): It's possible that one path is a subset of another path. We
@@ -139,7 +145,7 @@ function directSelectedUnitsToOneOffPath(r, c) {
   // Pos -> [Array-of CyclicPath]
   let oneOffPaths = new Map();
 
-  for (const unit of world.selectedUnits) {
+  for (const unit of units) {
     if (oneOffPaths.has(unit.pos)) {
       oneOffPaths.get(unit.pos).numFollowers++;
     } else {
@@ -170,7 +176,7 @@ function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
   // toPos (the path-finding algorithm is deterministic).
   for (const oneOffPath of world.oneOffPaths) {
     const currFromPos = oneOffPath.orderedPoss[0];
-    const currToPos = oneOffPath.orderedPoss[oneOffPath.orderedPoss.length - 1];
+    const currToPos = oneOffPath.orderedPoss[oneOffPath.lastIndex];
 
     if (fromPos.r === currFromPos.r && fromPos.c === currFromPos.c &&
         toPos.r === currToPos.r && toPos.c === currToPos.c) {
@@ -180,6 +186,95 @@ function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
   }
 
   world.oneOffPaths.push(newOneOffPath);
+}
+
+// Nat Nat -> Void
+// Sends the selected units off to a cyclic path to the given origin and
+// destination positions. Updates the world data definition only.
+function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
+  const newCyclicPath = _createCyclicPath(r1, c1, r2, c2);
+
+  // Adds a unique cyclic path to world.cyclicPaths. If it already exist, does
+  // nothing. Two cyclicPaths are the same if their from and to destinations are the same.
+  _addCyclicPath(world, {r: r1, c: c1}, {r: r2, c: c2}, newCyclicPath);
+
+  // If the unit is not already in the path, the unit needs to first
+  // travel to a point in the newCyclicPath's orderedPoss that is the
+  // minimum distance. Let the movement code deal with this.
+  for (const unit of world.selectedUnits) {
+    const {orderedPoss} = newCyclicPath;
+
+    unit.direction = DIRECTION.TO;
+
+    if (orderedPoss.some(p => p.r === unit.pos.r && p.c === unit.pos.c)) {
+      unit.path = newCyclicPath;
+      unit.indexInPath = 0;
+      unit.pathToJoin = false;
+      unit.indexInPathToJoin = false;
+      
+      newCyclicPath.numFollowers++;
+    } else {
+      const indexWithMinDist = _getIndexWithMinDist(orderedPoss, unit.pos);
+      const posWithMinDist = orderedPoss[indexWithMinDist];
+      
+      _directUnitsToOneOffPath([unit], posWithMinDist.r, posWithMinDist.c);
+      unit.PathToJoin = newCyclicPath;
+      unit.indexInPathToJoin = indexWithMinDist;
+    }
+  }
+}
+
+// [Listof Pos] Pos -> Nat
+// Returns null if the given orderedPoss is empty.
+function _getIndexWithMinDist(orderedPoss, pos) {
+  // It's possible to use calculus or some other algebraic method.
+  if (orderedPoss.length == 0) {
+    console.warning("_getIndexWithMinDist: orderedPoss is empty.");
+  }
+  let lowestDistSoFar = Infinity;
+  let rv = null;
+  
+  for (let i = 0; i < orderedPoss.length; i++) {
+    const currDist = _getDistance(orderedPoss[i], pos);
+
+    if (currDist < lowestDistSoFar) {
+      lowestDistSoFar = currDist;
+      rv = i;
+    }
+  }
+
+  return rv;
+}
+
+// Manhattan distance. Implementation detail of _getIndexWithMinDist.
+function _getDistance(pos1, pos2) {
+  return Math.abs(pos1.r - pos2.r) + Math.abs(pos1.c - pos2.c);
+}
+
+function _addCyclicPath(world, fromPos, toPos, newCyclicPath) {
+  for (const cyclicPath of world.cyclicPaths) {
+    const currFromPos = cyclicPath.orderedPoss[0];
+    const currToPos = cyclicPath.orderedPoss[oneOffPath.lastIndex];
+
+    if (fromPos.r === currFromPos.r && fromPos.c === currFromPos.c &&
+        toPos.r === currToPos.r && toPos.c === currToPos.c) {
+      return;
+    }
+  }
+
+  world.cyclicPaths.push(newCyclicPath);
+}
+
+// Nat Nat Nat Nat -> CyclicPath
+function _createCyclicPath(r1, c1, r2, c2) {
+  const orderedPoss = generatePathOrderedPoss(world.grid, r1, c1, r2, c2);
+  
+  return {
+    tag: PATH_TYPE.CYCLIC,
+    orderedPoss: orderedPoss,
+    numFollowers: 0,
+    lastIndex: orderedPoss.length - 1,
+  };
 }
 
 // --------------------------------------------------------------------------------

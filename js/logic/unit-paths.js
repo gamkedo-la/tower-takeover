@@ -50,10 +50,20 @@ function _onTickPaths(world) {
 // Currently only works with oneOff paths only.
 function _onTickPurgeUnfollowedPaths(world) {
   // Can't use for...of because mutating the array.
+
+  // Purging one off paths.
   for (let i = world.oneOffPaths.length - 1; i >= 0; i--) {
     const currOneOffPath = world.oneOffPaths[i];
     if (currOneOffPath.numFollowers <= 0) {
       world.oneOffPaths.splice(i, 1);
+    }
+  }
+
+  // Purging cyclic paths.
+  for (let i = world.cyclicPaths.length - 1; i >= 0; i--) {
+    const currCyclicPath = world.cyclicPaths[i];
+    if (currCyclicPath.numFollowers <= 0) {
+      world.cyclicPaths.splice(i, 1);
     }
   }
 }
@@ -111,11 +121,19 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
   unit.pos = posToMoveTo;
   unit.indexInPath = newIndexInPath;
 
+  // Handling reaching either end of a path.
   if (unit.path.tag === PATH_TYPE.ONE_OFF) {
     if (unit.indexInPath === unit.path.lastIndex) {
       // One off paths with no followers will be purged on a different pass.
       unit.path.numFollowers--;
       unit.path = false;
+
+      if (unit.pathToJoin) {
+	unit.path = unit.pathToJoin;
+	unit.indexInPath = unit.indexInPathToJoin;
+	unit.pathToJoin = false;
+	unit.indexInPathToJoin = false;
+      }
     }
   } else if (unit.path.tag === PATH_TYPE.CYCLIC) {
     // Change unit's direction if arrive at either end of the path.
@@ -168,13 +186,23 @@ function _addUnitToTile(unit, tile) {
       _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
     } else if (unit.path.tag === PATH_TYPE.CYCLIC) {
       if (tile.hasOwnProperty("pathUnitsQueues")) {
-	// Add unit to the right queue
+	// Add unit to the right queue if it already exists
+	let foundQueue = false;
+
 	for (const pathUnitsQueue of tile.pathUnitsQueues) {
 	  if (pathUnitsQueue.path === unit.path) {
 	    pathUnitsQueue.unitsQueue.push(unit);
 	    unit.role = ROLE.WALKER;
+	    foundQueue = true;
 	    break;
 	  }
+	}
+
+	if (!foundQueue) {
+	  tile.pathUnitsQueues.push({
+	    path: unit.path,
+	    unitsQueue: [unit],
+	  });
 	}
       }
     }
@@ -210,11 +238,8 @@ function _getLegalSocietyRoleToJoin(tile) {
 // The first unit in the given queue should move forward in its path if it
 // hasn't been moved.
 function _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths) {
-  for (let i = 0; i < pathUnitsQueue.unitsQueue.length; i++) {
-    const unit = pathUnitsQueue.unitsQueue[i];
-    if (!unit.hasMovedInTick) {
-      _onTickUnitInPaths(unit, worldGrid, worldPaths);
-      break;
-    }
+  // Have to traverse backwards because the array will be modified.
+  for (let i = pathUnitsQueue.unitsQueue.length - 1; i >= 0; i--) {
+    _onTickUnitInPaths(pathUnitsQueue.unitsQueue, i, worldGrid, worldPaths);
   }
 }

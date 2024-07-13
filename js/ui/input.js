@@ -68,7 +68,8 @@ function initializeInput(canvas0) {
               mouseY <= (r + 1) * squareLength &&
               mouseX >= c * squareLength &&
               mouseX <= (c + 1) * squareLength) {
-            directSelectedUnitsToOneOffPath(r, c);
+            // directSelectedUnitsToOneOffPath(r, c);
+	    directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
             clearSelectedUnits();
           }
         }
