@@ -335,15 +335,14 @@ const ENEMY_CAMP_PREFAB = {
 		    [ROLE.ATTACKER, {capacity: 20, units: []}]])
 }
 
-// A ClickMode is one of:
-// - Info
-// - Build
-// - OneOffPath
+// A ClickMode is one of the below.
 // Represents what clicking means.
 const CLICK_MODE = Object.freeze({
   INFO: 0,
   BUILD: 1,
   ONE_OFF_PATH: 2,
+  ONE_END_CYCLIC_PATH: 3,
+  TWO_END_CYCLIC_PATH: 4,
 });
 
 // ================================================================================

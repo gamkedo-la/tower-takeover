@@ -62,19 +62,39 @@ function initializeInput(canvas0) {
     document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
 
     if (world.selectedUnits.length > 0) {
+      // If there are selected units, behaviour based on click mode.
+      // INFO: same as ONE_OFF_PATH
+      // BUILD: does not apply
+      // ONE_OFF_PATH: direct selected units to one off path
+      // ONE_END_CYCLIC_PATH: Similar to ONE_OFF_PATH, but is a cyclic path
+      //                      instead.
+      // TWO_END_CYCLIC_PATH: User must click on another tile before it is in effect.
       for (let r = 0; r < world.grid.length; r++) {
         for (let c = 0; c < world.grid[r].length; c++) {
           if (mouseY >= r * squareLength &&
               mouseY <= (r + 1) * squareLength &&
               mouseX >= c * squareLength &&
               mouseX <= (c + 1) * squareLength) {
-            // directSelectedUnitsToOneOffPath(r, c);
-	    directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
-            clearSelectedUnits();
+	    switch (world.clickMode) {
+	    case CLICK_MODE.INFO:
+	    case CLICK_MODE.ONE_OFF_PATH:
+	      directSelectedUnitsToOneOffPath(r, c);
+	      clearSelectedUnits();
+	      break;
+	    case CLICK_MODE.ONE_END_CYCLIC_PATH:
+	      directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
+	      clearSelectedUnits();
+	      break;
+	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
+	      console.error("unimplemented");
+	      break;
+	    }
           }
         }
       }
-    } else if (world.clickMode == CLICK_MODE.INFO) {
+    } else if (world.clickMode === CLICK_MODE.INFO ||
+	       world.clickMode === CLICK_MODE.ONE_OFF_PATH ||
+	       world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH) {
       // Check if the click happens inside a map tile.
       for (let r = 0; r < world.grid.length; r++) {
         for (let c = 0; c < world.grid[r].length; c++) {
@@ -174,7 +194,10 @@ function initializeInput(canvas0) {
 	mouseDownPos.y <= (world.grid.length + 1) * squareLength) {
       // First mousedown inside map
       console.log("DRAG INSIDE MAP");
-    } else if (world.clickMode == CLICK_MODE.INFO &&
+    } else if ((world.clickMode === CLICK_MODE.INFO ||
+		world.clickMode === CLICK_MODE.ONE_OFF_PATH ||
+		world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH ||
+		world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH) &&
 	       mouseDownPos.x >= unitsInTileUIInfo.topLeftX &&
 	       mouseDownPos.y >= unitsInTileUIInfo.topLeftY) {
       // First mousedown inside tile units display
@@ -223,6 +246,12 @@ function initializeInput(canvas0) {
       changeClickMode(CLICK_MODE.INFO);
     } else if (evt.keyCode == KEY_2) {
       changeClickMode(CLICK_MODE.BUILD);
+    } else if (evt.keyCode == KEY_3) {
+      changeClickMode(CLICK_MODE.ONE_OFF_PATH);
+    } else if (evt.keyCode == KEY_4) {
+      changeClickMode(CLICK_MODE.ONE_END_CYCLIC_PATH);
+    } else if (evt.keyCode == KEY_5) {
+      changeClickMode(CLICK_MODE.TWO_END_CYCLIC_PATH);
     } else if (evt.keyCode == KEY_P){
       // Toggle pause
       gamePaused = !gamePaused;

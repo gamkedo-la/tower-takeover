@@ -120,7 +120,11 @@ function onDraw() {
     }
   }
 
-  if (world.clickMode == CLICK_MODE.INFO && world.mapTileSelected != null) {
+  if ((world.clickMode === CLICK_MODE.INFO ||
+       world.clickMode === CLICK_MODE.ONE_OFF_PATH ||
+       world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH ||
+       world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH) &&
+      world.mapTileSelected != null) {
     // Window to show units in the selected tile.
 
     // Pixel positions
