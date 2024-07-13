@@ -175,13 +175,10 @@ function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
   // An existing oneOffPath can be identified by having the same fromPos and
   // toPos (the path-finding algorithm is deterministic).
   for (const oneOffPath of world.oneOffPaths) {
-    const currFromPos = oneOffPath.orderedPoss[0];
-    const currToPos = oneOffPath.orderedPoss[oneOffPath.lastIndex];
-
-    if (fromPos.r === currFromPos.r && fromPos.c === currFromPos.c &&
-        toPos.r === currToPos.r && toPos.c === currToPos.c) {
+    if (pathHasEnds(oneOffPath, fromPos, toPos)) {
       oneOffPath.numFollowers += newOneOffPath.numFollowers;
       return;
+
     }
   }
 
@@ -253,11 +250,7 @@ function _getDistance(pos1, pos2) {
 
 function _addCyclicPath(world, fromPos, toPos, newCyclicPath) {
   for (const cyclicPath of world.cyclicPaths) {
-    const currFromPos = cyclicPath.orderedPoss[0];
-    const currToPos = cyclicPath.orderedPoss[oneOffPath.lastIndex];
-
-    if (fromPos.r === currFromPos.r && fromPos.c === currFromPos.c &&
-        toPos.r === currToPos.r && toPos.c === currToPos.c) {
+    if (pathHasEnds(cyclicPath, fromPos, toPos)) {
       return;
     }
   }

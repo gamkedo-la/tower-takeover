@@ -37,6 +37,58 @@ const PATH_TYPE = Object.freeze({
 // minus one. The Pos corresponds to the row and column of the world
 // grid. Assume that the length of orderedPoss is at least two.
 
+// Assumes that the two given paths are cyclic. Equal when origin and
+// destination of the two paths are the same.
+function cyclicPathEquals(cyclicPath1, cyclicPath2) {
+  if (cyclicPath1.tag != PATH_TYPE.CYCLIC ||
+      cyclicPath2.tag != PATH_TYPE.CYCLIC) {
+    console.error("cyclicPathEquals received one off path");
+  }
+  return _pathEquals(cyclicPath1, cyclicPath2);
+}
+
+// Does the given path have the following ends?
+function pathHasEnds(path, origin, destination) {
+  if (!path.hasOwnProperty("orderedPoss")) {
+    console.error("Path does not have orderedPoss field");
+  }
+  
+  const origin0 = path.orderedPoss[0];
+  const destination0 = path.orderedPoss[path.lastIndex];
+  return (
+    (posEquals(origin0, origin) &&
+     posEquals(destination0, destination))
+      ||
+      (posEquals(origin0, destination) &&
+       posEquals(destination0, origin)));
+}
+
+// Assumes that the two given paths are one off. Equal when origin and
+// destination of the two paths are the same.
+function oneOffPathEquals(oneOffPath1, oneOffPath2) {
+  if (cyclicPath1.tag != PATH_TYPE.ONE_OFF ||
+      cyclicPath2.tag != PATH_TYPE.ONE_OFF) {
+    console.error("oneOffPathEquals received cyclic");
+  }
+  return _pathEquals(oneOffPath1, oneOffPath2);
+}
+
+// Assumes that the two given paths are of the same type.
+function _pathEquals(path1, path2) {
+  const origin1 = path1.orderedPoss[0];
+  const destination1 = path1.orderedPoss[path1.lastIndex];
+
+  const origin2 = path2.orderedPoss[0];
+  const destination2 = path2.orderedPoss[path2.lastIndex];
+
+  return (
+    (posEquals(origin1, origin2) &&
+     posEquals(destination1, destination2))
+      ||
+      (posEquals(origin1, destination2) &&
+       posEquals(destination1, origin2)));
+}
+
 // A OneOffPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
 // Integer, lastIndex: Integer}
 // Represents a path that a set of units take (the nunmber of which is
@@ -45,6 +97,10 @@ const PATH_TYPE = Object.freeze({
 // A Pos is a {r: Integer, c: Integer}
 // Represents the position in the world's grid, where the larger r is, the more
 // downward in the grid, and the larger c is, the more rightward in the grid.
+
+function posEquals(pos1, pos2) {
+  return pos1.r === pos2.r && pos1.c === pos2.c;
+}
 
 // A TileType is one of the following.
 // Represents the type of tile. Note that no tile on the map should have a type
@@ -299,3 +355,5 @@ function _unitEquals(unit1, unit2) {
       unit1.indexInPath === unit2.indexInPath && unit1.direction === unit2.direction &&
       unit1.isCarryingFood === unit2.isCarryingFood;
 }
+
+
