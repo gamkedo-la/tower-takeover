@@ -131,6 +131,7 @@ function onDraw() {
     const tile = world.mapTileSelected;
 
     _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
+    _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
@@ -290,4 +291,10 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
       w / 2,
       l / 3 - 2);
   }
+}
+
+function _drawFoodStored(tile, topLeftX, topLeftY) {
+  canvasContext.font = "24px Arial";
+  canvasContext.fillStyle = "White";
+  canvasContext.fillText("Food Stored: " + tile.foodStored, topLeftX, topLeftY + 200);
 }
