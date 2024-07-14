@@ -364,11 +364,27 @@ function _onTickDestroyTiles(world) {
 
 function _onTickDestroyTile(r, c, tile) {
   if(tile.tag === TILE_TYPE.ENEMY_CAMP) {
-    const hasAnyUnits = tile.society.values().some(society => society.units?.length > 0);
-    if(!hasAnyUnits) {
+    if(!hasAnyUnits(tile)) {
       console.log(`All enemy units destroyed in enemy camp [${r},${c}] - changing to walkable tile`);
       // Destroy the enemy camp by changing it to a walkable tile
       changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE, true);
     }
   }
+}
+
+function hasAnyUnits(tile) {
+  if (!tile) {
+    return false;
+  }
+  if (!tile.society) {
+    return false;
+  }
+  if (!tile.society.values()) {
+    return false;
+  }
+  if (!Array.isArray(tile.society.values())) {
+    return false;
+  }
+
+  return tile.society.values().some(society => society.units?.length > 0);
 }
