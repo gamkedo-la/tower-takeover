@@ -6,7 +6,7 @@
 // take a resource and leave one step out. The implementation detail of the paths require that a separate pass to remove paths that are no longer used, hence the purge function.
 
 // _onTickPaths : World -> Void
-// _onTickPurgeUnfollowedPaths : World -> Void
+// _onTickPurgeUnfollowedOneOffPaths : World -> Void
 
 // ================================================================================
 // MAIN FUNCTIONALITY
@@ -47,8 +47,7 @@ function _onTickPaths(world) {
 }
 
 // Purges unfollowed one off paths.
-// Currently only works with oneOff paths only.
-function _onTickPurgeUnfollowedPaths(world) {
+function _onTickPurgeUnfollowedOneOffPaths(world) {
   // Can't use for...of because mutating the array.
 
   // Purging one off paths.
@@ -56,14 +55,6 @@ function _onTickPurgeUnfollowedPaths(world) {
     const currOneOffPath = world.oneOffPaths[i];
     if (currOneOffPath.numFollowers <= 0) {
       world.oneOffPaths.splice(i, 1);
-    }
-  }
-
-  // Purging cyclic paths.
-  for (let i = world.cyclicPaths.length - 1; i >= 0; i--) {
-    const currCyclicPath = world.cyclicPaths[i];
-    if (currCyclicPath.numFollowers <= 0) {
-      world.cyclicPaths.splice(i, 1);
     }
   }
 }

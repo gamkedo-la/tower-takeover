@@ -21,6 +21,7 @@
 // The position the mouse is currently at in pixel coordinates.
 let mouseX, mouseY;
 let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
+let twoEndCyclicPathFirstPos;  // in {r: Integer, c: Integer}, Pos definition
 let gamePaused = false;
 let gameMuted = false;
 
@@ -82,12 +83,23 @@ function initializeInput(canvas0) {
 	      clearSelectedUnits();
 	      break;
 	    case CLICK_MODE.ONE_END_CYCLIC_PATH:
+	      // Assume that all the selected units are not moving, and there's
+	      // now ay to select units from the multiple positions at the same
+	      // time, so all of their position shoulds be the same.
 	      directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
 	      clearSelectedUnits();
 	      break;
 	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
-	      console.error("unimplemented");
+	      if (twoEndCyclicPathFirstPos) {
+		directSelectedUnitsToCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
+		clearSelectedUnits();
+		twoEndCyclicPathFirstPos = null;
+	      } else {
+		twoEndCyclicPathFirstPos = { r: r, c: c };
+	      }
 	      break;
+
+
 	    }
           }
         }
@@ -149,6 +161,23 @@ function initializeInput(canvas0) {
                 mouseX <= (c + 1) * squareLength) {
               changeMapTile(r, c, world.buildTileSelected);
             }
+          }
+        }
+      }
+    } else if (world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH) {
+      // At this point, there are no selected units.
+      for (let r = 0; r < world.grid.length; r++) {
+        for (let c = 0; c < world.grid[r].length; c++) {
+          if (mouseY >= r * squareLength &&
+              mouseY <= (r + 1) * squareLength &&
+              mouseX >= c * squareLength &&
+              mouseX <= (c + 1) * squareLength) {
+	    if (twoEndCyclicPathFirstPos) {
+	      createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
+	      twoEndCyclicPathFirstPos = null;
+	    } else {
+	      twoEndCyclicPathFirstPos = { r: r, c: c };
+	    }
           }
         }
       }

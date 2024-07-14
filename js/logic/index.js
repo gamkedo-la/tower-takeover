@@ -31,7 +31,7 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
-  _onTickPurgeUnfollowedPaths(world);
+  _onTickPurgeUnfollowedOneOffPaths(world);
   _onTickDestroyTiles(world);
 }
 
@@ -185,7 +185,18 @@ function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
   world.oneOffPaths.push(newOneOffPath);
 }
 
-// Nat Nat -> Void
+// Nat Nat Nat Nat -> Void
+function createCyclicPath(r1, c1, r2, c2) {
+  // NOTE(marvin):
+  // It's the same behaviour as directSelectedUnitsToCyclicPath, but I created a
+  // new function for this because the purpose is different and so we ought to
+  // expose a difference function. Should the implementation details of
+  // directSelectedUnitsToCyclicPath change such that it no longer suffices with
+  // no selected units, then this function has to change.
+  directSelectedUnitsToCyclicPath(r1, c1, r2, c2);
+}
+
+// Nat Nat Nat Nat -> Void
 // Sends the selected units off to a cyclic path to the given origin and
 // destination positions. Updates the world data definition only.
 function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
@@ -215,8 +226,14 @@ function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
       const posWithMinDist = orderedPoss[indexWithMinDist];
       
       _directUnitsToOneOffPath([unit], posWithMinDist.r, posWithMinDist.c);
-      unit.PathToJoin = newCyclicPath;
+      unit.pathToJoin = newCyclicPath;
       unit.indexInPathToJoin = indexWithMinDist;
+
+      // We add unit to numFollowers even though the unit isn't there yet so
+      // that the the cyclic path isn't purged prematurely when no one has
+      // arrived. Have to be careful that if there is a way to change the
+      // pathToJoin, then the pathToJoin's numFollowers decreases.
+      newCyclicPath.numFollowers++;
     }
   }
 }
