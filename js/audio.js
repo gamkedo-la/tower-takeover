@@ -41,6 +41,11 @@ const nameToAudio = new Map(
 // playSFX : String -> Void
 // Plays the sound effect with the given name.
 function playSFX(name,vol=1,loop=false) {
+
+  // avoid error messages: ignore all audio until the browser will allow it
+  // sound can only be played once the game has input focus
+  if (firstClickEver) return;
+
   if (!gameMuted) {
     const audio = nameToAudio.get(name);
     if (audio) {

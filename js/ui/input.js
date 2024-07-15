@@ -24,6 +24,7 @@ let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coord
 let twoEndCyclicPathFirstPos;  // in {r: Integer, c: Integer}, Pos definition
 let gamePaused = false;
 let gameMuted = false;
+var firstClickEver = true; // used to stop sounds from playing until permitted
 
 // ================================================================================
 // FUNCTIONS
@@ -34,7 +35,6 @@ function initializeInput(canvas0) {
   const canvas = canvas0;
   const rect = canvas.getBoundingClientRect();
   const root = document.documentElement;
-  var firstClickEver = true;
 
   canvas.addEventListener("click", _onMouseClick);
   canvas.addEventListener("mousedown", _onMouseDragStart);

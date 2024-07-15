@@ -118,6 +118,18 @@ const TILE_TYPE = Object.freeze({
   ENEMY_CAMP: 6,
 });
 
+// used in draw.js _drawTileStats() to display tile type as a string
+// TODO: turn into a fancy "map" object with TILE-TYPE keys?
+const TILE_TYPE_STRING = [
+  "Unassigned",
+  "Wall",
+  "Walkable Terrain",
+  "Food Storage",
+  "Farm",
+  "Capital City",
+  "Enemy Camp"
+];
+
 // An ATile is a (tag: TileType, society: [Mapping Role (Nat, [List-of Unit])])
 // All tiles are abstract tiles, with the exception of WalkableTile which is
 // only an array and is guaranteed to only contain walkers.

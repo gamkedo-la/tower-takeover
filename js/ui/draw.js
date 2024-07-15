@@ -151,6 +151,7 @@ function onDraw() {
 
     _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
     _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY);
+    _drawTileStats(tile);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
@@ -312,8 +313,52 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
   }
 }
 
+function describeSocietyRole(soc,role,desc) {
+  let num = 0;
+  let cap = 0;
+  let sss = ""; // plural
+  let rol = soc.get(role);
+  if (rol) {
+    // account for the fact that some data is undefined or ""
+    if (rol.units>0) num = rol.units;
+    if (rol.capacity>0) cap = rol.capacity;
+    if (cap>1) sss = "s";
+  }
+  return num+" of "+cap+" "+desc+sss;
+}
+
+function _drawTileStats(tile, topLeftX=800, topLeftY=256) {
+  canvasContext.fillStyle = "rgba(0,0,0,0.2)";
+  canvasContext.fillRect(topLeftX,topLeftY,300,300);
+  canvasContext.font = "24px Arial";
+  canvasContext.fillStyle = "White";
+  let lineHeight = 24;
+  // margin:
+  topLeftX += 24;
+  topLeftY += 24;
+  canvasContext.fillText("Currently Selected Tile: ", topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText("-------------------------------",topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(/*"Tag: ["+tile.tag+"] "+ */TILE_TYPE_STRING[tile.tag], topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(/*"Society: "*/"", topLeftX,topLeftY+=lineHeight);
+  
+  // iterating MAPs is very difficult!
+  // console.log(tile.society); // you can't debug log explore a map's contents! yuck
+  // tile.society[ROLE.QUEEN].* doesn't work?!?! you have to get() etc - ewwwwwwwwwww
+  // and .units can be undefined or not a number instead of zero etc etc etc
+  
+  canvasContext.fillText(describeSocietyRole(tile.society,ROLE.FARMER,"farmer"),topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(describeSocietyRole(tile.society,ROLE.SOLDIER,"soldier"),topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(describeSocietyRole(tile.society,ROLE.WALKER,"walker"),topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(describeSocietyRole(tile.society,ROLE.QUEEN,"queen"),topLeftX,topLeftY+=lineHeight);
+  canvasContext.fillText(describeSocietyRole(tile.society,ROLE.ATTACKER,"attacker"),topLeftX,topLeftY+=lineHeight);
+
+  canvasContext.fillText("-------------------------------",topLeftX,topLeftY+=lineHeight);
+}
+
 function _drawFoodStored(tile, topLeftX, topLeftY) {
   canvasContext.font = "24px Arial";
   canvasContext.fillStyle = "White";
-  canvasContext.fillText("Food Stored: " + tile.foodStored, topLeftX, topLeftY + 200);
+  let amountString = "0kg"; // default - no food on tile
+  if (tile.foodStored != undefined) amountString = tile.foodStored+"kg";
+  canvasContext.fillText("Food Stored: " + amountString, topLeftX, topLeftY + 200);
 }
