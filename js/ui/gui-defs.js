@@ -39,3 +39,15 @@ const unitsInTileUIInfo = {
   topLeftX: 800,
   topLeftY: 0,
 }
+
+const modeUIInfo = {
+  topLeftX: 100,
+  topLeftY: 600,
+  clickModes: [
+    CLICK_MODE.INFO,
+    CLICK_MODE.BUILD,
+    CLICK_MODE.ONE_OFF_PATH,
+    CLICK_MODE.ONE_END_CYCLIC_PATH,
+    CLICK_MODE.TWO_END_CYCLIC_PATH,
+  ],
+}

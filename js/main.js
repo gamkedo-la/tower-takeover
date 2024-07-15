@@ -37,17 +37,29 @@ window.onload = function() {
 // NOTE(marvin): Consider moving all this to its own file.
 const rootImagesFolder = "images/";
 let tileTypeToImage = new Map();
+let clickModeToImage = new Map();
 
 function _prepareGameStart(callback) {
-  // TODO: tileImages array should be somewhere in the ui directory.
+  // TODO: Arrays should be somewhere in the ui directory.
   const tileImages = [
     {tileType: TILE_TYPE.FOOD_STORAGE, filename: "foodStorage.png"},
     {tileType: TILE_TYPE.FOOD_FARM, filename: "farm.png"},
   ];
 
-  let numImagesLeftToLoad = tileImages.length;
+  const modeImages = [
+    {clickMode: CLICK_MODE.INFO, filename: "modeInfo.png"},
+    {clickMode: CLICK_MODE.BUILD, filename: "modeBuild.png"},
+    {clickMode: CLICK_MODE.ONE_OFF_PATH, filename: "modeOneOff.png"},
+    {clickMode: CLICK_MODE.ONE_END_CYCLIC_PATH, filename: "modeOneEndCyclic.png"},
+    {clickMode: CLICK_MODE.TWO_END_CYCLIC_PATH, filename: "modeTwoEndCyclic.png"},
+  ];
+
+  let numImagesLeftToLoad = tileImages.length + modeImages.length;
   let shouldCallCallback = false;
 
+  // NOTE: The two for loops below are very similar. If there are further
+  // additions of image arrays and maps (and what not), definitely consider
+  // abstracting.
   for (const tileImage of tileImages) {
     const imgElement = document.createElement("img");
 
@@ -70,6 +82,34 @@ function _prepareGameStart(callback) {
     imgElement.src = rootImagesFolder + tileImage.filename;
 
     tileTypeToImage.set(tileImage.tileType, imgElement);
+
+    if (shouldCallCallback) {
+      callback();
+    }
+  }
+
+  for (const modeImage of modeImages) {
+    const imgElement = document.createElement("img");
+
+    // If the image element is cached, no need for onload.
+    if (imgElement.complete) {
+      numImagesLeftToLoad--;
+      if (numImagesLeftToLoad === 0) {
+	shouldCallCallback = true;
+      }
+    } else {
+      imgElement.onload = function () {
+	numImagesLeftToLoad--;
+
+	if (numImagesLeftToLoad === 0) {
+	  callback();
+	}
+      }
+    }
+
+    imgElement.src = rootImagesFolder + modeImage.filename;
+
+    clickModeToImage.set(modeImage.clickMode, imgElement);
 
     if (shouldCallCallback) {
       callback();
