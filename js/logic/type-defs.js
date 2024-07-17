@@ -130,11 +130,15 @@ const TILE_TYPE_STRING = [
   "Enemy Camp"
 ];
 
-// An ATile is a (tag: TileType, society: [Mapping Role (Nat, [List-of Unit])])
+// An ATile is a (tag: TileType, society: [Mapping Role SocietyClass])
 // All tiles are abstract tiles, with the exception of WalkableTile which is
 // only an array and is guaranteed to only contain walkers. The society field
 // maps between role to an object that holds the capacity (how manyunits can be
 // in that role?) and the list of units in that role.
+
+// A SocietyClass is a (capacity: Nat, units: [List-of Unit])
+// Represents the units in a particular class of society, as well as the maximum
+// capacity that can be contained in that society.
 
 // A Tile is one of:
 // - Wall
