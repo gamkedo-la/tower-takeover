@@ -62,6 +62,17 @@ function initializeInput(canvas0) {
     // CLEANUP(marvin): Remove debug line before ship.
     document.getElementById("debugText").innerHTML = `click: (${mouseX}, ${mouseY})`;
 
+    // Change modes
+    for (let i = 0; i < modeUIInfo.clickModes.length; i++) {
+      if (mouseY >= modeUIInfo.topLeftY &&
+	  mouseY < modeUIInfo.topLeftY + modeUIInfo.h &&
+	  mouseX >= modeUIInfo.topLeftX + (i * modeUIInfo.w) &&
+	  mouseX < modeUIInfo.topLeftX + ((i + 1) * modeUIInfo.w)) {
+	const clickMode = modeUIInfo.clickModes[i];
+	changeClickMode(clickMode);
+      }
+    }
+    
     if (world.selectedUnits.length > 0) {
       // If there are selected units, behaviour based on click mode.
       // INFO: same as ONE_OFF_PATH
