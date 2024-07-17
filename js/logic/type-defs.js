@@ -132,7 +132,9 @@ const TILE_TYPE_STRING = [
 
 // An ATile is a (tag: TileType, society: [Mapping Role (Nat, [List-of Unit])])
 // All tiles are abstract tiles, with the exception of WalkableTile which is
-// only an array and is guaranteed to only contain walkers.
+// only an array and is guaranteed to only contain walkers. The society field
+// maps between role to an object that holds the capacity (how manyunits can be
+// in that role?) and the list of units in that role.
 
 // A Tile is one of:
 // - Wall
