@@ -134,7 +134,10 @@ const TILE_TYPE_STRING = [
 // All tiles are abstract tiles, with the exception of WalkableTile which is
 // only an array and is guaranteed to only contain walkers. The society field
 // maps between role to an object that holds the capacity (how manyunits can be
-// in that role?) and the list of units in that role.
+// in that role?) and the list of units in that role. (TODO) The queen is not currently
+// represented in the society role, and is a boolean in the Capital field. It
+// really should be treated as a unit except that it cannot move and its death
+// causes a game over instead of just disappearing.
 
 // A SocietyClass is a (capacity: Nat, units: [List-of Unit])
 // Represents the units in a particular class of society, as well as the maximum
