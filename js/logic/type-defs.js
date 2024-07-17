@@ -332,13 +332,13 @@ const FOOD_FARM_PREFAB = Object.assign({
 // Represents the building in which eggs are laid and hatched into units.
 
 // TODO(capital): Finalise its design
-const CAPITAL_PREFAB = {
+const CAPITAL_PREFAB = Object.assign({
   ...ATILE,
   tag: TILE_TYPE.CAPITAL,
   society: new Map([[ROLE.SOLDIER, {capacty: 20, units: []}],
 		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
-}
+}, foodStorageMixin);
 
 // An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
 // Represents a group of eggs that have been laid for some number of ticks.
