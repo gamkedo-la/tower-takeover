@@ -327,7 +327,8 @@ function describeSocietyRole(soc,role,desc) {
   return num+" of "+cap+" "+desc+sss;
 }
 
-function _drawTileStats(tile, topLeftX=800, topLeftY=256) {
+function _drawTileStats(tile) {
+  let { topLeftX, topLeftY } = tileStatsUIInfo;
   canvasContext.fillStyle = "rgba(0,0,0,0.2)";
   canvasContext.fillRect(topLeftX,topLeftY,300,300);
   canvasContext.font = "24px Arial";

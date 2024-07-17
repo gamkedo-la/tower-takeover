@@ -36,7 +36,7 @@ const buildTileUIInfo = {
 
 // In pixel position.
 const unitsInTileUIInfo = {
-  topLeftX: 800,
+  topLeftX: 900,
   topLeftY: 0,
 }
 
@@ -52,4 +52,9 @@ const modeUIInfo = {
     CLICK_MODE.ONE_END_CYCLIC_PATH,
     CLICK_MODE.TWO_END_CYCLIC_PATH,
   ],
+}
+
+const tileStatsUIInfo = {
+  topLeftX: 900,
+  topLeftY: 256,
 }

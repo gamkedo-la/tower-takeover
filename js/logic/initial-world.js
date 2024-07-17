@@ -153,15 +153,15 @@ const initialWorldOld = {
 // Uses TILE_TYPE. For convenience, we write down integers instead of
 // TILE_TYPE.X.
 // The length of initialTileTypes must be a multiple of initialTileTypesRowLength.
-const initialTileTypesRowLength = 5;  // Number of columns.
+const initialTileTypesRowLength = 13;  // Number of columns.
 const initialTileTypes = [
-  1, 1, 1, 1, 1,
-  1, 1, 5, 1, 1,
-  1, 1, 2, 1, 1,
-  1, 1, 2, 1, 1,
-  1, 1, 2, 1, 1,
-  4, 2, 2, 2, 3,
-  1, 1, 6, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  4, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
 if (initialTileTypes.length % initialTileTypesRowLength != 0) {
