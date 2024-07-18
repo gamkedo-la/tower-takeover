@@ -335,7 +335,7 @@ const FOOD_FARM_PREFAB = Object.assign({
 const CAPITAL_PREFAB = Object.assign({
   ...ATILE,
   tag: TILE_TYPE.CAPITAL,
-  society: new Map([[ROLE.SOLDIER, {capacty: 20, units: []}],
+  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
 		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
 }, foodStorageMixin);
@@ -375,5 +375,3 @@ function _unitEquals(unit1, unit2) {
       unit1.indexInPath === unit2.indexInPath && unit1.direction === unit2.direction &&
       unit1.isCarryingFood === unit2.isCarryingFood;
 }
-
-

@@ -320,8 +320,10 @@ function describeSocietyRole(soc,role,desc) {
   let rol = soc.get(role);
   if (rol) {
     // account for the fact that some data is undefined or ""
-    if (rol.units>0) num = rol.units;
-    if (rol.capacity>0) cap = rol.capacity;
+    if (Array.isArray(rol.units)) {
+      num = rol.units.length;
+    }
+    if (!isNaN(rol.capacity) && rol.capacity > 0) cap = rol.capacity;
     if (cap>1) sss = "s";
   }
   return num+" of "+cap+" "+desc+sss;
