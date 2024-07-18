@@ -81,25 +81,6 @@ function onDraw() {
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
 
-  // Draw the modes.
-  // When we draw an image, we add its width to this value, so that we know
-  // where to place the next image.
-  let clickModeXSoFar = modeUIInfo.topLeftX;
-  for (const clickMode of modeUIInfo.clickModes) {
-    const clickModeImage = clickModeToImage.get(clickMode);
-
-    // If clickMode is what's selected at the moment, give it a different
-    // background.
-    if (world.clickMode === clickMode) {
-      canvasContext.fillStyle = "white";
-      canvasContext.fillRect(clickModeXSoFar, modeUIInfo.topLeftY, clickModeImage.width, clickModeImage.height);
-    }
-
-    canvasContext.drawImage(clickModeImage, clickModeXSoFar, modeUIInfo.topLeftY);
-    
-    clickModeXSoFar += clickModeImage.width;
-  }
-
   // Drawing the tiles.
   for (let r = 0; r < world.grid.length; r++) {
     for (let c = 0; c < world.grid[r].length; c++) {
@@ -173,6 +154,25 @@ function onDraw() {
 			   selectedBuildTileTopLeftR,
 			   selectedBuildTileTopLeftC);
     }
+  }
+
+  // Draw the modes.
+  // When we draw an image, we add its width to this value, so that we know
+  // where to place the next image.
+  let clickModeXSoFar = modeUIInfo.topLeftX;
+  for (const clickMode of modeUIInfo.clickModes) {
+    const clickModeImage = clickModeToImage.get(clickMode);
+
+    // If clickMode is what's selected at the moment, give it a different
+    // background.
+    if (world.clickMode === clickMode) {
+      canvasContext.fillStyle = "white";
+      canvasContext.fillRect(clickModeXSoFar, modeUIInfo.topLeftY, clickModeImage.width, clickModeImage.height);
+    }
+
+    canvasContext.drawImage(clickModeImage, clickModeXSoFar, modeUIInfo.topLeftY);
+    
+    clickModeXSoFar += clickModeImage.width;
   }
 
   if (mouseDownPos) {

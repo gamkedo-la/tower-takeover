@@ -41,8 +41,8 @@ const unitsInTileUIInfo = {
 }
 
 const modeUIInfo = {
-  topLeftX: 100,
-  topLeftY: 600,
+  topLeftX: 0,
+  topLeftY: 0,
   w: 32,   // for one, in px
   h: 32,   // for one, in px
   clickModes: [
