@@ -60,7 +60,7 @@ function _prepareGameStart(callback) {
     {name: "redX", filename: "redX.png"},
   ]
 
-  let numImagesLeftToLoad = tileImages.length + modeImages.length + namedImages;
+  let numImagesLeftToLoad = tileImages.length + modeImages.length + namedImages.length;
   let shouldCallCallback = false;
 
   // NOTE: The three for loops below are very similar. If there are further
@@ -122,7 +122,7 @@ function _prepareGameStart(callback) {
     }
   }
 
-  for (const modeImage of namedImages) {
+  for (const namedImage of namedImages) {
     const imgElement = document.createElement("img");
 
     // If the image element is cached, no need for onload.
