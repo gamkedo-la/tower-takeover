@@ -100,21 +100,23 @@ function initializeInput(canvas0) {
 	      // Assume that all the selected units are not moving, and there's
 	      // no way to select units from the multiple positions at the same
 	      // time, so all of their position shoulds be the same.
-              drawState.cyclicPaths.hasChanged = true;
-	      directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
-	      clearSelectedUnits();
+              if (isValidCyclicEndPoint(r, c)) {
+                drawState.cyclicPaths.hasChanged = true;
+	        directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
+	        clearSelectedUnits();
+              }
 	      break;
 	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
-	      if (twoEndCyclicPathFirstPos) {
-		directSelectedUnitsToCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
-		clearSelectedUnits();
-		twoEndCyclicPathFirstPos = null;
-	      } else {
-		twoEndCyclicPathFirstPos = { r: r, c: c };
-	      }
+              if (isValidCyclicEndPoint(r, c)) {
+                if (twoEndCyclicPathFirstPos) {
+		  directSelectedUnitsToCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
+		  clearSelectedUnits();
+		  twoEndCyclicPathFirstPos = null;
+	        } else {
+		  twoEndCyclicPathFirstPos = { r: r, c: c };
+	        }
+              }
 	      break;
-
-
 	    }
           }
         }
@@ -187,13 +189,15 @@ function initializeInput(canvas0) {
               mouseY <= (r + 1) * squareLength &&
               mouseX >= c * squareLength &&
               mouseX <= (c + 1) * squareLength) {
-	    if (twoEndCyclicPathFirstPos) {
-              drawState.cyclicPaths.hasChanged = true;
-	      createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
-	      twoEndCyclicPathFirstPos = null;
-	    } else {
-	      twoEndCyclicPathFirstPos = { r: r, c: c };
-	    }
+            if (isValidCyclicEndPoint(r, c)) {
+              if (twoEndCyclicPathFirstPos) {
+                drawState.cyclicPaths.hasChanged = true;
+	        createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
+	        twoEndCyclicPathFirstPos = null;
+	      } else {
+	        twoEndCyclicPathFirstPos = { r: r, c: c };
+	      }
+            }
           }
         }
       }

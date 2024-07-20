@@ -324,6 +324,23 @@ function _updateUnitPosInTile(tile, r, c) {
 // UTILS
 // --------------------------------------------------------------------------------
 
+// Nat Nat -> Boolean
+// Is the position with the given row and column in the world grid a valid
+// cyclic end point?
+function isValidCyclicEndPoint(r, c) {
+  const tile = world.grid[r][c];
+
+  switch (tile.tag) {
+  case TILE_TYPE.FOOD_STORAGE:
+  case TILE_TYPE.FOOD_FARM:
+  case TILE_TYPE.CAPITAL:
+  case TILE_TYPE.ENEMY_CAMP:
+    return true;
+  }
+
+  return false;
+}
+
 // Removes the given unit from the given list of units.
 function _removeUnitFromUnits(units, unitToRemove) {
   for (i = 0; i < units.length; i++) {
