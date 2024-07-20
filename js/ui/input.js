@@ -38,7 +38,7 @@ function initializeInput(canvas0) {
 
   canvas.addEventListener("click", _onMouseClick);
   canvas.addEventListener("mousedown", _onMouseDragStart);
-  canvas.addEventListener("mousemove", _onMouseDragUpdate);
+  canvas.addEventListener("mousemove", _onMouseMove);
   canvas.addEventListener("mouseup", _onMouseDragEnd);
   document.addEventListener("keydown", _onKeyDown);
 
@@ -95,8 +95,9 @@ function initializeInput(canvas0) {
 	      break;
 	    case CLICK_MODE.ONE_END_CYCLIC_PATH:
 	      // Assume that all the selected units are not moving, and there's
-	      // now ay to select units from the multiple positions at the same
+	      // no way to select units from the multiple positions at the same
 	      // time, so all of their position shoulds be the same.
+              drawState.cyclicPaths.hasChanged = true;
 	      directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
 	      clearSelectedUnits();
 	      break;
@@ -184,6 +185,7 @@ function initializeInput(canvas0) {
               mouseX >= c * squareLength &&
               mouseX <= (c + 1) * squareLength) {
 	    if (twoEndCyclicPathFirstPos) {
+              drawState.cyclicPaths.hasChanged = true;
 	      createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
 	      twoEndCyclicPathFirstPos = null;
 	    } else {
@@ -210,9 +212,28 @@ function initializeInput(canvas0) {
     // clearSelectedUnits();
   }
 
-  function _onMouseDragUpdate(evt) {
+  function _onMouseMove(evt) {
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
+
+    // If hover over a path in pathUI, give that path box a light blue
+    // background and draw that path on the map.
+    world.selectedPath = false;  // By default, no selected path.
+    const { pathBoxUIInfos } = drawState.cyclicPaths;
+    for (const pathBoxUIInfo of pathBoxUIInfos) {
+      const { topLeftX, topLeftY, w, h, path } = pathBoxUIInfo;
+
+      if (mouseX >= topLeftX &&
+          mouseX < topLeftX + w &&
+          mouseY >= topLeftY &&
+          mouseY < topLeftY + h) {
+
+        world.selectedPath = path;
+        
+        // The boxes are mutually exclusive, so we can stop.
+        break;
+      }
+    }
   }
 
   function _onMouseDragEnd(evt) {

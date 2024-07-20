@@ -12,7 +12,8 @@
 
 // A World is a {grid: [2D-array-of Tile], cyclicPaths: [Array-of CyclicPath],
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
-// Null], clickMode: ClickMode, selectedUnits: [Array-of Unit], oneOffPaths:
+// Null], clickMode: ClickMode, selectedUnits: [Array-of Unit], selectedPath:
+// CyclicPath, oneOffPaths:
 // [Array-of OneOffPath]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid.

@@ -140,6 +140,7 @@ const initialWorldOld = {
   buildTileSelected: null,
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
+  selectedPath: false,
 }
 
 // ================================================================================
@@ -158,10 +159,10 @@ const initialTileTypes = [
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  3, 2, 2, 2, 4, 1, 1, 1, 1, 1, 1, 1, 1,
   1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
   4, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 6, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
 if (initialTileTypes.length % initialTileTypesRowLength != 0) {
@@ -304,4 +305,5 @@ const initialWorld = {
   buildTileSelected: null,
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
+  selectedPath: false,
 }

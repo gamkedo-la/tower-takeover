@@ -40,6 +40,16 @@ const roleToBgColor = new Map([
 				    // shouldn't be
 ]);
 
+const tileTypeToColor = new Map([
+  [TILE_TYPE.UNASSIGNED, 'black'],
+  [TILE_TYPE.WALL, 'black'],
+  [TILE_TYPE.WALKABLE_TILE, 'white'],
+  [TILE_TYPE.FOOD_STORAGE, 'blue'],
+  [TILE_TYPE.FOOD_FARM, 'orange'],
+  [TILE_TYPE.CAPITAL, 'rgb(213, 182, 10)'],  // dark yellow
+  [TILE_TYPE.ENEMY_CAMP, 'red'], 
+]);
+
 // ================================================================================
 // FUNCTIONS
 // ================================================================================
@@ -99,25 +109,9 @@ function onDraw() {
     }
   }
 
-  // Drawing the paths.
-  for (const path of world.cyclicPaths) {
-    // Drawing a single path.
-    canvasContext.strokeStyle = "black";
-    canvasContext.lineWidth = 1;
-
-    let prevPos = path.orderedPoss[0];
-    
-    for (let i = 1; i < path.orderedPoss.length; i++) {
-      const currPos = path.orderedPoss[i];
-      
-      // Connect lines between the center of the tiles.
-      canvasContext.beginPath();
-      canvasContext.moveTo(prevPos.c * squareLength + 15, prevPos.r * squareLength + 15);
-      canvasContext.lineTo(currPos.c * squareLength + 15, currPos.r * squareLength + 15);
-      canvasContext.stroke();
-
-      prevPos = currPos;
-    }
+  // Drawing the selected path
+  if (world.selectedPath) {
+    _drawPath(world.selectedPath);
   }
 
   if ((world.clickMode === CLICK_MODE.INFO ||
@@ -175,11 +169,121 @@ function onDraw() {
     clickModeXSoFar += clickModeImage.width;
   }
 
+  _drawPathsUI(cyclicPathsUIInfo, world.cyclicPaths, world.grid);
+
   if (mouseDownPos) {
     canvasContext.save();
     canvasContext.strokeStyle = 'black';
     canvasContext.strokeRect(mouseDownPos.x, mouseDownPos.y, mouseX - mouseDownPos.x, mouseY - mouseDownPos.y);
     canvasContext.restore();
+  }
+}
+
+// CyclicPathUIInfo [Array-of CyclicPath] -> Void
+function _drawPathsUI(uiInfo, cyclicPaths, grid) {
+  const { topLeftX, topLeftY, w } = uiInfo;
+
+  const paddingX = 16;  // In pixels, on each side
+  const paddingY = 16;  // In pixels, on each side
+  const tileSideLength = 16;  // In pixels
+  const midTopLeftX = topLeftX + (w / 2);
+  
+  let resetX = topLeftX;
+  let currX = resetX;
+  let currY = topLeftY;
+
+  // We actually store draw computations, so we can just read from
+  // those. However, if cyclicPath changes in meaning, then we will need to
+  // redraw.
+
+  // TODO: hasChanged needs to be flicked to true whenever world.cyclicPaths
+  // changes. A few ways to go about that:
+  // - The input responsible for drawing a new cyclicPath needs to also change
+  // the drawState.
+
+  const {
+    hasChanged: shouldUpdateDrawStateCyclicPaths,
+    pathBoxUIInfos
+  } = drawState.cyclicPaths;
+
+  const pathBoxW = (w / 2) - paddingX;
+  const pathBoxH = (2 * paddingY) + tileSideLength;
+
+  if (shouldUpdateDrawStateCyclicPaths) {
+    pathBoxUIInfos.length = 0;
+  }
+
+  for (const cyclicPath of cyclicPaths) {
+    const { orderedPoss, numFollowers, lastIndex } = cyclicPath;
+    const pathLen = lastIndex + 1;
+
+    let pathBoxTopLeftX = currX;
+    let pathBoxTopLeftY = currY;
+
+    // Draw a light blue background if selected.
+    if (world.selectedPath &&
+        cyclicPathEquals(cyclicPath, world.selectedPath)) {
+      canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
+      canvasContext.fillRect(currX, currY, pathBoxW, pathBoxH);
+
+    }
+
+    currX += paddingX;
+    currY += paddingY;
+
+    // If go beyond the screen height, go to second column.
+    if (currY >= screenHeight) {
+      currY = topLeftY + paddingY;
+      resetX = midTopLeftX;
+      currX = resetX + paddingX;
+    }
+
+    // Draw the paths as tiny 16x16 tiles.
+    for (let i = 0; i < pathLen; i++) {
+      const pos = orderedPoss[i];
+      const tile = grid[pos.r][pos.c];
+      
+      canvasContext.fillStyle = tileTypeToColor.get(tile.tag);
+      canvasContext.fillRect(currX, currY, tileSideLength, tileSideLength);
+
+      currX += tileSideLength;
+    }
+
+    if (shouldUpdateDrawStateCyclicPaths) {
+      pathBoxUIInfos.push({
+        topLeftX: pathBoxTopLeftX,
+        topLeftY: pathBoxTopLeftY,
+        w: pathBoxW,
+        h: pathBoxH,
+        path: cyclicPath,
+      });
+    }
+
+    currX = resetX;
+    currY += (tileSideLength + paddingY);
+  }
+
+  // Since we have just drawn, must be up to date.
+  drawState.cyclicPaths.hasChanged = false;
+}
+
+function _drawPath(path) {
+  canvasContext.strokeStyle = "black";
+  canvasContext.lineWidth = 1;
+
+  let prevPos = path.orderedPoss[0];
+  
+  for (let i = 1; i < path.orderedPoss.length; i++) {
+    const currPos = path.orderedPoss[i];
+    
+    // Connect lines between the center of the tiles.
+    canvasContext.beginPath();
+    const centerOffset = squareLength / 2 - 1;
+    canvasContext.moveTo(prevPos.c * squareLength + centerOffset, prevPos.r * squareLength + centerOffset);
+    canvasContext.lineTo(currPos.c * squareLength + centerOffset, currPos.r * squareLength + centerOffset);
+    canvasContext.stroke();
+
+    prevPos = currPos;
   }
 }
 
