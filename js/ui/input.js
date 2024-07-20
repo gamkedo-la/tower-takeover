@@ -70,6 +70,9 @@ function initializeInput(canvas0) {
 	  mouseX < modeUIInfo.topLeftX + ((i + 1) * modeUIInfo.w)) {
 	const clickMode = modeUIInfo.clickModes[i];
 	changeClickMode(clickMode);
+
+        // Anything underneath shouldn't be registered.
+        return;
       }
     }
     
