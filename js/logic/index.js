@@ -193,7 +193,24 @@ function destroyCyclicPath(path) {
     const currPath = world.cyclicPaths[i];
 
     if (cyclicPathEquals(path, currPath)) {
+      // Remove from world state
       world.cyclicPaths.splice(i, 1);
+
+      // Tag path as destroyed
+      currPath.destroyed = true;
+
+      // Reassign all units in path units queue at the end points to a role at
+      // the end point.
+      const { orderedPoss, lastIndex } = currPath;
+
+      const originPos = orderedPoss[0];
+      const destinationPos = orderedPoss[lastIndex];
+
+      const originTile = world.grid[originPos.r][originPos.c];
+      const destinationTile = world.grid[destinationPos.r][destinationPos.c];
+
+      _assimilatePathUnitsQueue(originTile, currPath);
+      _assimilatePathUnitsQueue(destinationTile, currPath);
     }
   }
 }
@@ -417,4 +434,45 @@ function hasAnyUnits(tile) {
   }
 
   return tile.society.values().some(society => society.units?.length > 0);
+}
+
+// Tile CyclicPath -> Void
+// Reassigns units in the path units queue (if any) of the given tile with the
+// given path to roles of the given tile.
+function _assimilatePathUnitsQueue(tile, path0) {
+  if (tile.hasOwnProperty('pathUnitsQueues')) {
+
+    // Iterate backwards because we are mutating the list
+    for (let i = tile.pathUnitsQueues.length - 1; i >= 0; i--) {
+      const pathUnitsQueue = tile.pathUnitsQueues[i];
+      const { path, unitsQueue } = pathUnitsQueue;
+
+      if (cyclicPathEqual(path, path0)) {
+        for (const unit of unitsQueue) {
+          _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
+        }
+      }
+
+      // Now that units are reassigned, remove pathUnitsQueue.
+      tile.pathUnitsQueues.splice(i, 1);
+    }
+  }
+}
+
+// Tile -> Role
+function _getLegalSocietyRoleToJoin(tile) {
+  const societyRolesPriority = [
+    ROLE.FARMER,
+    ROLE.SOLDIER,
+    ROLE.WALKER,
+    ROLE.QUEEN,
+  ];
+
+  for (const role of societyRolesPriority) {
+    if (tile.society.has(role)) {
+      return role;
+    }
+  }
+
+  console.error("Tile did not have a role it could give.");
 }

@@ -88,8 +88,22 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
   
   // Moves the given unit one step forward in the given path from its given index
   // with the given direction, if it is moving.
-  if (unit.hasMovedInTick || unit.path === false) {
+  if (unit.hasMovedInTick || unit.path === false || unit.path === undefined) {
     return;
+  }
+
+  // TODO: Add caveat to documentation.
+  // If it's in a cyclic path that is destroyed, then change path to one
+  // off. This one off path won't appear in world state, but I think we can get
+  // away with that. We won't be needing it for anything else other than getting
+  // the units to their destination.
+  if (unit.path.tag === PATH_TYPE.CYCLIC && unit.path.destroyed) {
+    unit.path = {
+      tag: PATH_TYPE.ONE_OFF,
+      orderedPoss: unit.path.orderedPoss,
+      numFollowers: 1,
+      lastIndex: unit.path.lastIndex,
+    };
   }
 
   let newIndexInPath = unit.indexInPath;
@@ -114,7 +128,11 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
 
   // Handling reaching either end of a path.
   if (unit.path.tag === PATH_TYPE.ONE_OFF) {
-    if (unit.indexInPath === unit.path.lastIndex) {
+    // One off paths usually go from 0 to last index, but if a cyclic path gets
+    // destroyed and a unit is walking from last index to 0, then this case
+    // needs to catch it.
+    if (unit.indexInPath === unit.path.lastIndex ||
+        unit.indexInPath === 0) {
       // One off paths with no followers will be purged on a different pass.
       unit.path.numFollowers--;
       unit.path = false;
@@ -203,27 +221,6 @@ function _addUnitToTile(unit, tile) {
       unit.isCarryingFood = false;
     }
   }
-}
-
-// Tile -> Role
-// Helper function for _addUnitToTile.
-// TODO: This shouldn't be necessary. Players should be able to choose which
-// society role a unit would join.
-function _getLegalSocietyRoleToJoin(tile) {
-  const societyRolesPriority = [
-    ROLE.FARMER,
-    ROLE.SOLDIER,
-    ROLE.WALKER,
-    ROLE.QUEEN,
-  ];
-
-  for (const role of societyRolesPriority) {
-    if (tile.society.has(role)) {
-      return role;
-    }
-  }
-
-  console.error("Tile did not have a role it could give.");
 }
 
 // The first unit in the given queue should move forward in its path if it

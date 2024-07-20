@@ -16,7 +16,11 @@
 // CyclicPath, oneOffPaths:
 // [Array-of OneOffPath]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
-// in the grid.
+// in the grid. Units that are in cyclic paths that are destroyed will have
+// their cyclic paths converted to one off paths, however these one off paths
+// won't appear in the oneOffPaths array. (We could do it, it's just a pain. We
+// can get away with this because we don't need to observe the one off paths
+// other than getting the units to move.)
 
 // A PathType is one of:
 // - ONE_OFF
@@ -32,11 +36,12 @@ const PATH_TYPE = Object.freeze({
 // Represents an origin and destination and the positions in between them for units to traverse.
 
 // A CyclicPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
-// Nat, lastIndex: Integer}
+// Nat, lastIndex: Integer, destroyed: Boolean}
 // Represents an ordered list of positions from source to destination which
 // units traverse, and the lastIndex ought to be the length of the orderedPoss
 // minus one. The Pos corresponds to the row and column of the world
-// grid. Assume that the length of orderedPoss is at least two.
+// grid. Assume that the length of orderedPoss is at least two. The destroyed
+// field represents if whether the user has destroyed the path.
 
 // Assumes that the two given paths are cyclic. Equal when origin and
 // destination of the two paths are the same.
