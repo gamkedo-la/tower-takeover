@@ -203,6 +203,20 @@ function initializeInput(canvas0) {
       }
     }
 
+    // In any mode, clicking on a redX in path UI display should destroy the
+    // path.
+    for (const pathBoxUIInfo of drawState.cyclicPaths.pathBoxUIInfos) {
+      const { deleteUIInfo:{ topLeftX, topLeftY, w, h }, path } = pathBoxUIInfo;
+
+      if (mouseX >= topLeftX &&
+          mouseX < topLeftX + w &&
+          mouseY >= topLeftY &&
+          mouseY < topLeftY + h) {
+        drawState.cyclicPaths.hasChanged = true;
+        destroyCyclicPath(path);
+      }
+    }
+
     mouseDownPos = null;
   }
 

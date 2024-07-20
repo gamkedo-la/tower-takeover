@@ -90,9 +90,12 @@ const cyclicPathsUIInfo = {
 // A CyclicPathsDrawSTate is a (hasChanged: Bool, pathBoxUIInfos: [Array-of PathBoxUIInfo])
 
 // A PathBoxUIInfo is a (topLeftX: Nat, topLeftY: Nat, w: Nat, h: Nat,
-// path: CyclicPath).
+// deleteUIInfo: DeleteUIInfo, path: CyclicPath).
 // Represents where a single path box inside cyclic path UI lies in screen space
 // and in pixels.
+
+// A DeleteUIInfo is a (topLeftX: Nat, topLeftY: Nat, w: Nat, h: Nat)
+// Represents a region in screen space in pixels where a delete button is at.
 
 let drawState = {
   cyclicPaths: {

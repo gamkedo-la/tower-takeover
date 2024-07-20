@@ -185,6 +185,19 @@ function _addOneOffPath(world, fromPos, toPos, newOneOffPath) {
   world.oneOffPaths.push(newOneOffPath);
 }
 
+
+// CyclicPath -> Void
+function destroyCyclicPath(path) {
+  // Iterate backwards because we are mutating the array.
+  for (let i = world.cyclicPaths.length - 1; i >= 0; i--) {
+    const currPath = world.cyclicPaths[i];
+
+    if (cyclicPathEquals(path, currPath)) {
+      world.cyclicPaths.splice(i, 1);
+    }
+  }
+}
+
 // Nat Nat Nat Nat -> Void
 function createCyclicPath(r1, c1, r2, c2) {
   // NOTE(marvin):

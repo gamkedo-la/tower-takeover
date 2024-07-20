@@ -206,7 +206,7 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
     pathBoxUIInfos
   } = drawState.cyclicPaths;
 
-  const pathBoxW = (w / 2) - paddingX;
+  const pathBoxW = (w / 2);
   const pathBoxH = (2 * paddingY) + tileSideLength;
 
   if (shouldUpdateDrawStateCyclicPaths) {
@@ -249,12 +249,26 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
       currX += tileSideLength;
     }
 
+    
+    // Draw the delete button
+    const redXImage = nameToImage.get("redX");
+    const dTLX = topLeftX + (w / 2) - paddingX - redXImage.width;
+    const dTLY = pathBoxTopLeftY + paddingY;
+
+    canvasContext.drawImage(redXImage, dTLX, dTLY);
+
     if (shouldUpdateDrawStateCyclicPaths) {
       pathBoxUIInfos.push({
         topLeftX: pathBoxTopLeftX,
         topLeftY: pathBoxTopLeftY,
         w: pathBoxW,
         h: pathBoxH,
+        deleteUIInfo: {
+          topLeftX: dTLX,
+          topLeftY: dTLY,
+          w: redXImage.width,
+          h: redXImage.height,
+        },
         path: cyclicPath,
       });
     }
