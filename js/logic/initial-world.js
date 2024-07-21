@@ -175,7 +175,7 @@ if (initialTileTypes.length % initialTileTypesRowLength != 0) {
 // Note that row and col position counts from 0. Row counts from top to bottom,
 // and col counts from left to right.
 const initialPosToSociety = [
-  5, 0, [ROLE.SOLDIER, 5],
+  5, 0, [ROLE.SOLDIER, 10],
   // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
   // 1, 2, [ROLE.SOLDIER, 10, ROLE.ATTACKER, 2],
    6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 2],
@@ -265,36 +265,37 @@ function _initialTileTypesToTiles(tileTypes) {
   }
 
   return rv;
+}
 
-  // TileType -> Tile
-  // Given a tile type, returns its corresponding tile which is a cloned object
-  // of its prefab.
-  function _tileTypeToDefaultTile(tileType) {
-    return _.cloneDeep(_tileTypeToPrefab(tileType));
+// TileType -> Tile
+// Given a tile type, returns its corresponding tile which is a cloned object
+// of its prefab.
+function _tileTypeToDefaultTile(tileType) {
+  return _.cloneDeep(_tileTypeToPrefab(tileType));
+}
 
-    // Returns the corresponding prefab of the given tile type, serves as a helper
-    function _tileTypeToPrefab(tileType) {
-      switch (tileType) {
-      case TILE_TYPE.UNASSIGNED:
-	console.error("Cannot use TILE_TYPE.UNASSIGNED in world builder, using TILE_TYPE.WALL instead.");
-	return WALL_PREFAB;
-      case TILE_TYPE.WALL:
-	return WALL_PREFAB;
-      case TILE_TYPE.WALKABLE_TILE:
-	return WALKABLE_TILE_PREFAB;
-      case TILE_TYPE.FOOD_STORAGE:
-	return FOOD_STORAGE_PREFAB;
-      case TILE_TYPE.FOOD_FARM:
-	return FOOD_FARM_PREFAB;
-      case TILE_TYPE.CAPITAL:
-	return CAPITAL_PREFAB;
-      case TILE_TYPE.ENEMY_CAMP:
-	return ENEMY_CAMP_PREFAB;
-      }
-    }
+// Returns the corresponding prefab of the given tile type, serves as a helper
+// to _tileTypeToDefaultTile.
+function _tileTypeToPrefab(tileType) {
+  switch (tileType) {
+  case TILE_TYPE.UNASSIGNED:
+    console.error("Cannot use TILE_TYPE.UNASSIGNED in world builder, using TILE_TYPE.WALL instead.");
+    return WALL_PREFAB;
+  case TILE_TYPE.WALL:
+    return WALL_PREFAB;
+  case TILE_TYPE.WALKABLE_TILE:
+    return WALKABLE_TILE_PREFAB;
+  case TILE_TYPE.FOOD_STORAGE:
+    return FOOD_STORAGE_PREFAB;
+  case TILE_TYPE.FOOD_FARM:
+    return FOOD_FARM_PREFAB;
+  case TILE_TYPE.CAPITAL:
+    return CAPITAL_PREFAB;
+  case TILE_TYPE.ENEMY_CAMP:
+    return ENEMY_CAMP_PREFAB;
+  case TILE_TYPE.UNDER_CONSTRUCTION:
+    return UNDER_CONSTRUCTION_PREFAB;
   }
-
-  
 }
 
 const initialWorld = {

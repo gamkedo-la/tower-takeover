@@ -122,6 +122,7 @@ const TILE_TYPE = Object.freeze({
   FOOD_FARM: 4,
   CAPITAL: 5,
   ENEMY_CAMP: 6,
+  UNDER_CONSTRUCTION: 7,
 });
 
 // used in draw.js _drawTileStats() to display tile type as a string
@@ -133,7 +134,8 @@ const TILE_TYPE_STRING = [
   "Food Storage",
   "Farm",
   "Capital City",
-  "Enemy Camp"
+  "Enemy Camp",
+  "Under Construction",
 ];
 
 // An ATile is a (tag: TileType, society: [Mapping Role SocietyClass])
@@ -233,6 +235,7 @@ if (tile.hasOwnProperty("pathUnitsQueues")) {
 // - WALKER: 2
 // - QUEEN: 3
 // - ATTACKER: 4
+// - BUILDER: 5
 // Represents a way to categorize units based on what they do.
 const ROLE = Object.freeze({
   FARMER: 0,
@@ -240,7 +243,23 @@ const ROLE = Object.freeze({
   WALKER: 2,
   QUEEN: 3,
   ATTACKER: 4,
+  BUILDER: 5,
 });
+
+// An UnderConstruction is a (...ATile, constructionProgress: Nat,
+// constructionGoal: Nat, resultingTile: ATile)
+// Represents an ATile that contains another ATile, and only has a
+// society of builders, and information on completion percentage.
+const UNDER_CONSTRUCTION_PREFAB = {
+  ...ATILE,
+  tag: TILE_TYPE.UNDER_CONSTRUCTION,
+  society: new Map([
+    [ROLE.BUILDER, { capacity: Infinity, units: []}],
+  ]),
+  constructionProgress: 0,
+  constructionGoal: 100,  // Immutable
+  resultingTileType: null,  // Needs to be filled in when instantiated
+};
 
 // A Wall is an ATile that has no society.
 // Represents a tile type that cannot be walked into but can be replaced with

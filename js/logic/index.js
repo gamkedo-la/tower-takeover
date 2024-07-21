@@ -27,10 +27,13 @@ var world = initialWorld;
 
 function onTick() {
   _updateUnitPos(world);  // Very safe at the cost of performance
+
+  _onTickConstruction(world);
   _onTickUnitsEatAndDecay(world);
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
+  
   _onTickPurgeUnfollowedOneOffPaths(world);
   _onTickDestroyTiles(world);
 }
@@ -466,6 +469,7 @@ function _getLegalSocietyRoleToJoin(tile) {
     ROLE.SOLDIER,
     ROLE.WALKER,
     ROLE.QUEEN,
+    ROLE.BUILDER,
   ];
 
   for (const role of societyRolesPriority) {

@@ -91,7 +91,7 @@ function onDraw() {
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
 
-  // Drawing the tiles.
+  // Drawing the tiles on map.
   for (let r = 0; r < world.grid.length; r++) {
     for (let c = 0; c < world.grid[r].length; c++) {
       const tile = world.grid[r][c];
@@ -103,6 +103,9 @@ function onDraw() {
 	canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
 
 	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
+      } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
+        const { resultingTileType } = tile;
+        _drawTileTypeAtPos(resultingTileType, c, r, 0.25);
       } else {
 	_drawTileTypeAtPos(tile.tag, c, r);
       }
@@ -302,7 +305,9 @@ function _drawPath(path) {
 }
 
 // c and r are in terms of squareLength
-function _drawTileTypeAtPos(tileType, c, r) {
+function _drawTileTypeAtPos(tileType, c, r, alpha=1) {
+  canvasContext.globalAlpha = alpha;
+    
   if (tileType === TILE_TYPE.WALKABLE_TILE) {
     // White square.
     canvasContext.fillStyle = "white";
@@ -324,6 +329,8 @@ function _drawTileTypeAtPos(tileType, c, r) {
     canvasContext.fillStyle = "red";
     canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
   }
+
+  canvasContext.globalAlpha = 1;
 }
 
 // A subtile is a smaller tile within a grid of tiles in a squareLengthxsquareLength tile.
