@@ -127,9 +127,10 @@ function onDraw() {
     // Pixel positions
     const tile = world.mapTileSelected;
 
-    _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
-    _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY);
-    _drawTileStats(tile);
+    let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
+    nextTopLeftY = _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, nextTopLeftY);
+    let { topLeftX } = tileStatsUIInfo;
+    _drawTileStats(tile, topLeftX, nextTopLeftY);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     // Draw the build tile options window.
@@ -350,6 +351,8 @@ function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidth
     const bgColor = roleToBgColor.get(role);
     currTopLeftY += _drawUnitsTable(units, l, w, dl, dw, topLeftX, currTopLeftY, tableWidthPx, bgColor, tileUnitsInDisplay);
   }
+
+  return currTopLeftY;
 }
 
 
@@ -454,8 +457,7 @@ function describeSocietyRole(soc,role,desc) {
   return num+" of "+cap+" "+desc+sss;
 }
 
-function _drawTileStats(tile) {
-  let { topLeftX, topLeftY } = tileStatsUIInfo;
+function _drawTileStats(tile, topLeftX, topLeftY) {
   canvasContext.fillStyle = "rgba(0,0,0,0.2)";
   canvasContext.fillRect(topLeftX,topLeftY,300,300);
   canvasContext.font = "24px Arial";
@@ -484,9 +486,11 @@ function _drawTileStats(tile) {
 }
 
 function _drawFoodStored(tile, topLeftX, topLeftY) {
+  const effectiveHeight = 50;
   canvasContext.font = "24px Arial";
   canvasContext.fillStyle = "White";
   let amountString = "0kg"; // default - no food on tile
   if (tile.foodStored != undefined) amountString = tile.foodStored+"kg";
-  canvasContext.fillText("Food Stored: " + amountString, topLeftX, topLeftY + 200);
+  canvasContext.fillText("Food Stored: " + amountString, topLeftX, topLeftY + 25);
+  return topLeftY + effectiveHeight;
 }
