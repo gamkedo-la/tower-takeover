@@ -74,9 +74,6 @@ function changeClickMode(clickMode) {
 // Building over legal non-walls take twice the time (as if the units
 // destroyed it and built a new building.)
 function beginTileConstruction(r, c, tileType) {
-  // TODO(marvin): If the given position is not a wall and is a legal tile to
-  // build over, then double the progress goal.
-
   const replacedTile = world.grid[r][c];
 
   // Check if cannot build.
@@ -103,6 +100,10 @@ function beginTileConstruction(r, c, tileType) {
   const underConstructionTile = _.cloneDeep(UNDER_CONSTRUCTION_PREFAB);
   underConstructionTile.resultingTileType = tileType;
   underConstructionTile.constructionProgress = 0;
+  // Double the goal if changing from legal non-wall to something else.
+  if (replacedTile.tag !== TILE_TYPE.WALL) {
+    underConstructionTile.constructionGoal *= 2;
+  }
   world.grid[r][c] = underConstructionTile;
   playSFX("building_built");
 }
