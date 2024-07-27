@@ -176,7 +176,7 @@ function initializeInput(canvas0) {
                 mouseY <= (r + 1) * squareLength &&
                 mouseX >= c * squareLength &&
                 mouseX <= (c + 1) * squareLength) {
-              changeMapTile(r, c, world.buildTileSelected);
+              beginTileConstruction(r, c, world.buildTileSelected);
             }
           }
         }

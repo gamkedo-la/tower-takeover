@@ -16,24 +16,17 @@ function _onTickConstruction(world) {
 // AUXILLARY FUNCTIONALITY
 // ================================================================================
 
-let started = false;
-
 // Makes progress on the tile's construction, and if it's done, changes the
 // world grid at its position, row r and column c, to the resulting tile.
 function _onTickTileConstruction(tile, worldGrid, r, c) {
   switch (tile.tag) {
   case TILE_TYPE.UNDER_CONSTRUCTION:
-    if (!started) {
-      started = true;
-    }
-
-    const { society, constructionProgress:constructionProgress0, constructionGoal, resultingTileType } = tile;
+    const { society, constructionProgress, constructionGoal, resultingTileType } = tile;
     const numUnits = society.get(ROLE.BUILDER).units.length;
 
-    // IWASHERE:
-    // - Add penalty for going from wall -> walkable. Twice the time.
-    //   under construction tile needs to have replacedTileType field.
-    const constructionProgress = constructionProgress0;
+    if (numUnits <= 0) {
+      return;
+    }
 
     // y = 3.5ln10x - 6
     // where y is the new construction progress to add this game logic frame and
@@ -53,6 +46,7 @@ function _onTickTileConstruction(tile, worldGrid, r, c) {
     if (tile.constructionProgress >= tile.constructionGoal) {
       const newTile = _tileTypeToDefaultTile(resultingTileType);
       worldGrid[r][c] = newTile;
+      playSFX("building_built");
 
       // Move units in construction society over to resultingTile's society.
       for (const [_, {units}] of tile.society) {

@@ -67,6 +67,21 @@ function changeClickMode(clickMode) {
   world.clickMode = clickMode;
 }
 
+function beginTileConstruction(r, c, tileType) {
+  // TODO(marvin): Need to check if it is even legal to begin tile construction
+  // at the given position in the first place. E.g cannot build on enemy camps
+  // and capital, can only build next to walkable tiles.
+
+  // TODO(marvin): If the given position is not a wall and is a legal tile to
+  // build over, then double the progress goal.
+
+  const underConstructionTile = _.cloneDeep(UNDER_CONSTRUCTION_PREFAB);
+  underConstructionTile.resultingTileType = tileType;
+  underConstructionTile.constructionProgress = 0;
+  world.grid[r][c] = underConstructionTile;
+  playSFX("building_built");
+}
+
 // Changes the map tile in the given position row r and column c, to the given
 // tile type. If gameCommand is true, that building denied is overriden. If
 // gameCommand is false, then it is a player request, which can be denied.
