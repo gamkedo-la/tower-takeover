@@ -58,6 +58,7 @@ function _prepareGameStart(callback) {
 
   const namedImages = [
     {name: "redX", filename: "redX.png"},
+    {name: "dynamite", filename: "dynamite.png"},
   ]
 
   let numImagesLeftToLoad = tileImages.length + modeImages.length + namedImages.length;
