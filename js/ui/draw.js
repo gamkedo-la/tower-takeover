@@ -144,13 +144,13 @@ function onDraw() {
     }
 
     // Draw the currently selected tile.
-    const selectedBuildTileTopLeftR = 7;
-    const selectedBuildTileTopLeftC = 1;
+    const { selectedBuildTileTopLeftR,
+            selectedBuildTileTopLeftC } = buildTileUIInfo;
 
     if (world.buildTileSelected != null) {
 	_drawTileTypeAtPos(world.buildTileSelected,
-			   selectedBuildTileTopLeftR,
-			   selectedBuildTileTopLeftC);
+			   selectedBuildTileTopLeftC,
+                           selectedBuildTileTopLeftR);
     }
   }
 

@@ -36,6 +36,8 @@ const buildTileUIInfo = {
   topLeftC: 1,
   topLeftR: 8,
   buildTiles: world.buildTileOptions,
+  selectedBuildTileTopLeftC: 6,
+  selectedBuildTileTopLeftR: 8,
 }
 
 // In pixel position.
