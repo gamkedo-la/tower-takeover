@@ -33,11 +33,15 @@ const unitInTileUIInfo = {
 // (top left column in logical positioning, top left row in logical
 // positioning, tile types the user can build).
 const buildTileUIInfo = {
+  // In tile positions (probably should change to pixels, but would have to
+  // change draw code.)
   topLeftC: 1,
   topLeftR: 8,
   buildTiles: world.buildTileOptions,
-  selectedBuildTileTopLeftC: 6,
+  selectedBuildTileTopLeftC: 8,
   selectedBuildTileTopLeftR: 8,
+  dynamiteTopLeftC: 6,
+  dynamiteTopLeftR: 8,
 }
 
 // In pixel position.

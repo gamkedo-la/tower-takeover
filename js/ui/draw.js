@@ -143,6 +143,12 @@ function onDraw() {
       _drawTileTypeAtPos(buildTile, buildTileUIInfo.topLeftC + cc, buildTileUIInfo.topLeftR);
     }
 
+    // Draw the dynamite.
+    const { dynamiteTopLeftR, dynamiteTopLeftC } = buildTileUIInfo;
+
+    const dynamiteImage = nameToImage.get("dynamite");
+    canvasContext.drawImage(dynamiteImage, dynamiteTopLeftC * squareLength, dynamiteTopLeftR * squareLength);
+
     // Draw the currently selected tile.
     const { selectedBuildTileTopLeftR,
             selectedBuildTileTopLeftC } = buildTileUIInfo;
