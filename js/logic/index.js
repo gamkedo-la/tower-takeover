@@ -67,19 +67,58 @@ function changeClickMode(clickMode) {
   world.clickMode = clickMode;
 }
 
+// You can only build if
+// - The replaced tile is different from the new tile.
+// - The replaced tile is neither an enemy camp, capital, or walkable tile.
+// - The replaced tile is adjacent to a walkable tile.
+// Building over legal non-walls take twice the time (as if the units
+// destroyed it and built a new building.)
 function beginTileConstruction(r, c, tileType) {
-  // TODO(marvin): Need to check if it is even legal to begin tile construction
-  // at the given position in the first place. E.g cannot build on enemy camps
-  // and capital, can only build next to walkable tiles.
-
   // TODO(marvin): If the given position is not a wall and is a legal tile to
   // build over, then double the progress goal.
+
+  const replacedTile = world.grid[r][c];
+
+  // Check if cannot build.
+  if (replacedTile.tag === tileType) {
+    // TODO(message): Show temporary message that cannot build over the same
+    // tile.
+    playSFX("building_denied");
+    return;
+  } else if (replacedTile.tag === TILE_TYPE.ENEMY_CAMP ||
+             replacedTile.tag === TILE_TYPE.CAPITAL ||
+             replacedTile.tag === TILE_TYPE.WALKABLE_TILE) {
+    // TODO(message): Show temporary message that the given tile cannot be built over.
+    playSFX("building_denied");
+    return;
+  } else if (!adjacentToWalkableTile(world.grid, r, c)) {
+    // TODO(message): Show temporary message that you must build next to a
+    // walkable tile. 
+    playSFX("building_denied");
+    return;
+  }
+
+  // Beyond this point, the construction is guaranteed to be legal.
 
   const underConstructionTile = _.cloneDeep(UNDER_CONSTRUCTION_PREFAB);
   underConstructionTile.resultingTileType = tileType;
   underConstructionTile.constructionProgress = 0;
   world.grid[r][c] = underConstructionTile;
   playSFX("building_built");
+}
+
+// Is the given position adjacent to at least one walkable tile in the world
+// grid?
+function adjacentToWalkableTile(grid, r, c) {
+  const highestR = grid.length - 1;
+  // Assumes that the grid is two dimensional, i.e grid.length > 0
+  const highestC = grid[0].length - 1;
+  
+  // Check in order of top, bottom, left, right.
+  return ((r > 0 && grid[r - 1][c].tag === TILE_TYPE.WALKABLE_TILE)||
+          (r < highestR && grid[r + 1][c].tag === TILE_TYPE.WALKABLE_TILE) ||
+          (c > 0 && grid[r][c - 1].tag === TILE_TYPE.WALKABLE_TILE) ||
+          (c < highestC && grid[r][c + 1].tag === TILE_TYPE.WALKABLE_TILE));
 }
 
 // Changes the map tile in the given position row r and column c, to the given
@@ -444,14 +483,12 @@ function hasAnyUnits(tile) {
   if (!tile.society) {
     return false;
   }
-  if (!tile.society.values()) {
-    return false;
-  }
-  if (!Array.isArray(tile.society.values())) {
-    return false;
-  }
 
-  return tile.society.values().some(society => society.units?.length > 0);
+  for (const [_, {units}] of tile.society) {
+    if (units.length > 0) {
+      return true;
+    }
+  }
 }
 
 // Tile CyclicPath -> Void
