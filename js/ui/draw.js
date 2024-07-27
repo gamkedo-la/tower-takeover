@@ -149,6 +149,11 @@ function onDraw() {
     const dynamiteImage = nameToImage.get("dynamite");
     canvasContext.drawImage(dynamiteImage, dynamiteTopLeftC * squareLength, dynamiteTopLeftR * squareLength);
 
+    // Draw blue outline if dynamite is selected.
+    if (world.dynamiteSelected) {
+      _drawBlueSquareOutlineAt(dynamiteTopLeftR, dynamiteTopLeftC);
+    }
+
     // Draw the currently selected tile.
     const { selectedBuildTileTopLeftR,
             selectedBuildTileTopLeftC } = buildTileUIInfo;
@@ -187,6 +192,21 @@ function onDraw() {
     canvasContext.strokeRect(mouseDownPos.x, mouseDownPos.y, mouseX - mouseDownPos.x, mouseY - mouseDownPos.y);
     canvasContext.restore();
   }
+}
+
+function _drawBlueSquareOutlineAt(r, c) {
+  // The canvas stroke rect's line width expands from the middle, which makes
+  // the very top left of the outline appear at (c*squareLength-lineWidth/2,
+  // r*squareLength-lineWidth/2). Need to add
+  const lineWidth = 8;
+  const halvedLineWidth = lineWidth / 2;
+  
+  canvasContext.save();
+  canvasContext.strokeStyle = 'rgb(173, 216, 230)';
+  canvasContext.lineWidth = lineWidth;
+  canvasContext.strokeRect(c * squareLength + halvedLineWidth, r * squareLength + halvedLineWidth,
+                           squareLength - lineWidth, squareLength - lineWidth);
+  canvasContext.restore();
 }
 
 // CyclicPathUIInfo [Array-of CyclicPath] -> Void

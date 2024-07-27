@@ -44,6 +44,7 @@ function onTick() {
 
 function selectBuildTile(tileType) {
   world.buildTileSelected = tileType;
+  world.dynamiteSelected = false;
 }
 
 function selectMapTile(r, c) {
@@ -65,6 +66,37 @@ function clearSelectedUnits() {
 
 function changeClickMode(clickMode) {
   world.clickMode = clickMode;
+}
+
+// Uses the world's state to decide how the tile with the given position will be modified.
+function modifyTileUsingBuildSettings(r, c) {
+  if (world.dynamiteSelected) {
+    destroyBuilding(r, c);
+  } else if (world.buildTileSelected) {
+    beginTileConstruction(r, c, world.buildTileSelected);
+  } else {
+    // TODO(message): Show the temporary message "You need to pick a tile in
+    // the build menu in order to build."
+    playSFX("building_denied");
+  }
+}
+
+// Converts the tile with the given position to a wall if it is not an enemy
+// camp, walkable tile or capital.
+function destroyBuilding(r, c) {
+  const tileToDestroy = world.grid[r][c];
+  if (tileToDestroy.tag === TILE_TYPE.ENEMY_CAMP ||
+      tileToDestroy.tag === TILE_TYPE.CAPITAL ||
+      tileToDestroy.tag === TILE_TYPE.WALKABLE_TILE) {
+    // TODO(message): Show temporary message that cannot destroy enemy camps,
+    // capitals and walkable tiles.
+    playSFX("building_denied");
+    return;
+  }
+
+  // At this point, assume that building can be legally destroyed.
+  world.grid[r][c] = _tileTypeToDefaultTile(TILE_TYPE.WALL);
+  playSFX("building_destroyed");
 }
 
 // You can only build if
@@ -181,6 +213,15 @@ function changeMapTile(r, c, tileType, gameCommand = false) {
     playSFX("building_destroyed");
   } else {
     playSFX("building_built");
+  }
+}
+
+function toggleDynamite() {
+  if (world.dynamiteSelected) {
+    world.dynamiteSelected = false;
+  } else {
+    world.buildTileSelected = false;
+    world.dynamiteSelected = true;
   }
 }
 

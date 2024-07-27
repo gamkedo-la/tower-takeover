@@ -12,15 +12,16 @@
 
 // A World is a {grid: [2D-array-of Tile], cyclicPaths: [Array-of CyclicPath],
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
-// Null], clickMode: ClickMode, selectedUnits: [Array-of Unit], selectedPath:
-// CyclicPath, oneOffPaths:
-// [Array-of OneOffPath]}
+// Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
+// [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
+// OneOffPath]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
 // their cyclic paths converted to one off paths, however these one off paths
 // won't appear in the oneOffPaths array. (We could do it, it's just a pain. We
 // can get away with this because we don't need to observe the one off paths
 // other than getting the units to move.)
+// If dynamiteSelected is true, then buildTileSelected must be null.
 
 // A PathType is one of:
 // - ONE_OFF

@@ -158,12 +158,20 @@ function initializeInput(canvas0) {
       // within a region. Otherwise, do nothing.
       for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
         if (mouseY >= buildTileUIInfo.topLeftR * squareLength &&
-            mouseY <= (buildTileUIInfo.topLeftR + 1) * squareLength &&
+            mouseY < (buildTileUIInfo.topLeftR + 1) * squareLength &&
             mouseX >= (buildTileUIInfo.topLeftC + i) * squareLength &&
-            mouseX <= (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
+            mouseX < (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
           const buildTile = buildTileUIInfo.buildTiles[i];
           selectBuildTile(buildTile);
         }
+      }
+
+      // Check if select dynamite.
+      if (mouseY >= buildTileUIInfo.dynamiteTopLeftR * squareLength &&
+          mouseY < (buildTileUIInfo.dynamiteTopLeftR + 1) * squareLength &&
+          mouseX >= buildTileUIInfo.dynamiteTopLeftC * squareLength &&
+          mouseX < (buildTileUIInfo.dynamiteTopLeftC + 1) * squareLength) {
+        toggleDynamite();
       }
 
       // Check if the click happens in a tile in the map.
@@ -176,7 +184,7 @@ function initializeInput(canvas0) {
                 mouseY <= (r + 1) * squareLength &&
                 mouseX >= c * squareLength &&
                 mouseX <= (c + 1) * squareLength) {
-              beginTileConstruction(r, c, world.buildTileSelected);
+              modifyTileUsingBuildSettings(r, c);
             }
           }
         }
