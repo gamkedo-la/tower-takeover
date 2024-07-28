@@ -95,8 +95,120 @@ function destroyBuilding(r, c) {
   }
 
   // At this point, assume that building can be legally destroyed.
+
+  // Evacuate all the society units to the other nearest building.
+  const {r: friendlyTilePosR, c: friendlyTilePosC} = _searchNearestFriendlyTilePos(r, c);
+
+  for (const [_, {units}] of tileToDestroy.society) {
+    _directUnitsToOneOffPath(units, friendlyTilePosR, friendlyTilePosC);
+  }
+
+  // We need to get these units to come out of the tileToDestroy before the end
+  // of this function body where the tile gets deleted. If we don't do this now,
+  // then the onTickTileInPaths won't have a chance to run on the tile that got
+  // destroyed. If we don't want to do this, the other option is to either delay
+  // the destruction of the tileToDestroy (after _onTickTileInPaths has a chance
+  // has to run naturally) or we allow walls to temporarily holds units that got evacuated.
+  _onTickTileInPaths(tileToDestroy, world.grid, world.cyclicPaths);
+
+  // Go through all one off paths. If a destination is the tileToDestroy, get
+  // all units to join a new one off path where the destination is where they
+  // came from.
+  for (const oneOffPath of world.oneOffPaths) {
+    const { orderedPoss, lastIndex } = oneOffPath;
+    const { r: destR, c: destC } = orderedPoss[lastIndex];
+
+    if (r === destR && c === destC) {
+      oneOffPath.destroyed = true;
+    }
+  }
+
+  // Go through all cyclic paths. If one end is the tileToDestroy, then get all
+  // units in the path to go on a one off path to the other end (that isn't the
+  // tileToDestroy).
+  for (const cyclicPath of world.cyclicPaths) {
+    const { orderedPoss, lastIndex } = cyclicPath;
+    const { r: startR, c: startC } = orderedPoss[0];
+    const { r: destR, c: destC } = orderedPoss[lastIndex];
+
+    if (r === startR && c === startC) {
+      cyclicPath.destroyed = true;
+      cyclicPath.forceDest = {r: destR, c: destC};
+      destroyCyclicPath(cyclicPath);
+    } else if (r === destR && c === destC) {
+      cyclicPath.destroyed = true;
+      cyclicPath.forceDest = {r: startR, c: startC};
+      destroyCyclicPath(cyclicPath);
+    }
+  }
+  
+  // Finally, we can actually replace the tile.
   world.grid[r][c] = _tileTypeToDefaultTile(TILE_TYPE.WALL);
   playSFX("building_destroyed");
+}
+
+// Search for the nearest friendly tile position from the tile with the given
+// position. If not found, logs an error and returns the same given position.
+function _searchNearestFriendlyTilePos(r0, c0) {
+  const openList = [{r: r0, c: c0}];
+  const closedList = [];
+
+  while (openList.length > 0) {
+    const {r, c} = openList.pop();
+
+    const successors = _getSuccessorsForFriendly(world.grid, r, c);
+    for (const successor of successors) {
+      if (_posListContains(closedList, successor)) {
+        continue;
+      }
+      
+      if (isFriendlyTileType(world.grid[successor.r][successor.c].tag)) {
+        return {r: successor.r, c: successor.c};
+      }
+
+      if (world.grid[successor.r][successor.c].tag === TILE_TYPE.WALKABLE_TILE) {
+        openList.push(successor);
+      }
+    }
+
+    closedList.push({r: r, c: c});
+  }
+
+  // Not found, log an error and return the given position as dummy data.
+  console.error(`Unable to find nearest friendly tile position from posiion {r: ${r0}, c: ${c0}}. Returning that given position as result instead.`);
+  return {r: r0, c: c0};
+}
+
+// Not to  be confused for _getSuccessors in path-finding.js. The condition for
+// a valid successor is a little more broad.
+function _getSuccessorsForFriendly(grid0, r, c) {
+  const totalNeighbours = [
+    {r: r - 1, c: c},
+    {r: r + 1, c: c},
+    {r: r, c: c - 1},
+    {r: r, c: c + 1},
+  ];
+
+  const validSuccessors = totalNeighbours.filter((pos) => {
+    return (pos.r >= 0 && pos.r < grid0.length &&
+	    pos.c >= 0 && pos.c < grid0[pos.r].length &&
+	    (grid0[pos.r][pos.c].tag === TILE_TYPE.WALKABLE_TILE ||
+             isFriendlyTileType(grid0[pos.r][pos.c].tag)));
+  });
+
+  return validSuccessors;
+}
+
+// [List-of Pos] Pos -> Boolean
+// Does the given list of positions contain the given position?
+function _posListContains(posList, pos0) {
+  for (const pos of posList) {
+    if (posEquals(pos, pos0)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // You can only build if
@@ -245,8 +357,8 @@ function _directUnitsToOneOffPath(units, r, c) {
   let oneOffPaths = new Map();
 
   for (const unit of units) {
-    if (oneOffPaths.has(unit.pos)) {
-      oneOffPaths.get(unit.pos).numFollowers++;
+    if (_posListContains(oneOffPaths.keys(), unit.pos)) {
+      _getFromPosMap(oneOffPaths, unit.pos).numFollowers++;
     } else {
       const orderedPoss = generatePathOrderedPoss(world.grid, unit.pos.r, unit.pos.c, r, c);
       oneOffPaths.set(unit.pos, {
@@ -254,11 +366,13 @@ function _directUnitsToOneOffPath(units, r, c) {
 	orderedPoss: orderedPoss,
 	numFollowers: 1,
 	lastIndex: orderedPoss.length - 1,
+        destroyed: false,
       });
     }
 
     unit.indexInPath = 0;
-    unit.path = oneOffPaths.get(unit.pos);
+    unit.path = _getFromPosMap(oneOffPaths, unit.pos);
+
     unit.direction = DIRECTION.TO;
   }
 
@@ -266,6 +380,20 @@ function _directUnitsToOneOffPath(units, r, c) {
   // exists, then add the new number of units to that oneOffPaths.
   for (const [pos, path] of oneOffPaths) {
     _addOneOffPath(world, pos, {r: r, c: c}, path);
+  }
+
+
+  // ES6 Maps don't allow you to define your own equality check when getting
+  // values from them... Need to make our own...
+  function _getFromPosMap(posMap, pos0) {
+    for (const [pos, val] of posMap) {
+      if (posEquals(pos, pos0)) {
+        return val;
+      }
+    }
+
+    console.error("Pos (", pos0, ") is not found in posMap", posMap);
+    return null;
   }
 }
 
@@ -544,7 +672,7 @@ function _assimilatePathUnitsQueue(tile, path0) {
       const pathUnitsQueue = tile.pathUnitsQueues[i];
       const { path, unitsQueue } = pathUnitsQueue;
 
-      if (cyclicPathEqual(path, path0)) {
+      if (cyclicPathEquals(path, path0)) {
         for (const unit of unitsQueue) {
           _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
         }

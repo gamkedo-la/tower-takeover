@@ -98,12 +98,49 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
   // away with that. We won't be needing it for anything else other than getting
   // the units to their destination.
   if (unit.path.tag === PATH_TYPE.CYCLIC && unit.path.destroyed) {
-    unit.path = {
-      tag: PATH_TYPE.ONE_OFF,
-      orderedPoss: unit.path.orderedPoss,
-      numFollowers: 1,
-      lastIndex: unit.path.lastIndex,
-    };
+    if (unit.path.forceDest) {
+      unit.path.numFollowers--;
+      const {r: destR, c: destC} = unit.path.forceDest;
+      _directUnitsToOneOffPath([unit], destR, destC);
+    } else {
+      unit.path.numFollowers--;
+      unit.path = {
+        tag: PATH_TYPE.ONE_OFF,
+        orderedPoss: unit.path.orderedPoss,
+        numFollowers: 1,
+        lastIndex: unit.path.lastIndex,
+        destroyed: false,
+      };
+      world.oneOffPaths.push(unit.path);
+    }
+  } else if (unit.path.tag === PATH_TYPE.ONE_OFF && unit.path.destroyed) {
+    const startPos = unit.path.orderedPoss[0];
+    console.log(unit.path);
+    if (worldGrid[startPos.r][startPos.c].tag === TILE_TYPE.WALL) {
+      unit.path.numFollowers--;
+      const {r: friendlyTilePosR, c: friendlyTilePosC} = _searchNearestFriendlyTilePos(unit.pos.r, unit.pos.c);
+      _directUnitsToOneOffPath([unit], friendlyTilePosR, friendlyTilePosC);
+    } else {
+      // Need to reverse the copy so we don't mutate the original array.
+      const orderedPossCopyReversed = _.cloneDeep(unit.path.orderedPoss);
+      orderedPossCopyReversed.reverse();
+      
+      unit.path.numFollowers--;
+      unit.path = {
+        tag: PATH_TYPE.ONE_OFF,
+        orderedPoss: orderedPossCopyReversed,
+        numFollowers: 1,
+        lastIndex: unit.path.lastIndex,
+        destroyed: false,
+      }
+
+      // SMELL: A bit of a code smell that we are accessing the world directly instead
+      // of passing the array as an argument.
+      world.oneOffPaths.push(unit.path);
+
+      // Update unit.indexInPath
+      unit.indexInPath = _findIndexOfPosInPosList(unit.path.orderedPoss, unit.pos);
+    }
   }
 
   let newIndexInPath = unit.indexInPath;
@@ -154,6 +191,21 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
   }
 
   unit.hasMovedInTick = true;
+}
+
+// [List-of Pos] Pos -> Nat
+// Returns the index of the given position in the given list of positions. If
+// the given position is not found, then logs an error and returns 0.
+function _findIndexOfPosInPosList(posList, pos0) {
+  for (let i = 0; i < posList.length; i++) {
+    const currPos = posList[i];
+    if (posEquals(currPos, pos0)) {
+      return i;
+    }
+  }
+
+  console.error("The given position (", pos0, ") cannot be found in the given list of positions", posList);
+  return 0;
 }
 
 // Removes the unit with the given index in the given units array, that is in a

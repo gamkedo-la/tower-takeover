@@ -37,12 +37,17 @@ const PATH_TYPE = Object.freeze({
 // Represents an origin and destination and the positions in between them for units to traverse.
 
 // A CyclicPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
-// Nat, lastIndex: Integer, destroyed: Boolean}
+// Nat, lastIndex: Integer, destroyed: Boolean, forceDest: [U Pos False]}
 // Represents an ordered list of positions from source to destination which
 // units traverse, and the lastIndex ought to be the length of the orderedPoss
 // minus one. The Pos corresponds to the row and column of the world
 // grid. Assume that the length of orderedPoss is at least two. The destroyed
-// field represents if whether the user has destroyed the path.
+// field represents if whether the user has destroyed the path. If path is
+// destroyed and forceDest is a pos, then units in the cyclic path will join a
+// one off path to forceDest. If path is destroyed and forceDest is false, then
+// units will go on a one off path to the end of the cyclic path they were
+// already heading towards or are already there. forceDest has no effect if the
+// path has not been destroyed.
 
 // Assumes that the two given paths are cyclic. Equal when origin and
 // destination of the two paths are the same.
@@ -97,9 +102,12 @@ function _pathEquals(path1, path2) {
 }
 
 // A OneOffPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
-// Integer, lastIndex: Integer}
+// Integer, lastIndex: Integer, destroyed: Boolean}
 // Represents a path that a set of units take (the nunmber of which is
-// followers) to reach a destination. Ought to not exist when followers is 0.
+// followers) to reach a destination. Ought to not exist when followers is
+// 0. Destroyed means that the path should be converted to one to the opposite
+// direction (units will return to where they came from.), or if where they came
+// from has also been destroyed, then go to nearest friendly tile.
 
 // A Pos is a {r: Integer, c: Integer}
 // Represents the position in the world's grid, where the larger r is, the more
@@ -138,6 +146,18 @@ const TILE_TYPE_STRING = [
   "Enemy Camp",
   "Under Construction",
 ];
+
+function isFriendlyTileType(tileType) {
+  switch (tileType) {
+  case TILE_TYPE.FOOD_STORAGE:
+  case TILE_TYPE.FOOD_FARM:
+  case TILE_TYPE.CAPITAL:
+  case TILE_TYPE.UNDER_CONSTRUCTION:
+    return true;
+  }
+
+  return false;
+}
 
 // An ATile is a (tag: TileType, society: [Mapping Role SocietyClass])
 // All tiles are abstract tiles, with the exception of WalkableTile which is
