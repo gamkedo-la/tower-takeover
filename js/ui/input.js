@@ -45,7 +45,7 @@ function initializeInput(canvas0) {
   function _onMouseClick(evt) {
     if (firstClickEver) {
         firstClickEver = false;
-        playSFX("ambient_sound_loop",0.5,true);
+        playSFX("bgm_01",0.5,true);
     }
 
     if(gamePaused){

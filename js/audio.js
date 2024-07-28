@@ -26,7 +26,8 @@ const nameToFilePath = [
   ["button_click_ok", "Sx_UI_Button_ClickOK.wav"],
   ["button_hover", "Sx_UI_Button_Hover.wav"],
   ["button_hover", "Sx_UI_Button_Hover.wav"],
-  ["ambient_sound_loop", "ambient_sound_loop.mp3"]
+  ["ambient_sound_loop", "ambient_sound_loop.mp3"],
+  ["bgm_01", "background_music_01.wav"]
 ];
 
 const nameToAudio = new Map(
