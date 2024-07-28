@@ -39,6 +39,35 @@ function onTick() {
 }
 
 // ================================================================================
+// WORLD->X FUNCTIONS
+// ================================================================================
+
+// World -> String
+// Gets the message text to display given the current world state. Returns an
+// empty string by default.
+function getMessageText(w) {
+  switch (w.clickMode) {
+  case CLICK_MODE.BUILD:
+    const { buildTileSelected, dynamiteSelected } = w;
+    if (dynamiteSelected) {
+      return "Click on a building to instantly destroy it. Units within will leave to closest friendly tile.";
+    } else {
+      return "Click on a wall or friendly tiles (except the capital) adjacent to an empty tile to build it.";
+    }
+  }
+
+  return "";
+}
+
+/*
+  CLICK_MODE.BUILD: "You have X selected, click on an empty tile adjacent to a
+  walkable tile to build it." or if you have the erasor selected, "click on a
+  building to destroy it". And on underneath the text, you can see the list of
+  tiles you can choose from as your brush, as well as the erasor option.
+  
+  */
+
+// ================================================================================
 // FEATURE FUNCTIONS
 // ================================================================================
 

@@ -33,15 +33,11 @@ const unitInTileUIInfo = {
 // (top left column in logical positioning, top left row in logical
 // positioning, tile types the user can build).
 const buildTileUIInfo = {
-  // In tile positions (probably should change to pixels, but would have to
-  // change draw code.)
-  topLeftC: 1,
-  topLeftR: 8,
-  buildTiles: world.buildTileOptions,
-  selectedBuildTileTopLeftC: 8,
-  selectedBuildTileTopLeftR: 8,
-  dynamiteTopLeftC: 6,
-  dynamiteTopLeftR: 8,
+  // In pixels
+  topLeftX: 860,
+  topLeftY: 600,  // Need to adjust if the text gets longer and wraps into it.
+  dynamiteTopLeftX: 988,
+  dynamiteTopLeftY: 600,
 }
 
 // In pixel position.
@@ -77,6 +73,15 @@ const cyclicPathsUIInfo = {
   w: 832,  // If there are 13 cols, map width is 64*13=832
 }
 
+const messageUIInfo = {
+  // All in pixels
+  topLeftX: 860,
+  topLeftY: 448,  // If there are 7 rows, map height is 64*7=448
+  w: 330,  // screenWidth - topLeftX - padding = 1200 - 860 -10 = 330
+  fontSize: 24,
+  lineSpacing: 2,
+}
+
 // ================================================================================
 // STATE
 // ================================================================================
@@ -91,9 +96,9 @@ const cyclicPathsUIInfo = {
 // input.js should only change data that has to do with control flow (e.g. what
 // data needs to be recomputed). There is probably a better way of organizing this.
 
-// A DrawState is a (cyclicPaths: CyclicPathsDrawState)
+// A DrawState is a (cyclicPaths: CyclicPathsDrawState, message: MessageState)
 
-// A CyclicPathsDrawSTate is a (hasChanged: Bool, pathBoxUIInfos: [Array-of PathBoxUIInfo])
+// A CyclicPathsDrawState is a (hasChanged: Bool, pathBoxUIInfos: [Array-of PathBoxUIInfo])
 
 // A PathBoxUIInfo is a (topLeftX: Nat, topLeftY: Nat, w: Nat, h: Nat,
 // deleteUIInfo: DeleteUIInfo, path: CyclicPath).
@@ -103,9 +108,22 @@ const cyclicPathsUIInfo = {
 // A DeleteUIInfo is a (topLeftX: Nat, topLeftY: Nat, w: Nat, h: Nat)
 // Represents a region in screen space in pixels where a delete button is at.
 
+// A MessageState is a (temporaryMessage: [U String False],
+// temporaryMessageShownInFrames: Number, temporaryMessageToShowInSeconds:
+// Number, messageForCurrentFrame: [String False]).
+
 let drawState = {
   cyclicPaths: {
     hasChanged: false,  // Toggled by input.js
     pathBoxUIInfos: [],  // Reset and filled in by draw.js
   },
+  message: {
+    temporaryMessage: false,
+    // Reset to 0 whenever showing new temporary message.
+    temporaryMessageShownInFrames: 0,
+    // Ought to be changed alongside temporaryMessageShownInSeconds.
+    temporaryMessageToShowInSeconds: 0,
+
+    messageForCurrentFrame: false,
+  }
 };

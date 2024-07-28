@@ -156,21 +156,21 @@ function initializeInput(canvas0) {
       // If so, log the selected building.
       // Deduce screen region from build tiles and log the tile type if click
       // within a region. Otherwise, do nothing.
-      for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
-        if (mouseY >= buildTileUIInfo.topLeftR * squareLength &&
-            mouseY < (buildTileUIInfo.topLeftR + 1) * squareLength &&
-            mouseX >= (buildTileUIInfo.topLeftC + i) * squareLength &&
-            mouseX < (buildTileUIInfo.topLeftC + i + 1) * squareLength) {
-          const buildTile = buildTileUIInfo.buildTiles[i];
+      for (let i = 0; i < world.buildTileOptions.length; i++) {
+        if (mouseX >= buildTileUIInfo.topLeftX + i * squareLength &&
+            mouseX < buildTileUIInfo.topLeftX + (i + 1) * squareLength &&
+            mouseY >= buildTileUIInfo.topLeftY &&
+            mouseY < buildTileUIInfo.topLeftY + squareLength) {
+          const buildTile = world.buildTileOptions[i];
           selectBuildTile(buildTile);
         }
       }
 
       // Check if select dynamite.
-      if (mouseY >= buildTileUIInfo.dynamiteTopLeftR * squareLength &&
-          mouseY < (buildTileUIInfo.dynamiteTopLeftR + 1) * squareLength &&
-          mouseX >= buildTileUIInfo.dynamiteTopLeftC * squareLength &&
-          mouseX < (buildTileUIInfo.dynamiteTopLeftC + 1) * squareLength) {
+      if (mouseX >= buildTileUIInfo.dynamiteTopLeftX &&
+          mouseX < buildTileUIInfo.dynamiteTopLeftX + squareLength &&
+          mouseY >= buildTileUIInfo.dynamiteTopLeftY &&
+          mouseY < buildTileUIInfo.dynamiteTopLeftY + squareLength) {
         toggleDynamite();
       }
 

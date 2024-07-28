@@ -17,6 +17,7 @@
 // CONSTANTS
 // ================================================================================
 const FRAMES_PER_SECOND = 10;
+const SECONDS_PER_FRAME = 1 / FRAMES_PER_SECOND;
 const GAME_LOGIC_FRAMES_PER_SECOND = 1;
 
 // ================================================================================

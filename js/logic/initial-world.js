@@ -118,8 +118,6 @@ const enemyCamp = {
 };
 
 const buildTileOptions0 = [
-  TILE_TYPE.WALL,
-  TILE_TYPE.WALKABLE_TILE,
   TILE_TYPE.FOOD_STORAGE,
   TILE_TYPE.FOOD_FARM,
 ];

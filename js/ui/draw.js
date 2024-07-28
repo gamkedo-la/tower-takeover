@@ -133,35 +133,29 @@ function onDraw() {
     _drawTileStats(tile, topLeftX, nextTopLeftY);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
+    const { topLeftX, topLeftY, dynamiteTopLeftX, dynamiteTopLeftY } = buildTileUIInfo;
     // Draw the build tile options window.
     // These are arbitrary values, tune them as necessary and potentially make
     // their positions dependent on the positions of other UI elements.
-    for (let i = 0; i < buildTileUIInfo.buildTiles.length; i++) {
-      const buildTile = buildTileUIInfo.buildTiles[i];
-      const cc = i;
+    for (let i = 0; i < world.buildTileOptions.length; i++) {
+      const buildTile = world.buildTileOptions[i];
+      const x = topLeftX + i * squareLength;
+      canvasContext.drawImage(tileTypeToImage.get(buildTile),
+                              x,
+                              topLeftY);
 
-      _drawTileTypeAtPos(buildTile, buildTileUIInfo.topLeftC + cc, buildTileUIInfo.topLeftR);
+      if (buildTile === world.buildTileSelected) {
+        _drawBlueHighlightAtPixels(x, topLeftY);
+      }
     }
 
     // Draw the dynamite.
-    const { dynamiteTopLeftR, dynamiteTopLeftC } = buildTileUIInfo;
-
     const dynamiteImage = nameToImage.get("dynamite");
-    canvasContext.drawImage(dynamiteImage, dynamiteTopLeftC * squareLength, dynamiteTopLeftR * squareLength);
+    canvasContext.drawImage(dynamiteImage, dynamiteTopLeftX, dynamiteTopLeftY);
 
     // Draw blue outline if dynamite is selected.
     if (world.dynamiteSelected) {
-      _drawBlueSquareOutlineAt(dynamiteTopLeftR, dynamiteTopLeftC);
-    }
-
-    // Draw the currently selected tile.
-    const { selectedBuildTileTopLeftR,
-            selectedBuildTileTopLeftC } = buildTileUIInfo;
-
-    if (world.buildTileSelected != null) {
-	_drawTileTypeAtPos(world.buildTileSelected,
-			   selectedBuildTileTopLeftC,
-                           selectedBuildTileTopLeftR);
+      _drawBlueHighlightAtPixels(dynamiteTopLeftX, dynamiteTopLeftY);
     }
   }
 
@@ -186,12 +180,18 @@ function onDraw() {
 
   _drawPathsUI(cyclicPathsUIInfo, world.cyclicPaths, world.grid);
 
+  _drawMessageGUI();
+
   if (mouseDownPos) {
     canvasContext.save();
     canvasContext.strokeStyle = 'black';
     canvasContext.strokeRect(mouseDownPos.x, mouseDownPos.y, mouseX - mouseDownPos.x, mouseY - mouseDownPos.y);
     canvasContext.restore();
   }
+}
+
+function _drawBlueHighlightAtPixels(x, y) {
+  drawTintedRect(0.2, "blue", x, y, squareLength, squareLength);
 }
 
 function _drawBlueSquareOutlineAt(r, c) {
@@ -519,4 +519,89 @@ function _drawFoodStored(tile, topLeftX, topLeftY) {
   if (tile.foodStored != undefined) amountString = tile.foodStored+"kg";
   canvasContext.fillText("Food Stored: " + amountString, topLeftX, topLeftY + 25);
   return topLeftY + effectiveHeight;
+}
+
+// --------------------------------------------------------------------------------
+// MESSAGE SYSTEM
+// --------------------------------------------------------------------------------
+// These are functions related to the message system. The data definitions are
+// stored in gui-defs.js. The exposed functions are `setMessageForCurrentFrame()`
+// (useful for hover) and `setTemporaryMessage(seconds)` to display a temporary
+// message for the given number of seconds. If a temporary message is currently
+// displayed and you set a new temporary message, the new temporary message will
+// replace the old one. The `_drawMessageGUI()` is called internally by draw.js
+// every frame.
+
+// Void -> Void
+function setMessageForCurrentFrame() {
+  console.error("Unimplemented.");
+}
+
+// Number -> Void
+function setTemporaryMessage(seconds) {
+  console.error("Unimplemented.");
+}
+
+// Void -> Void
+// Order of precedence:
+// 1. messageForCurrentFrame
+// 2. temporaryMessage
+// 3. the message for the current world state (defined in this function body)
+function _drawMessageGUI() {
+  let textToShowThisFrame = "";
+  
+  const { message } = drawState;
+  
+  if (message.messageForCurrentFrame) {
+    textToShowThisFrame = message.messageForCurrentFrame;
+  } else if (message.temporaryMessage) {
+    textToShowThisFrame = message.temporaryMessage;
+    message.temporaryMessageShownInFrames += 1;
+
+    // Check if we can stop showing the temporary message for next frame.
+    const { temporaryMessageShownInFrames,
+            temporaryMessageToShowInSeconds } = message;
+    const temporaryMessageShownInSeconds = temporaryMessageShownInFrames * SECONDS_PER_FRAME;
+    if (temporaryMessageShownInSeconds > temporaryMessageToShowInSeconds) {
+      message.temporaryMessage = false;
+    }
+  } else {
+    // We decide what text to show based on game state.
+    textToShowThisFrame = getMessageText(world);
+  }
+
+  const { topLeftX, topLeftY, w, fontSize, lineSpacing } = messageUIInfo;
+  canvasContext.font = `${fontSize}px Arial`;
+  canvasContext.fillStyle = "White";
+  _fillWrappedText(textToShowThisFrame, topLeftX, topLeftY + fontSize, w, fontSize, lineSpacing);
+}
+
+// String Number Number Number Number Number -> Void
+// A wrapper around `CanvasRenderingContext2D: fillText()` that draws text that
+// otherwise wouldn't fit onto one line on a new line. However, it can go off
+// screen vertically as there is no maximum height. All number arguments are in pixels.
+function _fillWrappedText(text, topLeftX, topLeftY, maxWidth, fontSize, lineSpacing) {
+  // Implemented inspired by
+  // https://stackoverflow.com/questions/2936112/text-wrap-in-a-canvas-element
+
+  const words = text.split(" ");
+
+  // The first word is exempt from the max width.
+  let currentLine = words[0];
+  let currTopLeftY = topLeftY;
+
+  for (let i = 1; i < words.length; i++) {
+    const word = words[i];
+    const width = canvasContext.measureText(currentLine + " " + word).width;
+
+    if (width < maxWidth) {
+      currentLine += " " + word;
+    } else {
+      canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
+      currTopLeftY += (fontSize + lineSpacing);
+      currentLine = word;
+    }
+  }
+
+  canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
 }
