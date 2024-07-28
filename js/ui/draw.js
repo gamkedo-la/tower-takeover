@@ -128,6 +128,7 @@ function onDraw() {
     const tile = world.mapTileSelected;
 
     let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
+    nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
     nextTopLeftY = _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, nextTopLeftY);
     let { topLeftX } = tileStatsUIInfo;
     _drawTileStats(tile, topLeftX, nextTopLeftY);
@@ -465,6 +466,35 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
       w / 2,
       l / 3 - 2);
   }
+}
+
+function _drawNextRoleButtons(topLeftX, topLeftY) {
+  const buttonWidth = 140;
+  const buttonHeight = 30;
+  const horizontalGapBetweenButtons = 10;
+  const verticalGapBetweenButtons = 10;
+
+  const roleKeys = Object.keys(ROLE);
+  let currentY = 0;
+  roleKeys.map((roleKey, index) => {
+    if (index % 2 === 0) {
+      _drawNextRoleButton(topLeftX, topLeftY + currentY, buttonWidth, buttonHeight, roleKey);
+    } else {
+      _drawNextRoleButton(topLeftX + buttonWidth + horizontalGapBetweenButtons, topLeftY + currentY, buttonWidth, buttonHeight, roleKey);
+      currentY = currentY + buttonHeight + verticalGapBetweenButtons;
+    }
+  });
+
+  return topLeftY + currentY;
+}
+
+function _drawNextRoleButton(x, y, width, height, text) {
+  canvasContext.fillStyle = 'green';
+  canvasContext.fillRect(x, y, width, height);
+
+  canvasContext.font = "20px Arial";
+  canvasContext.fillStyle = "White";
+  canvasContext.fillText(text, x, y + 20);
 }
 
 function describeSocietyRole(soc,role,desc) {
