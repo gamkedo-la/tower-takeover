@@ -236,9 +236,12 @@ function initializeInput(canvas0) {
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
     mouseDownPos = {x: mouseX, y: mouseY};
-    // TODO: Unselect units only if the user click on an invalid tile or outside
-    // of map. 
-    // clearSelectedUnits();
+    // Unselect units only if the user click on an invalid tile or outside
+    // of map.
+
+    if (mouseX > mapUIInfo.w || mouseY > mapUIInfo.h) {
+      clearSelectedUnits();
+    }
   }
 
   function _onMouseMove(evt) {

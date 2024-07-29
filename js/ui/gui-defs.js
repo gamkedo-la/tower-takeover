@@ -6,9 +6,6 @@
 // ================================================================================
 // DEPENDENCIES
 // ================================================================================
-// world.buildTileOptions from world.js
-
-// NOTE(marvin): Needing buildTileOptions is probably removable in the long-term.
 
 // ================================================================================
 // CONSTANTS
@@ -20,6 +17,12 @@ const squareLength = 64;
 // In pixels, should be the same as the one in index.html.
 const screenWidth = 1200;
 const screenHeight = 680;
+
+const mapUIInfo = {
+  // In pixels, the map dimensions are defined in js/logic/initial-world.js
+  w: mapCols * squareLength,
+  h: mapRows * squareLength,
+}
 
 const unitInTileUIInfo = {
   l: 42, // Really should be called "h" for height.

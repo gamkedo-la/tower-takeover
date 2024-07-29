@@ -164,6 +164,9 @@ const initialTileTypes = [
   1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
+const mapCols = initialTileTypesRowLength;
+const mapRows = initialTileTypes / mapCols;
+
 if (initialTileTypes.length % initialTileTypesRowLength != 0) {
   console.error("The length of initialTileTypes must be a multiple of initialTileTypesRowLength.");
 }
