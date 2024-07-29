@@ -377,12 +377,16 @@ const FOOD_FARM_PREFAB = Object.assign({
 // PathUnitsQueue]}
 // Represents the building in which eggs are laid and hatched into units.
 
-// TODO(capital): Finalise its design
+// We just make the queen here.
+const QUEEN_UNIT = _.cloneDeep(UNIT_PREFAB);
+QUEEN_UNIT.role = ROLE.QUEEN;
+
 const CAPITAL_PREFAB = Object.assign({
   ...ATILE,
   tag: TILE_TYPE.CAPITAL,
   society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
-		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
+		    [ROLE.ATTACKER, {capacity: 20, units: []}],
+                    [ROLE.QUEEN, {capacity: 1, units: [QUEEN_UNIT]}]]),
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
 }, foodStorageMixin);
 

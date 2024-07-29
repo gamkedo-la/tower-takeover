@@ -92,11 +92,15 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
     return;
   }
 
-  // TODO: Add caveat to documentation.
-  // If it's in a cyclic path that is destroyed, then change path to one
-  // off. This one off path won't appear in world state, but I think we can get
-  // away with that. We won't be needing it for anything else other than getting
-  // the units to their destination.
+  if (unit.role === ROLE.QUEEN) {
+    // TODO(message): Display temporary message that the queen cannot be moved
+    // from the capital.
+    unit.path = false;
+    console.log("Can't move the queen");  // Can remove this once message system
+                                          // is used.
+    return;
+  }
+
   if (unit.path.tag === PATH_TYPE.CYCLIC && unit.path.destroyed) {
     if (unit.path.forceDest) {
       unit.path.numFollowers--;

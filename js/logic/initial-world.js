@@ -235,6 +235,13 @@ function _addSocietyToInitialTiles(tiles, society) {
 	for (let c = 0; c < count; c++) {
 	  const unitToAdd = _.cloneDeep(UNIT_PREFAB);
 	  unitToAdd.role = role;
+
+          if (societyRole.units.length == societyRole.capacity) {
+            console.error(`Reached society capacity for ${tile}, role (${role}), capacity (${societyRole.capacity}), adding units anyway.`);
+          }
+          if (role === ROLE.QUEEN) {
+            console.error("You shouldn't be adding queens in the world builder, the capital prefab already provides the queen unit.");
+          }
 	  societyRole.units.push(unitToAdd);
 	}
 
