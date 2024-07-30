@@ -382,6 +382,10 @@ function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidth
   let currTopLeftY = 0;
 
   for (const [role, {units}] of society) {
+    if (units.length <= 0) {
+      continue;
+    }
+    
     const bgColor = roleToBgColor.get(role);
     currTopLeftY += _drawUnitsTable(units, l, w, dl, dw, topLeftX, currTopLeftY, tableWidthPx, bgColor, tileUnitsInDisplay);
   }

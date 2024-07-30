@@ -384,9 +384,10 @@ QUEEN_UNIT.role = ROLE.QUEEN;
 const CAPITAL_PREFAB = Object.assign({
   ...ATILE,
   tag: TILE_TYPE.CAPITAL,
-  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
-		    [ROLE.ATTACKER, {capacity: 20, units: []}],
-                    [ROLE.QUEEN, {capacity: 1, units: [QUEEN_UNIT]}]]),
+  society: new Map([[ROLE.QUEEN, {capacity: 1, units: [QUEEN_UNIT]}],
+                    [ROLE.SOLDIER, {capacity: 20, units: []}],
+                    [ROLE.ATTACKER, {capacity: 20, units: []}],
+                   ]),
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
   pathUnitsQueues: [],
 }, foodStorageMixin);

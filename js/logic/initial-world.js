@@ -177,7 +177,7 @@ if (initialTileTypes.length % initialTileTypesRowLength != 0) {
 // Note that row and col position counts from 0. Row counts from top to bottom,
 // and col counts from left to right.
 const initialPosToSociety = [
-  5, 0, [ROLE.SOLDIER, 10],
+  5, 0, [ROLE.SOLDIER, 10, ROLE.FARMER, 5, ],
   // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
   // 1, 2, [ROLE.SOLDIER, 10, ROLE.ATTACKER, 2],
    6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 2],
