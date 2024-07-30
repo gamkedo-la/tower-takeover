@@ -31,14 +31,12 @@ function _onTickTileEggs(tile) {
 
       if (eggTimeGroup.ticksPassed >= 10) {
 	for (let i = 0; i < eggTimeGroup.eggs; i++) {
-	  tile.society.get(ROLE.SOLDIER).units.push({
-	    energy: 100,
-	    pathId: -1,
-	    indexInPath: -1,
-	    direction: DIRECTION.STATIONARY,
-	    isCarryingFood: false,
-	    hasMovedInTick: false,
-	  });
+          const newUnit = _.cloneDeep(UNIT_PREFAB);
+          newUnit.affiliation = AFFILIATION.YOURS;
+          newUnit.direction = DIRECTION.STATIONARY;
+          newUnit.role = ROLE.SOLDIER;
+          
+	  tile.society.get(ROLE.SOLDIER).units.push(newUnit);
 	}
 
 	// Remove group.
