@@ -40,7 +40,7 @@ function _onTickTileBattles(tile) {
     _societyBattle(tile.society);
     _pathUnitsQueuesBattle(tile.society.get(ROLE.ATTACKER).units, tile.pathUnitsQueues);
 
-    if (enemies.length > guards.length) {
+    if (enemies.length > 0) {
       tile.isQueenAlive = false;
     }
   } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
@@ -55,15 +55,33 @@ function _onTickTileBattles(tile) {
 }
 
 // [Mapping Role SocietyClass] -> Void
-// All units of the society with enemy role fights every other role. Mutates the
+// All units of the society with enemy role fights every other role, except the queen. Mutates the
 // given society as necessary.
 function _societyBattle(society) {
-  console.error("_societyBattle unimplemented");
+  const enemyUnits = society.get(ROLE.ATTACKER).units;
+
+  for (const [role, {units}] of society) {
+    if (role === ROLE.ATTACKER || role === ROLE.QUEEN) {
+      continue;
+    }
+
+    while (units.length > 0 && enemyUnits.length > 0) {
+      units.pop();
+      enemyUnits.pop();
+    }
+  }
 }
 
 // [List-of Unit] [List-of PathUnitsQueue] -> Void
 // All of the given units fight the given path units queues, mutating the given
 // arguments as necessary.
 function _pathUnitsQueuesBattle(units, pathUnitsQueues) {
-  console.error("_pathUnitsQueuesBattle unimplemented");
+  for (const pathUnitsQueue of pathUnitsQueues) {
+    const { unitsQueue } = pathUnitsQueue;
+
+    while (units.length > 0 && unitsQueue.length > 0) {
+      units.pop();
+      unitsQueue.pop();
+    }
+  }
 }

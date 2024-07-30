@@ -388,6 +388,7 @@ const CAPITAL_PREFAB = Object.assign({
 		    [ROLE.ATTACKER, {capacity: 20, units: []}],
                     [ROLE.QUEEN, {capacity: 1, units: [QUEEN_UNIT]}]]),
   eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
+  pathUnitsQueues: [],
 }, foodStorageMixin);
 
 // An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
