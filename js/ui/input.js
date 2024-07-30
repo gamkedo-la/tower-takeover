@@ -75,7 +75,18 @@ function initializeInput(canvas0) {
         return;
       }
     }
-    
+
+    const { buttonWidth, buttonHeight, horizontalGapBetweenButtons, verticalGapBetweenButtons } = nextRoleUIInfo;
+    for (let i = 0; i < selectableRoleKeys.length; i++) {
+      const targetX = startOfNextRoleButtonsX + (buttonWidth + horizontalGapBetweenButtons) * (i % 2);
+      const targetY = startOfNextRoleButtonsY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
+      if (mouseX > targetX && mouseX < targetX + buttonWidth
+        && mouseY > targetY && mouseY < targetY + buttonHeight) {
+        console.log('yes, its in the area!', i, selectableRoleKeys[i]);
+        break;
+      }
+    }
+  
     if (world.selectedUnits.length > 0) {
       // If there are selected units, behaviour based on click mode.
       // INFO: same as ONE_OFF_PATH

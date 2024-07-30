@@ -31,6 +31,11 @@ let canvas, canvasContext;
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
 
+const selectableRoleKeys = Object.keys(ROLE);
+let startOfNextRoleButtonsX = Infinity;
+let startOfNextRoleButtonsY = Infinity;
+
+
 const roleToBgColor = new Map([
   [ROLE.FARMER, 'rgb(255, 178, 102)'],
   [ROLE.SOLDIER, 'rgb(51, 153, 255)'],
@@ -128,6 +133,8 @@ function onDraw() {
     const tile = world.mapTileSelected;
 
     let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
+    startOfNextRoleButtonsX = unitsInTileUIInfo.topLeftX;
+    startOfNextRoleButtonsY = nextTopLeftY;
     nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
     nextTopLeftY = _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, nextTopLeftY);
     let { topLeftX } = tileStatsUIInfo;
@@ -469,14 +476,10 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
 }
 
 function _drawNextRoleButtons(topLeftX, topLeftY) {
-  const buttonWidth = 140;
-  const buttonHeight = 30;
-  const horizontalGapBetweenButtons = 10;
-  const verticalGapBetweenButtons = 10;
+  const { buttonWidth, buttonHeight, horizontalGapBetweenButtons, verticalGapBetweenButtons } = nextRoleUIInfo;
 
-  const roleKeys = Object.keys(ROLE);
   let currentY = 0;
-  roleKeys.map((roleKey, index) => {
+  selectableRoleKeys.map((roleKey, index) => {
     if (index % 2 === 0) {
       _drawNextRoleButton(topLeftX, topLeftY + currentY, buttonWidth, buttonHeight, roleKey);
     } else {

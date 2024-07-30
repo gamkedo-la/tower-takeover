@@ -85,6 +85,13 @@ const messageUIInfo = {
   lineSpacing: 2,
 }
 
+const nextRoleUIInfo = {
+  buttonWidth: 140,
+  buttonHeight: 30,
+  horizontalGapBetweenButtons: 10,
+  verticalGapBetweenButtons: 10,
+}
+
 // ================================================================================
 // STATE
 // ================================================================================
