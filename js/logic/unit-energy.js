@@ -63,11 +63,34 @@ function _feedUnits(units, foodRemaining) {
   for (const unit of units) {
     const unitSpaceForFood = 100 - unit.energy;
     const foodToTake = Math.min(10, foodRemaining, unitSpaceForFood);
-    unit.energy = Math.min(foodToTake, 100);
+    unit.energy += foodToTake;
     foodRemaining -= foodToTake;
   }
 
   return foodRemaining;
+}
+
+// [List-of Unit] -> Nat
+// How much food would the given list of units take this tick? Should mirror _feedUnits.
+// A helper function for _getFoodCostPerCycle in eggs.js.
+function getUnitsFoodCost(units) {
+  let foodCost = 0;
+
+  // Unlike _feedUnits, we don't care about foodRemaining.
+  
+  for (const unit of units) {
+    // Assume take 10.
+    foodCost += 10;
+  }
+
+  return foodCost;
+}
+
+// Nat -> Nat
+// How many units can be sustained by the given food amount in a tick? Assume
+// that a unit eats 10 per tick.
+function getUnitsCanSustain(food) {
+  return Math.floor(food / 10);
 }
 
 

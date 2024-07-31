@@ -388,12 +388,13 @@ const CAPITAL_PREFAB = Object.assign({
                     [ROLE.SOLDIER, {capacity: 20, units: []}],
                     [ROLE.ATTACKER, {capacity: 20, units: []}],
                    ]),
-  eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
   pathUnitsQueues: [],
-}, foodStorageMixin);
 
-// An EggTimeGroup is a {ticksPassed: Integer, eggs: Integer}
-// Represents a group of eggs that have been laid for some number of ticks.
+  // Related to eggs
+  numUnitsToSpawnNextCycle: 0,
+  ticksPassed: 0,
+  ticksPerEggCycle: 30,  // Immutable
+}, foodStorageMixin);
 
 // An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit],
 // pathUnitsQueues: [Array-of PathUnitsQueue]}
