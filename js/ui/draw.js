@@ -92,6 +92,7 @@ function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
 // Observes the world from the logic module, ideally without changing it.
 // Assumes that initializeDraw has been called.
 function onDraw() {
+
   // Draw background.
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
@@ -104,8 +105,9 @@ function onDraw() {
       // Draw a tile, given row and column position.
       if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
 	// White square first, with units on top. Fit as many units as possible.
-	canvasContext.fillStyle = "white";
-	canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+	//canvasContext.fillStyle = "white";
+	//canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    _drawTileTypeAtPos(tile.tag, c, r);
 
 	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
       } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
@@ -343,10 +345,8 @@ function _drawPath(path) {
 function _drawTileTypeAtPos(tileType, c, r, alpha=1) {
   canvasContext.globalAlpha = alpha;
     
-  if (tileType === TILE_TYPE.WALKABLE_TILE) {
-    // White square.
-    canvasContext.fillStyle = "white";
-    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+  if (tileType === TILE_TYPE.WALKABLE_TILE) { 
+    canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.WALKABLE_TILE), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.WALL) {
     // Black square.
     canvasContext.fillStyle = "black";
@@ -356,9 +356,7 @@ function _drawTileTypeAtPos(tileType, c, r, alpha=1) {
   } else if (tileType === TILE_TYPE.FOOD_FARM) {
     canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.FOOD_FARM), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.CAPITAL) {
-    // Green square.
-    canvasContext.fillStyle = "green";
-    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.CAPITAL), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.ENEMY_CAMP) {
     // Red square.
     canvasContext.fillStyle = "red";

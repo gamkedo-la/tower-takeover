@@ -47,6 +47,8 @@ function _prepareGameStart(callback) {
   const tileImages = [
     {tileType: TILE_TYPE.FOOD_STORAGE, filename: "foodStorage.png"},
     {tileType: TILE_TYPE.FOOD_FARM, filename: "farm.png"},
+    {tileType: TILE_TYPE.WALKABLE_TILE, filename: "walkableTerrainGrassland.png"},
+    {tileType: TILE_TYPE.CAPITAL, filename: "capitalCity.png"},
   ];
 
   const modeImages = [
@@ -79,17 +81,19 @@ function _prepareGameStart(callback) {
       }
     } else {
       imgElement.onload = function () {
-	numImagesLeftToLoad--;
-
-	if (numImagesLeftToLoad === 0) {
-	  callback();
-	}
+	    numImagesLeftToLoad--;
+    	if (numImagesLeftToLoad === 0) {
+	      callback();
+	    }
       }
     }
 
     imgElement.src = rootImagesFolder + tileImage.filename;
 
     tileTypeToImage.set(tileImage.tileType, imgElement);
+    
+    // debug what files we are downloading:
+    // console.log("downloading tile type "+tileImage.tileType+": "+imgElement.src);
 
     if (shouldCallCallback) {
       callback();
