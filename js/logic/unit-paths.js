@@ -248,7 +248,8 @@ function _addUnitToTile(unit, tile) {
   } else {
     // If one off, join based on priority. If cyclic, join the path units queue.
     if (unit.path.tag === PATH_TYPE.ONE_OFF) {
-      _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
+      _addUnitToRole(tile, _getSelectedLegalSocietyRoleToJoin(tile), unit);
+      // _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
     } else if (unit.path.tag === PATH_TYPE.CYCLIC) {
       if (tile.hasOwnProperty("pathUnitsQueues")) {
 	// Add unit to the right queue if it already exists

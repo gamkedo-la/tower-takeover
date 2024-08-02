@@ -31,7 +31,7 @@ let canvas, canvasContext;
 let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
 
 
-const selectableRoleKeys = Object.keys(ROLE);
+let selectableRoleKeys = ['FARMER', 'SOLDIER'];
 let startOfNextRoleButtonsX = Infinity;
 let startOfNextRoleButtonsY = Infinity;
 
@@ -491,12 +491,19 @@ function _drawNextRoleButtons(topLeftX, topLeftY) {
       currentY = currentY + buttonHeight + verticalGapBetweenButtons;
     }
   });
+  if (selectableRoleKeys.length % 2 > 0) {
+    currentY = currentY + buttonHeight + verticalGapBetweenButtons;
+  }
 
   return topLeftY + currentY;
 }
 
 function _drawNextRoleButton(x, y, width, height, text) {
-  canvasContext.fillStyle = 'green';
+  if (selectedNextRole === ROLE[text]) {
+    canvasContext.fillStyle = 'green';
+  } else {
+    canvasContext.fillStyle = 'gray';
+  }
   canvasContext.fillRect(x, y, width, height);
 
   canvasContext.font = "20px Arial";

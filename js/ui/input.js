@@ -82,7 +82,7 @@ function initializeInput(canvas0) {
       const targetY = startOfNextRoleButtonsY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
       if (mouseX > targetX && mouseX < targetX + buttonWidth
         && mouseY > targetY && mouseY < targetY + buttonHeight) {
-        console.log('yes, its in the area!', i, selectableRoleKeys[i]);
+        selectedNextRole = ROLE[selectableRoleKeys[i]];
         break;
       }
     }

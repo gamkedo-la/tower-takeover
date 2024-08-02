@@ -78,6 +78,7 @@ function selectBuildTile(tileType) {
 
 function selectMapTile(r, c) {
   world.mapTileSelected = world.grid[r][c];
+  selectableRoleKeys = _getSelectableRoles(world.mapTileSelected);
 }
 
 function selectUnit(unit) {
@@ -727,6 +728,37 @@ function _getLegalSocietyRoleToJoin(tile) {
     if (tile.society.has(role)) {
       return role;
     }
+  }
+
+  console.error("Tile did not have a role it could give.");
+}
+
+let selectedNextRole = ROLE.FARMER;
+
+function _getSelectableRoles(tile) {
+  let result = [];
+
+  const roleKeys = [
+    'FARMER',
+    'SOLDIER',
+    'WALKER',
+    'BUILDER',
+  ];
+
+  for (const roleKey of roleKeys) {
+    if (tile.society.has(ROLE[roleKey])) {
+      result.push(roleKey);
+    }
+  }
+
+  console.log('is this correct?', result);
+
+  return result
+}
+
+function _getSelectedLegalSocietyRoleToJoin(tile) {
+  if (tile.society.has(selectedNextRole)) {
+    return selectedNextRole;
   }
 
   console.error("Tile did not have a role it could give.");
