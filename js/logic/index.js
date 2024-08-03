@@ -47,6 +47,9 @@ function onTick() {
 // empty string by default.
 function getMessageText(w) {
   switch (w.clickMode) {
+  case CLICK_MODE.INFO:
+    const { mapTileSelected } = w;
+    return _getTileMessageText(mapTileSelected);
   case CLICK_MODE.BUILD:
     const { buildTileSelected, dynamiteSelected } = w;
     if (dynamiteSelected) {
@@ -59,13 +62,25 @@ function getMessageText(w) {
   return "";
 }
 
-/*
-  CLICK_MODE.BUILD: "You have X selected, click on an empty tile adjacent to a
-  walkable tile to build it." or if you have the erasor selected, "click on a
-  building to destroy it". And on underneath the text, you can see the list of
-  tiles you can choose from as your brush, as well as the erasor option.
+// [U Tile False] -> String
+// Gets the message text to display given the selected map tile. Returns an
+// empty string by default.
+function _getTileMessageText(mapTileSelected) {
+  if (!mapTileSelected) {
+    return "";
+  }
   
-  */
+  switch (mapTileSelected.tag) {
+  case TILE_TYPE.CAPITAL:
+    const { foodStored, numUnitsToSpawnNextCycle, ticksPassed, ticksPerEggCycle, projectedFoodCostPerCycle, projectedSurplusFoodOverCostPerCyclePercentage } = mapTileSelected;
+    const percentageToCycleEnd = Math.ceil(ticksPassed / ticksPerEggCycle * 100);
+    const surplusFoodPercentage = Math.ceil(projectedSurplusFoodOverCostPerCyclePercentage * 100);
+    const foodStoredInt = Math.ceil(foodStored);
+    return `CAPITAL. Spawns new units every cycle proportional to this tile's surplus food.\n\nCycle: ${percentageToCycleEnd}%\nNumber of new units arriving: ${numUnitsToSpawnNextCycle}\nFood stored: ${foodStoredInt}kg\nSurplus food percentage: ${surplusFoodPercentage}% `;
+  }
+
+  return "";
+}
 
 // ================================================================================
 // FEATURE FUNCTIONS

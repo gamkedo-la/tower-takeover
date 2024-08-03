@@ -30,7 +30,12 @@ function _onTickTileEggs(tile) {
     return;
   }
 
-  // ticksPassed, ticksPerEggCycle
+  // Update necessary fields every game logic tick.
+  const foodCostPerCycle = _getFoodCostPerCycle(tile);
+  tile.projectedFoodCostPerCycle = foodCostPerCycle;
+
+  const surplusFoodOverCostPerCyclePercentage = Math.max(Math.min((tile.foodStored - foodCostPerCycle) / foodCostPerCycle, 1), 0);
+  tile.projectedSurplusFoodOverCostPerCyclePercentage = surplusFoodOverCostPerCyclePercentage;
 
   // Don't do anything if it's not the end of the cycle.
   if (tile.ticksPassed < tile.ticksPerEggCycle) {
@@ -51,11 +56,9 @@ function _onTickTileEggs(tile) {
 
   // Dealing with food to prepare for next cycle's units.
   const leftoverFoodThisCycle = tile.foodStored;
-  const foodCostPerCycle = _getFoodCostPerCycle(tile);
 
   const foodForEggs = leftoverFoodThisCycle *
-        (0.75 + (0.25 *
-                 (Math.max(Math.min((leftoverFoodThisCycle - foodCostPerCycle) / foodCostPerCycle, 1), 0))));
+        (0.75 + (0.25 * surplusFoodOverCostPerCyclePercentage));
 
   tile.numUnitsToSpawnNextCycle = getUnitsCanSustain(foodForEggs / tile.ticksPerEggCycle);
 

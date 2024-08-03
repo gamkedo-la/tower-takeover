@@ -103,7 +103,6 @@ const capital = {
   ..._.cloneDeep(CAPITAL_PREFAB),
   tag: TILE_TYPE.CAPITAL,
   isQueenAlive: true,
-  eggTimeGroups: [{ticksPassed: 2, eggs: 5}, {ticksPassed: 5, eggs: 10}],
   foodStored: 1000,
   pathUnitsQueues: [],
 };

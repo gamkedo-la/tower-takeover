@@ -14,7 +14,7 @@
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
 // Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
 // [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
-// OneOffPath]}
+// OneOffPath], mapTileSelected: [U Tile False]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
 // their cyclic paths converted to one off paths, however these one off paths
@@ -372,9 +372,9 @@ const FOOD_FARM_PREFAB = Object.assign({
   pathUnitsQueues: [],
 }, foodStorageMixin);
 
-// A Capital is a {tag: TileType, isQueenAlive: Boolean, eggTimeGroups:
-// [Array-of EggTimeGroup], foodStored: Integer, pathUnitsQueues: [Array-of
-// PathUnitsQueue]}
+// A Capital is a {tag: TileType, isQueenAlive: Boolean, foodStored: Integer,
+// numUnitsToSpawnNextCycle: Nat, ticksPassed: Nat, ticksPerEggCycle: Nat,
+// pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the building in which eggs are laid and hatched into units.
 
 // We just make the queen here.
@@ -394,6 +394,8 @@ const CAPITAL_PREFAB = Object.assign({
   numUnitsToSpawnNextCycle: 0,
   ticksPassed: 0,
   ticksPerEggCycle: 30,  // Immutable
+  projectedFoodCostPerCycle: 0,  // Keep updated every game logic tick. IWASHERE,
+  projectedSurplusFoodOverCostPerCyclePercentage: 0,  // Keep updated every game logic tick.
 }, foodStorageMixin);
 
 // An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit],
