@@ -81,7 +81,7 @@ const messageUIInfo = {
   topLeftX: 860,
   topLeftY: 448,  // If there are 7 rows, map height is 64*7=448
   w: 330,  // screenWidth - topLeftX - padding = 1200 - 860 -10 = 330
-  fontSize: 24,
+  fontSize: 23,
   lineSpacing: 2,
 }
 
