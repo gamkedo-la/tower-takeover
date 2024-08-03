@@ -345,8 +345,8 @@ const UNIT_PREFAB = {
   indexInPathToJoin: false,
 }
 
-// A FoodStorage is a {tag: TileType, foodStored: Integer,
-// pathUnitsQueues: [Array-of PathUnitsQueue]}
+// A FoodStorage is a {tag: TileType, foodStored: Integer, foodMaxCapacity:
+// Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the amount of food contained, the society of guards, the paths it is on and
 // the units waiting to be deployed on the path in order.
 const FOOD_STORAGE_PREFAB = Object.assign({
@@ -355,13 +355,14 @@ const FOOD_STORAGE_PREFAB = Object.assign({
   society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
 		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
   pathUnitsQueues: [],
+  foodMaxCapacity: 15000,
 }, foodStorageMixin);
 
 // A PathUnitsQueue is a {path: Path, unitsQueue: [Array-of Units]}
 // Represents a queue of units to be deployed on the path.
 
-// A FoodFarm is a {tag: TileType, foodStored: Integer, pathUnitsQueues:
-// [Array-of PathUnitsQueue]}
+// A FoodFarm is a {tag: TileType, foodStored: Integer, foodMaxCapacity:
+// Integer, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the society of farmers and guards, and the food stored.
 const FOOD_FARM_PREFAB = Object.assign({
   ...ATILE,
@@ -370,11 +371,12 @@ const FOOD_FARM_PREFAB = Object.assign({
 		    [ROLE.FARMER, {capacity: 20, units: []}],
 		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
   pathUnitsQueues: [],
+  foodMaxCapacity: 3000,
 }, foodStorageMixin);
 
 // A Capital is a {tag: TileType, isQueenAlive: Boolean, foodStored: Integer,
-// numUnitsToSpawnNextCycle: Nat, ticksPassed: Nat, ticksPerEggCycle: Nat,
-// pathUnitsQueues: [Array-of PathUnitsQueue]}
+// foodMaxCapacity: Integer, numUnitsToSpawnNextCycle: Nat, ticksPassed: Nat,
+// ticksPerEggCycle: Nat, pathUnitsQueues: [Array-of PathUnitsQueue]}
 // Represents the building in which eggs are laid and hatched into units.
 
 // We just make the queen here.
@@ -389,6 +391,7 @@ const CAPITAL_PREFAB = Object.assign({
                     [ROLE.ATTACKER, {capacity: 20, units: []}],
                    ]),
   pathUnitsQueues: [],
+  foodMaxCapacity: 6000,
 
   // Related to eggs
   numUnitsToSpawnNextCycle: 0,

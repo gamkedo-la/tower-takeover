@@ -274,8 +274,13 @@ function _addUnitToTile(unit, tile) {
 
     // Only store the food if the tile can hold food.
     if (unit.isCarryingFood && (typeof tile.foodStored) === 'number') {
-      tile.foodStored += 30;
-      unit.isCarryingFood = false;
+      // If the tile cannot hold any more food, then the unit should hold onto
+      // it until there is space or the unit enters another tile that has space
+      // (whichever comes first).
+      if (tile.foodStored <= tile.foodMaxCapacity - 30) {
+        tile.foodStored += 30;
+        unit.isCarryingFood = false;
+      }
     }
   }
 }

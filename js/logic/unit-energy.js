@@ -39,13 +39,22 @@ function _onTickTileEatAndDecay(tile) {
     }
   }
 
-  
+  // Food farm should restore food first.
   if (tile.tag === TILE_TYPE.FOOD_FARM) {
-    // Food farm should restore food first.
-    tile.foodStored += 150;
+    tile.foodStored = Math.min(tile.foodStored + 150, tile.foodMaxCapacity);
   }
 
-  // TODO(marvin): Feed the queen.
+  // Units that are holding food because the tile's food storage was full before
+  // should check if there is space this time and if so add to it.
+  for (const [_, {units}] of tile.society) {
+    for (const unit of units) {
+      if (unit.isCarryingFood && tile.foodStored <= tile.foodMaxCapacity - 30) {
+        tile.foodStored += 30;
+        unit.isCarryingFood = false;
+      }
+    }
+  }
+
   tile.feedAllUnitsButAttackers();
   
   if (tile.hasOwnProperty('pathUnitsQueues')) {
