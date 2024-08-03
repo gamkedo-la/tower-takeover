@@ -119,7 +119,6 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
     }
   } else if (unit.path.tag === PATH_TYPE.ONE_OFF && unit.path.destroyed) {
     const startPos = unit.path.orderedPoss[0];
-    console.log(unit.path);
     if (worldGrid[startPos.r][startPos.c].tag === TILE_TYPE.WALL) {
       unit.path.numFollowers--;
       const {r: friendlyTilePosR, c: friendlyTilePosC} = _searchNearestFriendlyTilePos(unit.pos.r, unit.pos.c);
@@ -222,9 +221,9 @@ function _moveUnitToTile(units, idx, tileToMoveFrom, tileToMoveTo) {
 
   // Remove from given units array.
   units.splice(idx, 1);
-  if (tileToMoveFrom === TILE_TYPE.FOOD_FARM) {
+  if (tileToMoveFrom.tag === TILE_TYPE.FOOD_FARM && tileToMoveFrom.foodStored >= 30) {
     unit.isCarryingFood = true;
-    tileToMoveFrom.foodStored--;
+    tileToMoveFrom.foodStored -= 30;
   }
 
   // Add to new units array.
@@ -273,8 +272,9 @@ function _addUnitToTile(unit, tile) {
       }
     }
 
-    if (tile.tag == TILE_TYPE.FOOD_STORAGE && unit.isCarryingFood) {
-      tile.foodStored++;
+    // Only store the food if the tile can hold food.
+    if (unit.isCarryingFood && (typeof tile.foodStored) === 'number') {
+      tile.foodStored += 30;
       unit.isCarryingFood = false;
     }
   }
