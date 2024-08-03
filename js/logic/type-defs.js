@@ -14,7 +14,8 @@
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
 // Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
 // [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
-// OneOffPath], mapTileSelected: [U Tile False]}
+// OneOffPath], mapTileSelected: [U Tile False], twoEndCyclicPathFirstPos: [U
+// Pos False]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
 // their cyclic paths converted to one off paths, however these one off paths

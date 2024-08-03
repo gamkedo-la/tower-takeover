@@ -57,6 +57,31 @@ function getMessageText(w) {
     } else {
       return "Click on a wall or friendly tiles (except the capital) adjacent to an empty tile to build it.";
     }
+  case CLICK_MODE.ONE_OFF_PATH: {
+    const { selectedUnits } = w;
+    if (selectedUnits.length === 0) {
+      return "Click on a tile, and then click and drag over the units you want to move."
+    } else {
+      return "Click on a tile where you want to move the selected units to.";
+    }
+  }
+  case CLICK_MODE.ONE_END_CYCLIC_PATH: {
+    const { selectedUnits } = w;
+    if (selectedUnits.length === 0) {
+      return "Click on a tile, and then click and drag over the units you want to move back and forth between where the tile they are already on and another tile of your choice."
+    } else {
+      return "Click on another tile to get the selected units to move back and forth between the that tile and the tile they are already on.";
+    }
+  }
+  case CLICK_MODE.TWO_END_CYCLIC_PATH: {
+    const { twoEndCyclicPathFirstPos } = w;
+    if (!twoEndCyclicPathFirstPos) {
+      return "Click on the first of the two buildings to create a cyclic path, and any units selected will walk back and forth between them. (You may need to select units first with another mode.)"
+    } else {
+      return "Click on the second of the two bulidings to create a cyclic path, and any units selected will walk back and forth between them."
+    }
+    return "";
+  }
   }
 
   return "";
@@ -98,7 +123,6 @@ function _getTileMessageText(tile) {
 
   return "";
 }
-
 
 // Nat Nat -> String
 // Returns the given stored and max capacity in the given format

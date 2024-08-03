@@ -21,7 +21,6 @@
 // The position the mouse is currently at in pixel coordinates.
 let mouseX, mouseY;
 let mouseDownPos, mouseUpPos;  // pos is a {x: Integer, y: Integer}, in px coords
-let twoEndCyclicPathFirstPos;  // in {r: Integer, c: Integer}, Pos definition
 let gamePaused = false;
 let gameMuted = false;
 var firstClickEver = true; // used to stop sounds from playing until permitted
@@ -118,13 +117,14 @@ function initializeInput(canvas0) {
               }
 	      break;
 	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
+              const { twoEndCyclicPathFirstPos } = world;
               if (isValidCyclicEndPoint(r, c)) {
                 if (twoEndCyclicPathFirstPos) {
 		  directSelectedUnitsToCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
 		  clearSelectedUnits();
-		  twoEndCyclicPathFirstPos = null;
+		  world.twoEndCyclicPathFirstPos = false;
 	        } else {
-		  twoEndCyclicPathFirstPos = { r: r, c: c };
+		  world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	        }
               }
 	      break;
@@ -209,12 +209,13 @@ function initializeInput(canvas0) {
               mouseX >= c * squareLength &&
               mouseX <= (c + 1) * squareLength) {
             if (isValidCyclicEndPoint(r, c)) {
+              const { twoEndCyclicPathFirstPos } = world;
               if (twoEndCyclicPathFirstPos) {
                 drawState.cyclicPaths.hasChanged = true;
 	        createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
-	        twoEndCyclicPathFirstPos = null;
+	        world.twoEndCyclicPathFirstPos = false;
 	      } else {
-	        twoEndCyclicPathFirstPos = { r: r, c: c };
+	        world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	      }
             }
           }

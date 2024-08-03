@@ -138,9 +138,9 @@ function onDraw() {
     startOfNextRoleButtonsX = unitsInTileUIInfo.topLeftX;
     startOfNextRoleButtonsY = nextTopLeftY;
     nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
-    nextTopLeftY = _drawFoodStored(tile, unitsInTileUIInfo.topLeftX, nextTopLeftY);
     let { topLeftX } = tileStatsUIInfo;
-    _drawTileStats(tile, topLeftX, nextTopLeftY);
+    // For debugging.
+    // _drawTileStats(tile, topLeftX, nextTopLeftY);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {
     const { topLeftX, topLeftY, dynamiteTopLeftX, dynamiteTopLeftY } = buildTileUIInfo;
@@ -551,16 +551,6 @@ function _drawTileStats(tile, topLeftX, topLeftY) {
   canvasContext.fillText(describeSocietyRole(tile.society,ROLE.ATTACKER,"attacker"),topLeftX,topLeftY+=lineHeight);
 
   canvasContext.fillText("-------------------------------",topLeftX,topLeftY+=lineHeight);
-}
-
-function _drawFoodStored(tile, topLeftX, topLeftY) {
-  const effectiveHeight = 50;
-  canvasContext.font = "24px Arial";
-  canvasContext.fillStyle = "White";
-  let amountString = "0kg"; // default - no food on tile
-  if (tile.foodStored != undefined) amountString = tile.foodStored+"kg";
-  canvasContext.fillText("Food Stored: " + amountString, topLeftX, topLeftY + 25);
-  return topLeftY + effectiveHeight;
 }
 
 // --------------------------------------------------------------------------------
