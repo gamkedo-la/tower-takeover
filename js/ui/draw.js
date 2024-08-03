@@ -570,8 +570,12 @@ function setMessageForCurrentFrame() {
 }
 
 // Number -> Void
-function setTemporaryMessage(seconds) {
-  console.error("Unimplemented.");
+function setTemporaryMessage(text, seconds=1.5) {
+  const { message } = drawState;
+
+  message.temporaryMessage = text;
+  message.temporaryMessageToShowInSeconds = seconds;
+  message.temporaryMessageShownInFrames = 0;
 }
 
 // Void -> Void

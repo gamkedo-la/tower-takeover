@@ -93,11 +93,8 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
   }
 
   if (unit.role === ROLE.QUEEN) {
-    // TODO(message): Display temporary message that the queen cannot be moved
-    // from the capital.
+    setTemporaryMessage("Can't move the queen");
     unit.path = false;
-    console.log("Can't move the queen");  // Can remove this once message system
-                                          // is used.
     return;
   }
 

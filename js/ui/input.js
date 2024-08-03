@@ -185,18 +185,14 @@ function initializeInput(canvas0) {
         toggleDynamite();
       }
 
-      // Check if the click happens in a tile in the map.
-      // If so, changes the clicked tile to the selected build tile if not null.
-      // In any other situation, does nothing.
-      if (world.buildTileSelected != null) {
-        for (let r = 0; r < world.grid.length; r++) {
-          for (let c = 0; c < world.grid[r].length; c++) {
-            if (mouseY >= r * squareLength &&
-                mouseY <= (r + 1) * squareLength &&
-                mouseX >= c * squareLength &&
-                mouseX <= (c + 1) * squareLength) {
-              modifyTileUsingBuildSettings(r, c);
-            }
+      // Build tile functionality.
+      for (let r = 0; r < world.grid.length; r++) {
+        for (let c = 0; c < world.grid[r].length; c++) {
+          if (mouseY >= r * squareLength &&
+              mouseY <= (r + 1) * squareLength &&
+              mouseX >= c * squareLength &&
+              mouseX <= (c + 1) * squareLength) {
+            modifyTileUsingBuildSettings(r, c);
           }
         }
       }

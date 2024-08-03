@@ -171,8 +171,7 @@ function modifyTileUsingBuildSettings(r, c) {
   } else if (world.buildTileSelected) {
     beginTileConstruction(r, c, world.buildTileSelected);
   } else {
-    // TODO(message): Show the temporary message "You need to pick a tile in
-    // the build menu in order to build."
+    setTemporaryMessage("You need to pick a tile in the build menu in order to build.");
     playSFX("building_denied");
   }
 }
@@ -184,8 +183,7 @@ function destroyBuilding(r, c) {
   if (tileToDestroy.tag === TILE_TYPE.ENEMY_CAMP ||
       tileToDestroy.tag === TILE_TYPE.CAPITAL ||
       tileToDestroy.tag === TILE_TYPE.WALKABLE_TILE) {
-    // TODO(message): Show temporary message that cannot destroy enemy camps,
-    // capitals and walkable tiles.
+    setTemporaryMessage("You cannot destroy enemy camps like this. You have to send soldiers over to them.", 2.5);
     playSFX("building_denied");
     return;
   }
@@ -318,19 +316,17 @@ function beginTileConstruction(r, c, tileType) {
 
   // Check if cannot build.
   if (replacedTile.tag === tileType) {
-    // TODO(message): Show temporary message that cannot build over the same
-    // tile.
+    setTemporaryMessage("You cannot build over the same tile.");
     playSFX("building_denied");
     return;
   } else if (replacedTile.tag === TILE_TYPE.ENEMY_CAMP ||
              replacedTile.tag === TILE_TYPE.CAPITAL ||
              replacedTile.tag === TILE_TYPE.WALKABLE_TILE) {
-    // TODO(message): Show temporary message that the given tile cannot be built over.
+    setTemporaryMessage(`You cannot build over the ${TILE_TYPE_STRING[replacedTile.tag]}.`);
     playSFX("building_denied");
     return;
   } else if (!adjacentToWalkableTile(world.grid, r, c)) {
-    // TODO(message): Show temporary message that you must build next to a
-    // walkable tile. 
+    setTemporaryMessage("You can only build adjacent to walkable terrain.");
     playSFX("building_denied");
     return;
   }
