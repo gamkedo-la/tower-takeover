@@ -42,7 +42,7 @@ function _onTickTileEatAndDecay(tile) {
   
   if (tile.tag === TILE_TYPE.FOOD_FARM) {
     // Food farm should restore food first.
-    tile.foodStored += 50;
+    tile.foodStored += 150;
   }
 
   // TODO(marvin): Feed the queen.
