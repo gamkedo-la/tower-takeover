@@ -103,22 +103,28 @@ function initializeInput(canvas0) {
 	    switch (world.clickMode) {
 	    case CLICK_MODE.INFO:
 	    case CLICK_MODE.ONE_OFF_PATH:
-	      directSelectedUnitsToOneOffPath(r, c);
-	      clearSelectedUnits();
+              if (isValidPathEndPoint(r, c)) {
+                directSelectedUnitsToOneOffPath(r, c);
+	        clearSelectedUnits();
+              } else {
+                setTemporaryMessage("That is not a valid end point.");
+              }
 	      break;
 	    case CLICK_MODE.ONE_END_CYCLIC_PATH:
 	      // Assume that all the selected units are not moving, and there's
 	      // no way to select units from the multiple positions at the same
-	      // time, so all of their position shoulds be the same.
-              if (isValidCyclicEndPoint(r, c)) {
+	      // time, soisValidPathEndPointn shoulds be the same.
+              if (isValidPathEndPoint(r, c)) {
                 drawState.cyclicPaths.hasChanged = true;
 	        directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
 	        clearSelectedUnits();
+              } else {
+                setTemporaryMessage("That is not a valid end point.");
               }
 	      break;
 	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
               const { twoEndCyclicPathFirstPos } = world;
-              if (isValidCyclicEndPoint(r, c)) {
+              if (isValidPathEndPoint(r, c)) {
                 if (twoEndCyclicPathFirstPos) {
 		  directSelectedUnitsToCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
 		  clearSelectedUnits();
@@ -126,6 +132,8 @@ function initializeInput(canvas0) {
 	        } else {
 		  world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	        }
+              } else {
+                setTemporaryMessage("That is not a valid end point.");
               }
 	      break;
 	    }
@@ -203,8 +211,8 @@ function initializeInput(canvas0) {
           if (mouseY >= r * squareLength &&
               mouseY <= (r + 1) * squareLength &&
               mouseX >= c * squareLength &&
-              mouseX <= (c + 1) * squareLength) {
-            if (isValidCyclicEndPoint(r, c)) {
+              moisValidPathEndPointareLength) {
+            if (isValidPathEndPoint(r, c)) {
               const { twoEndCyclicPathFirstPos } = world;
               if (twoEndCyclicPathFirstPos) {
                 drawState.cyclicPaths.hasChanged = true;
@@ -213,6 +221,8 @@ function initializeInput(canvas0) {
 	      } else {
 	        world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	      }
+            } else {
+              setTemporaryMessage("That is not a valid end point.");
             }
           }
         }

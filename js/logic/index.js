@@ -676,7 +676,7 @@ function _updateUnitPosInTile(tile, r, c) {
 // Nat Nat -> Boolean
 // Is the position with the given row and column in the world grid a valid
 // cyclic end point?
-function isValidCyclicEndPoint(r, c) {
+function isValidPathEndPoint(r, c) {
   const tile = world.grid[r][c];
 
   switch (tile.tag) {
