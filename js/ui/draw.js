@@ -621,29 +621,43 @@ function _drawMessageGUI() {
 // String Number Number Number Number Number -> Void
 // A wrapper around `CanvasRenderingContext2D: fillText()` that draws text that
 // otherwise wouldn't fit onto one line on a new line. However, it can go off
-// screen vertically as there is no maximum height. All number arguments are in pixels.
+// screen vertically as there is no maximum height. All number arguments are in
+// pixels. If two consecutive characters are "\n", it will create a new line, no exceptions.
 function _fillWrappedText(text, topLeftX, topLeftY, maxWidth, fontSize, lineSpacing) {
   // Implemented inspired by
   // https://stackoverflow.com/questions/2936112/text-wrap-in-a-canvas-element
 
-  const words = text.split(" ");
-
-  // The first word is exempt from the max width.
-  let currentLine = words[0];
   let currTopLeftY = topLeftY;
 
-  for (let i = 1; i < words.length; i++) {
-    const word = words[i];
-    const width = canvasContext.measureText(currentLine + " " + word).width;
+  const logicalLines = text.split("\n");
 
-    if (width < maxWidth) {
-      currentLine += " " + word;
-    } else {
-      canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
+  // llIdx is short for logical lines index.
+  for (let llIdx = 0; llIdx < logicalLines.length; llIdx++) {
+    const words = logicalLines[llIdx].split(" ");
+    if (llIdx != 0) {
+      // Add new line if not the first logical line.
       currTopLeftY += (fontSize + lineSpacing);
-      currentLine = word;
     }
+
+    let currentLine = words[0];
+
+    for (let i = 1; i < words.length; i++) {
+      const word = words[i];
+      const width = canvasContext.measureText(currentLine + " " + word).width;
+
+      if (width < maxWidth) {
+        currentLine += " " + word;
+      } else {
+        canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
+        currTopLeftY += (fontSize + lineSpacing);
+        currentLine = word;
+      }
+    }
+
+    canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
   }
 
-  canvasContext.fillText(currentLine, topLeftX, currTopLeftY, maxWidth);
+  const words = text.split(" ");
+
+
 }
