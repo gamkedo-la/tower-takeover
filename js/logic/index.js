@@ -65,21 +65,45 @@ function getMessageText(w) {
 // [U Tile False] -> String
 // Gets the message text to display given the selected map tile. Returns an
 // empty string by default.
-function _getTileMessageText(mapTileSelected) {
-  if (!mapTileSelected) {
+function _getTileMessageText(tile) {
+  if (!tile) {
     return "";
   }
   
-  switch (mapTileSelected.tag) {
-  case TILE_TYPE.CAPITAL:
-    const { foodStored, numUnitsToSpawnNextCycle, ticksPassed, ticksPerEggCycle, projectedFoodCostPerCycle, projectedSurplusFoodOverCostPerCyclePercentage } = mapTileSelected;
+  switch (tile.tag) {
+  case TILE_TYPE.CAPITAL: {
+    const { foodStored, foodMaxCapacity, numUnitsToSpawnNextCycle, ticksPassed, ticksPerEggCycle, projectedFoodCostPerCycle, projectedSurplusFoodOverCostPerCyclePercentage } = tile;
     const percentageToCycleEnd = Math.ceil(ticksPassed / ticksPerEggCycle * 100);
     const surplusFoodPercentage = Math.ceil(projectedSurplusFoodOverCostPerCyclePercentage * 100);
-    const foodStoredInt = Math.ceil(foodStored);
-    return `CAPITAL. Spawns new units every cycle proportional to this tile's surplus food.\n\nCycle: ${percentageToCycleEnd}%\nNumber of new units arriving: ${numUnitsToSpawnNextCycle}\nFood stored: ${foodStoredInt}kg\nSurplus food percentage: ${surplusFoodPercentage}% `;
+    const foodStoredStr = _getFoodStoredMessageText(foodStored, foodMaxCapacity);
+    return `CAPITAL. Spawns new units every cycle proportional to this tile's surplus food.\n\nCycle: ${percentageToCycleEnd}%\nNumber of new units arriving: ${numUnitsToSpawnNextCycle}\nFood: ${foodStoredStr}\nSurplus food percentage: ${surplusFoodPercentage}% `;
+  }
+  case TILE_TYPE.FOOD_STORAGE: {
+    const { foodStored, foodMaxCapacity } = tile;
+    const foodStoredStr = _getFoodStoredMessageText(foodStored, foodMaxCapacity);
+    return "FOOD STORAGE. Holds a lot of food and soldiers.\n\n" +
+      `Food: ${foodStoredStr}`;
+  }
+  case TILE_TYPE.FOOD_FARM: {
+    const { foodStored, foodMaxCapacity } = tile;
+    const foodStoredStr = _getFoodStoredMessageText(foodStored, foodMaxCapacity);
+    // TODO(food production): Add food production rate.
+    return "FARM. Produces food at a rate proportional to number of farmers.\n\n" +
+      `Food: ${foodStoredStr}`;
+  }
   }
 
   return "";
+}
+
+
+// Nat Nat -> String
+// Returns the given stored and max capacity in the given format
+// `${foodStored}kg/${foodMaxCapacity}kg (${theirPercentage}%)`.
+// E.g "1000kg/1500kg (67%)"
+function _getFoodStoredMessageText(foodStored, foodMaxCapacity) {
+  const theirPercentage = Math.ceil(foodStored / foodMaxCapacity * 100);
+  return `${foodStored}kg/${foodMaxCapacity}kg (${theirPercentage}%)`;
 }
 
 // ================================================================================
