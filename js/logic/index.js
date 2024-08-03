@@ -91,6 +91,9 @@ function _getTileMessageText(tile) {
     return "FARM. Produces food at a rate proportional to number of farmers.\n\n" +
       `Food: ${foodStoredStr}`;
   }
+  case TILE_TYPE.ENEMY_CAMP: {
+    return "ENEMY CAMP. Enemies come from here. Destroy all enemy camps to win the game.";
+  }
   }
 
   return "";
