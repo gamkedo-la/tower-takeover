@@ -50,6 +50,7 @@ function _prepareGameStart(callback) {
     {tileType: TILE_TYPE.FOOD_FARM, filename: "farm.png"},
     {tileType: TILE_TYPE.WALKABLE_TILE, filename: "walkableTerrainGrassland.png"},
     {tileType: TILE_TYPE.CAPITAL, filename: "capitalCity.png"},
+    {tileType: TILE_TYPE.ENEMY_CAMP, filename: "enemy_camp.png"},
   ];
 
   const modeImages = [

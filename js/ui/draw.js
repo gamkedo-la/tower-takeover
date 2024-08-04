@@ -358,9 +358,7 @@ function _drawTileTypeAtPos(tileType, c, r, alpha=1) {
   } else if (tileType === TILE_TYPE.CAPITAL) {
     canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.CAPITAL), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.ENEMY_CAMP) {
-    // Red square.
-    canvasContext.fillStyle = "red";
-    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.ENEMY_CAMP), c * squareLength, r * squareLength);
   }
 
   canvasContext.globalAlpha = 1;
