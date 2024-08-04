@@ -60,7 +60,7 @@ function getMessageText(w) {
   case CLICK_MODE.ONE_OFF_PATH: {
     const { selectedUnits } = w;
     if (selectedUnits.length === 0) {
-      return "Click on a tile, and then click and drag over the units you want to move."
+      return "Click on a tile, and then click and drag over the units you want to move. The selected role on the tile will be given assigned to the units, if no role is selected, the units will be randomly assigned one."
     } else {
       return "Click on a tile where you want to move the selected units to.";
     }
@@ -818,10 +818,13 @@ function _getSelectableRoles(tile) {
   return result
 }
 
+// Tile -> Role
+// Prioritise the player's choice, but if the player's choice is illegal, use
+// the priority system.
 function _getSelectedLegalSocietyRoleToJoin(tile) {
   if (tile.society.has(selectedNextRole)) {
     return selectedNextRole;
+  } else {
+    return _getLegalSocietyRoleToJoin(tile);
   }
-
-  console.error("Tile did not have a role it could give.");
 }
