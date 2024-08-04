@@ -155,12 +155,12 @@ const initialWorldOld = {
 const initialTileTypesRowLength = 13;  // Number of columns.
 const initialTileTypes = [
   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 5, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  3, 2, 2, 2, 4, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  4, 2, 2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1,
-  1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 5, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
+  1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1,
+  3, 2, 2, 2, 4, 1, 1, 1, 2, 2, 2, 2, 1,
+  1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
+  4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1,
+  1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
 ];
 
 const mapCols = initialTileTypesRowLength;
@@ -176,10 +176,11 @@ if (initialTileTypes.length % initialTileTypesRowLength != 0) {
 // Note that row and col position counts from 0. Row counts from top to bottom,
 // and col counts from left to right.
 const initialPosToSociety = [
-  5, 0, [ROLE.SOLDIER, 10, ROLE.FARMER, 5, ],
+  5, 0, [ROLE.SOLDIER, 10, ROLE.FARMER, 5],
   // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
-  // 1, 2, [ROLE.SOLDIER, 10, ROLE.ATTACKER, 2],
-   6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 2],
+  1, 2, [ROLE.SOLDIER, 10],
+  3, 4, [ROLE.SOLDIER, 15, ROLE.FARMER, 15],
+  6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 2],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
 ];
