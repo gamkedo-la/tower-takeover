@@ -45,7 +45,7 @@ const buildTileUIInfo = {
 
 // In pixel position.
 const unitsInTileUIInfo = {
-  topLeftX: 900,
+  topLeftX: 860,
   topLeftY: 0,
 }
 
