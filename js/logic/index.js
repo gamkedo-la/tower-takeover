@@ -684,6 +684,7 @@ function isValidPathEndPoint(r, c) {
   case TILE_TYPE.FOOD_FARM:
   case TILE_TYPE.CAPITAL:
   case TILE_TYPE.ENEMY_CAMP:
+  case TILE_TYPE.UNDER_CONSTRUCTION:
     return true;
   }
 
