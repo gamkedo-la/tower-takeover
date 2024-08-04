@@ -92,6 +92,7 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
+  _onTickEnemyWave(world);
 
   _onTickPurgeStarvedUnits(world);
   _onTickPurgeUnfollowedOneOffPaths(world);
@@ -355,6 +356,10 @@ function destroyBuilding(r, c) {
       destroyCyclicPath(cyclicPath);
     }
   }
+
+  // Go through all enemy paths. If one end is the tileToDestroy, then modify
+  // the path to target another friendly building.
+  // IWASHERE.
   
   // Finally, we can actually replace the tile.
   world.grid[r][c] = _tileTypeToDefaultTile(TILE_TYPE.WALL);
@@ -794,6 +799,20 @@ function _updateUnitPosInTile(tile, r, c) {
 // --------------------------------------------------------------------------------
 // UTILS
 // --------------------------------------------------------------------------------
+
+// Grid -> [List-of Pos]
+function getAllFriendlyBuildingsPoss(grid) {
+  const allFriendlyBuildingsPoss = [];
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const tile = grid[r][c];
+      if (isFriendlyTileType(tile.tag)) {
+        allFriendlyBuildingsPoss.push({r: r, c: c});
+      }
+    }
+  }
+  return allFriendlyBuildingsPoss;
+}
 
 // Nat Nat -> Boolean
 // Is the position with the given row and column in the world grid a valid

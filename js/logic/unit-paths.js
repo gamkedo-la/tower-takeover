@@ -57,6 +57,16 @@ function _onTickPurgeUnfollowedOneOffPaths(world) {
       world.oneOffPaths.splice(i, 1);
     }
   }
+
+  // Purging enemy paths.
+  const { enemyWave } = world;
+  const { paths:enemyPaths } = enemyWave;
+  for (let i = enemyPaths.length - 1; i >= 0; i--) {
+    const enemyPath = enemyPaths[i];
+    if (enemyPath.initiated && enemyPath.numFollowers <= 0) {
+      enemyWave.paths.splice(i, 1);
+    }
+  }
 }
 
 // ================================================================================

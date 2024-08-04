@@ -169,7 +169,7 @@ const initialTileTypes = [
   3, 2, 2, 2, 4, 1, 1, 1, 2, 2, 2, 2, 1,
   1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
   4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1,
-  1, 1, 3, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
+  1, 1, 6, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
 ];
 
 const mapCols = initialTileTypesRowLength;
@@ -191,7 +191,7 @@ const initialPosToSociety = [
   // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
   1, 2, [ROLE.SOLDIER, 10],
   3, 4, [ROLE.SOLDIER, 15, ROLE.FARMER, 15],
-  6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 2],
+  6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 15],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
 ];
@@ -377,8 +377,8 @@ function _getEnemyCampPoss(grid) {
 const initialWorldGrid = _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety);
 
 const initialWorldEnemyWave = {
-  ticksUntilEnemyWave: 60,
-  ticksUntilAnnounceEnemyWave: 45,
+  ticksUntilEnemyWave: 7,
+  ticksUntilAnnounceEnemyWave: 3,
   ticksPassed: 0,
   madeAnnouncement: false,
   paths: [],
