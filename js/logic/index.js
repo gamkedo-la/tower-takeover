@@ -119,6 +119,11 @@ function _getTileMessageText(tile) {
   case TILE_TYPE.ENEMY_CAMP: {
     return "ENEMY CAMP. Enemies come from here. Destroy all enemy camps to win the game.";
   }
+  case TILE_TYPE.UNDER_CONSTRUCTION: {
+    const { constructionProgress, constructionGoal } = tile;
+    const constructionProgressInt = Math.min(Math.ceil(constructionProgress), constructionGoal);
+    return `UNDER CONSTRUCTION.\n\nProgress: ${constructionProgressInt}/${constructionGoal}`;
+  }
   }
 
   return "";
@@ -336,10 +341,6 @@ function beginTileConstruction(r, c, tileType) {
   const underConstructionTile = _.cloneDeep(UNDER_CONSTRUCTION_PREFAB);
   underConstructionTile.resultingTileType = tileType;
   underConstructionTile.constructionProgress = 0;
-  // Double the goal if changing from legal non-wall to something else.
-  if (replacedTile.tag !== TILE_TYPE.WALL) {
-    underConstructionTile.constructionGoal *= 2;
-  }
   world.grid[r][c] = underConstructionTile;
   playSFX("building_built");
 }

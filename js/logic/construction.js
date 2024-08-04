@@ -46,6 +46,10 @@ function _onTickTileConstruction(tile, worldGrid, r, c) {
     if (tile.constructionProgress >= tile.constructionGoal) {
       const newTile = _tileTypeToDefaultTile(resultingTileType);
       worldGrid[r][c] = newTile;
+
+      // TODO(construction): If selecting the under construction tile that is
+      // now built, select nothing.
+      
       playSFX("building_built");
 
       // Move units in construction society over to resultingTile's society.
