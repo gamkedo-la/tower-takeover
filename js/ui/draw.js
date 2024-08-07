@@ -96,6 +96,8 @@ function onDraw() {
   // Draw background.
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
+  
+  let shouldHighlight,selectedTileX,selectedTileY;
 
   // Drawing the tiles on map.
   for (let r = 0; r < world.grid.length; r++) {
@@ -104,19 +106,36 @@ function onDraw() {
 
       // Draw a tile, given row and column position.
       if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
-	// White square first, with units on top. Fit as many units as possible.
-	//canvasContext.fillStyle = "white";
-	//canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
-    _drawTileTypeAtPos(tile.tag, c, r);
+        // White square first, with units on top. Fit as many units as possible.
+        //canvasContext.fillStyle = "white";
+        //canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+        _drawTileTypeAtPos(tile.tag, c, r);
 
-	_drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
-      } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
-        const { resultingTileType } = tile;
-        _drawTileTypeAtPos(resultingTileType, c, r, 0.25);
-      } else {
-	_drawTileTypeAtPos(tile.tag, c, r);
+        _drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
+            } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
+            const { resultingTileType } = tile;
+            _drawTileTypeAtPos(resultingTileType, c, r, 0.25);
+            } else {
+        _drawTileTypeAtPos(tile.tag, c, r);
       }
+
+        // if this is the currently selected tile, remember where it is on screen
+        if (world.mapTileSelected == tile) {
+            shouldHighlight = true;
+            selectedTileX = c*squareLength-32;
+            selectedTileY = r*squareLength-32;
+        }
+
     }
+
+    // highlight the currently selected tile
+    // we draw it here and not in the loop above so other tiles don't overlap it
+    if (shouldHighlight) {
+        canvasContext.globalAlpha = Math.sin(performance.now()/300)/4+0.4; // pulse from 0.15-0.65
+        canvasContext.drawImage(nameToImage.get("selectedTileHighlight"),selectedTileX,selectedTileY);
+        canvasContext.globalAlpha = 1;
+    }
+
   }
 
   // Drawing the selected path
