@@ -131,7 +131,7 @@ function onDraw() {
     // highlight the currently selected tile
     // we draw it here and not in the loop above so other tiles don't overlap it
     if (shouldHighlight) {
-        canvasContext.globalAlpha = Math.sin(performance.now()/300)/4+0.4; // pulse from 0.15-0.65
+        canvasContext.globalAlpha = Math.sin(performance.now()/300)/4+0.4; // pulse
         canvasContext.drawImage(nameToImage.get("selectedTileHighlight"),selectedTileX,selectedTileY);
         canvasContext.globalAlpha = 1;
     }
@@ -368,8 +368,9 @@ function _drawTileTypeAtPos(tileType, c, r, alpha=1) {
     canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.WALKABLE_TILE), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.WALL) {
     // Black square.
-    canvasContext.fillStyle = "black";
-    canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    //canvasContext.fillStyle = "black";
+    //canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
+    canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.WALL), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.FOOD_STORAGE) {
     canvasContext.drawImage(tileTypeToImage.get(TILE_TYPE.FOOD_STORAGE), c * squareLength, r * squareLength);
   } else if (tileType === TILE_TYPE.FOOD_FARM) {

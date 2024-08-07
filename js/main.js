@@ -51,6 +51,7 @@ function _prepareGameStart(callback) {
     {tileType: TILE_TYPE.WALKABLE_TILE, filename: "walkableTerrainGrassland.png"},
     {tileType: TILE_TYPE.CAPITAL, filename: "capitalCity.png"},
     {tileType: TILE_TYPE.ENEMY_CAMP, filename: "enemy_camp.png"},
+    {tileType: TILE_TYPE.WALL, filename: "mountains.png"},    
   ];
 
   const modeImages = [
