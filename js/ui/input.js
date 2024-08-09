@@ -75,14 +75,19 @@ function initializeInput(canvas0) {
       }
     }
 
-    const { buttonWidth, buttonHeight, horizontalGapBetweenButtons, verticalGapBetweenButtons } = nextRoleUIInfo;
-    for (let i = 0; i < selectableRoleKeys.length; i++) {
-      const targetX = startOfNextRoleButtonsX + (buttonWidth + horizontalGapBetweenButtons) * (i % 2);
-      const targetY = startOfNextRoleButtonsY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
-      if (mouseX > targetX && mouseX < targetX + buttonWidth
-        && mouseY > targetY && mouseY < targetY + buttonHeight) {
-        selectedNextRole = ROLE[selectableRoleKeys[i]];
-        break;
+    if (shouldShowRoleButtons) {
+      const { buttonWidth, buttonHeight, horizontalGapBetweenButtons, verticalGapBetweenButtons } = nextRoleUIInfo;
+      for (let i = 0; i < selectableRoleKeys.length; i++) {
+        const targetX = startOfNextRoleButtonsX + (buttonWidth + horizontalGapBetweenButtons) * (i % 2);
+        const targetY = startOfNextRoleButtonsY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
+        if (mouseX > targetX && mouseX < targetX + buttonWidth
+          && mouseY > targetY && mouseY < targetY + buttonHeight) {
+          selectedNextRole = ROLE[selectableRoleKeys[i]];
+          directSelectedUnitsToOneOffPath(savedDestinationR, savedDestinationC);
+	        clearSelectedUnits();
+          shouldShowRoleButtons = false;
+          break;
+        }
       }
     }
   
@@ -104,8 +109,11 @@ function initializeInput(canvas0) {
 	    case CLICK_MODE.INFO:
 	    case CLICK_MODE.ONE_OFF_PATH:
               if (isValidPathEndPoint(r, c)) {
-                directSelectedUnitsToOneOffPath(r, c);
-	        clearSelectedUnits();
+                savedDestinationR = r;
+                savedDestinationC = c;
+                const destinationTile = world.grid[r][c];
+                selectableRoleKeys = _getSelectableRoles(destinationTile);
+                shouldShowRoleButtons = true;
               } else {
                 setTemporaryMessage("That is not a valid end point.");
               }
@@ -258,7 +266,9 @@ function initializeInput(canvas0) {
     // of map.
 
     if (mouseX > mapUIInfo.w || mouseY > mapUIInfo.h) {
-      clearSelectedUnits();
+      if (!shouldShowRoleButtons) {
+        clearSelectedUnits();
+      }
     }
   }
 

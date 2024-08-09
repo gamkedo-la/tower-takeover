@@ -156,7 +156,9 @@ function onDraw() {
     let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
     startOfNextRoleButtonsX = unitsInTileUIInfo.topLeftX;
     startOfNextRoleButtonsY = nextTopLeftY;
-    nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
+    if (shouldShowRoleButtons) {
+      nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
+    }
     let { topLeftX } = tileStatsUIInfo;
     // For debugging.
     // _drawTileStats(tile, topLeftX, nextTopLeftY);

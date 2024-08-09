@@ -149,7 +149,6 @@ function selectBuildTile(tileType) {
 
 function selectMapTile(r, c) {
   world.mapTileSelected = world.grid[r][c];
-  selectableRoleKeys = _getSelectableRoles(world.mapTileSelected);
 }
 
 function selectUnit(unit) {
@@ -797,7 +796,10 @@ function _getLegalSocietyRoleToJoin(tile) {
   console.error("Tile did not have a role it could give.");
 }
 
-let selectedNextRole = ROLE.FARMER;
+let shouldShowRoleButtons = false;
+let savedDestinationR = undefined;
+let savedDestinationC = undefined;
+let selectedNextRole = undefined;
 
 function _getSelectableRoles(tile) {
   let result = [];
@@ -814,8 +816,6 @@ function _getSelectableRoles(tile) {
       result.push(roleKey);
     }
   }
-
-  console.log('is this correct?', result);
 
   return result
 }
