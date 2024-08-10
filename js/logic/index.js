@@ -135,7 +135,8 @@ function _getTileMessageText(tile) {
 // E.g "1000kg/1500kg (67%)"
 function _getFoodStoredMessageText(foodStored, foodMaxCapacity) {
   const theirPercentage = Math.ceil(foodStored / foodMaxCapacity * 100);
-  return `${foodStored}kg/${foodMaxCapacity}kg (${theirPercentage}%)`;
+  const foodStoredInt = Math.floor(foodStored);
+  return `${foodStoredInt}kg/${foodMaxCapacity}kg (${theirPercentage}%)`;
 }
 
 // ================================================================================
