@@ -111,7 +111,8 @@ function onDraw() {
         //canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
         _drawTileTypeAtPos(tile.tag, c, r);
 
-        _drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
+        // We only draw the first four units so that they can fit in a 64x64 tile.s
+        _drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units).slice(0, 4), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
             } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
             const { resultingTileType } = tile;
             _drawTileTypeAtPos(resultingTileType, c, r, 0.25);
