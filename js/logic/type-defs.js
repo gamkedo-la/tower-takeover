@@ -14,7 +14,7 @@
 // buildTileOptions: [Array-of TileType], buildTileSelected: [One-of TileType
 // Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
 // [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
-// OneOffPath], mapTileSelected: [U Tile False], twoEndCyclicPathFirstPos: [U
+// OneOffPath], mapTileSelected: Tile, twoEndCyclicPathFirstPos: [U
 // Pos False]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
@@ -172,6 +172,19 @@ function isFriendlyTileType(tileType) {
 // A SocietyClass is a (capacity: Nat, units: [List-of Unit])
 // Represents the units in a particular class of society, as well as the maximum
 // capacity that can be contained in that society.
+
+// Society -> Boolean
+// Does the given society have any movable units? All units are movable except
+// enemies and the queen.
+function societyHasMovableUnits(society) {
+  for (const [role, {units}] of society) {
+    if (role !== ROLE.QUEEN && role !== ROLE.ATTACKER && units.length > 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 // A Tile is one of:
 // - Wall

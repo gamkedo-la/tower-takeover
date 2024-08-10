@@ -115,7 +115,7 @@ function initializeInput(canvas0) {
                 selectableRoleKeys = _getSelectableRoles(destinationTile);
                 shouldShowRoleButtons = true;
               } else {
-                setTemporaryMessage("That is not a valid end point.");
+                setTemporaryMessage("That is not a valid destination. You must click on a building.");
               }
 	      break;
 	    case CLICK_MODE.ONE_END_CYCLIC_PATH:
@@ -127,7 +127,7 @@ function initializeInput(canvas0) {
 	        directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
 	        clearSelectedUnits();
               } else {
-                setTemporaryMessage("That is not a valid end point.");
+                setTemporaryMessage("That is not a valid destination. You must click on a building.");
               }
 	      break;
 	    case CLICK_MODE.TWO_END_CYCLIC_PATH:
@@ -141,7 +141,7 @@ function initializeInput(canvas0) {
 		  world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	        }
               } else {
-                setTemporaryMessage("That is not a valid end point.");
+                setTemporaryMessage("That is not a valid destination. You must click on a building.");
               }
 	      break;
 	    }
@@ -230,7 +230,7 @@ function initializeInput(canvas0) {
 	        world.twoEndCyclicPathFirstPos = { r: r, c: c };
 	      }
             } else {
-              setTemporaryMessage("That is not a valid end point.");
+              setTemporaryMessage("That is not a valid destination. You must click on a building.");
             }
           }
         }

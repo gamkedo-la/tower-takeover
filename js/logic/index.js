@@ -55,34 +55,47 @@ function getMessageText(w) {
     if (dynamiteSelected) {
       return "Click on a building to instantly destroy it. Units within will leave to closest friendly tile.";
     } else {
-      return "Click on a wall or friendly tiles (except the capital) adjacent to an empty tile to build it.";
+      return "Click on a wall or building adjacent to an empty tile to build it. No resource necessary, but units must be on-site to construct it. Select one of these:";
     }
   case CLICK_MODE.ONE_OFF_PATH: {
-    const { selectedUnits } = w;
+    const { selectedUnits, mapTileSelected } = w;
+    if (!societyHasMovableUnits(mapTileSelected.society)) {
+      return "This mode allows you to move units to a different tile, but this tile has no units that you can move. There is nothing you can do here.";
+    }
     if (selectedUnits.length === 0) {
-      return "Click on a tile, and then click and drag over the units you want to move. The selected role on the tile will be given assigned to the units, if no role is selected, the units will be randomly assigned one."
+      return "Click and drag over the units you want to move."
     } else {
       if (shouldShowRoleButtons) {
-        return "Click on which role these units should take on in the destination tile."
+        return "Click on which role these units should take on in the tile they are moving to."
       } else {
         return "Click on a tile where you want to move the selected units to.";
       }
     }
   }
   case CLICK_MODE.ONE_END_CYCLIC_PATH: {
-    const { selectedUnits } = w;
+    const { selectedUnits, mapTileSelected } = w;
+    if (!societyHasMovableUnits(mapTileSelected.society)) {
+      return "This mode allows you to get units to move back and forth between the tile they are on and another tile of your choice. However, this tile has no units that you can move. There is nothing you can do here.";
+    }
     if (selectedUnits.length === 0) {
-      return "Click on a tile, and then click and drag over the units you want to move back and forth between where the tile they are already on and another tile of your choice."
+      return "Click and drag over the units you want to move back and forth between the tile they are already on and another tile of your choice."
     } else {
-      return "Click on another tile to get the selected units to move back and forth between the that tile and the tile they are already on.";
+      return "Click on another tile to get the selected units to move back and forth between that tile and the tile they are already on.";
     }
   }
   case CLICK_MODE.TWO_END_CYCLIC_PATH: {
-    const { twoEndCyclicPathFirstPos } = w;
-    if (!twoEndCyclicPathFirstPos) {
-      return "Click on the first of the two buildings to create a cyclic path, and any units selected will walk back and forth between them. (You may need to select units first with another mode.)"
+    const { twoEndCyclicPathFirstPos, selectedUnits, mapTileSelected } = w;
+    if (!societyHasMovableUnits(mapTileSelected.society)) {
+      return "This mode allows you to get units to move back and forth between two distinct tiles of your choice. However, this tile has no units that you can move. There is nothing you can do here.";
+    }
+    if (selectedUnits.length === 0) {
+      return "Click and drag over the units you want to move back and forth between two distinct tiles.";
     } else {
-      return "Click on the second of the two bulidings to create a cyclic path, and any units selected will walk back and forth between them."
+      if (!twoEndCyclicPathFirstPos) {
+        return "Click on the first of the two buildings to create a cyclic path, and any units selected will walk back and forth between them."
+      } else {
+        return "Click on the second of the two bulidings to create a cyclic path, and any units selected will walk back and forth between them."
+      }
     }
     return "";
   }
@@ -117,7 +130,7 @@ function _getTileMessageText(tile) {
     const { foodStored, foodMaxCapacity } = tile;
     const foodStoredStr = _getFoodStoredMessageText(foodStored, foodMaxCapacity);
     // TODO(food production): Add food production rate.
-    return "FARM. Produces food at a rate proportional to number of farmers.\n\n" +
+    return "FARM. Produces food at a rate proportional to number of farmers. Units leaving this tile will always carry food out with them.\n\n" +
       `Food: ${foodStoredStr}`;
   }
   case TILE_TYPE.ENEMY_CAMP: {
@@ -126,7 +139,7 @@ function _getTileMessageText(tile) {
   case TILE_TYPE.UNDER_CONSTRUCTION: {
     const { constructionProgress, constructionGoal } = tile;
     const constructionProgressInt = Math.min(Math.ceil(constructionProgress), constructionGoal);
-    return `UNDER CONSTRUCTION.\n\nProgress: ${constructionProgressInt}/${constructionGoal}`;
+    return `UNDER CONSTRUCTION. Units must be present on-site to construct the building.\n\nProgress: ${constructionProgressInt}/${constructionGoal}`;
   }
   }
 
