@@ -379,6 +379,7 @@ function initializeInput(canvas0) {
       console.log("Game Paused")
     } else if (evt.keyCode == KEY_M) {
       // Toggle mute
+      // TODO(mute)
       gameMuted = !gameMuted;
       console.log(gameMuted ? "Game audio muted" : "Game audio unmuted")
     }
