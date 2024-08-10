@@ -344,8 +344,9 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
 }
 
 function _drawPath(path) {
-  canvasContext.strokeStyle = "black";
-  canvasContext.lineWidth = 1;
+  canvasContext.strokeStyle = "rgb(188, 231, 245)";  // Light blue, slightly
+                                                     // brighter than select color
+  canvasContext.lineWidth = 5;
 
   let prevPos = path.orderedPoss[0];
   
