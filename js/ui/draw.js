@@ -154,13 +154,13 @@ function onDraw() {
     const tile = world.mapTileSelected;
 
     let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
-    startOfNextRoleButtonsX = unitsInTileUIInfo.topLeftX;
-    startOfNextRoleButtonsY = nextTopLeftY;
+    
     if (shouldShowRoleButtons) {
-      nextTopLeftY = _drawNextRoleButtons(unitsInTileUIInfo.topLeftX, nextTopLeftY);
+      _drawNextRoleButtons(nextRoleButtonsUIInfo.topLeftX, nextRoleButtonsUIInfo.topLeftY);
     }
-    let { topLeftX } = tileStatsUIInfo;
+    
     // For debugging.
+    // let { topLeftX } = tileStatsUIInfo;
     // _drawTileStats(tile, topLeftX, nextTopLeftY);
 
   } else if (world.clickMode == CLICK_MODE.BUILD) {

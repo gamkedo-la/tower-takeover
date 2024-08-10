@@ -78,8 +78,8 @@ function initializeInput(canvas0) {
     if (shouldShowRoleButtons) {
       const { buttonWidth, buttonHeight, horizontalGapBetweenButtons, verticalGapBetweenButtons } = nextRoleUIInfo;
       for (let i = 0; i < selectableRoleKeys.length; i++) {
-        const targetX = startOfNextRoleButtonsX + (buttonWidth + horizontalGapBetweenButtons) * (i % 2);
-        const targetY = startOfNextRoleButtonsY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
+        const targetX = nextRoleButtonsUIInfo.topLeftX + (buttonWidth + horizontalGapBetweenButtons) * (i % 2);
+        const targetY = nextRoleButtonsUIInfo.topLeftY + (buttonHeight + verticalGapBetweenButtons) * Math.floor(i / 2);
         if (mouseX > targetX && mouseX < targetX + buttonWidth
           && mouseY > targetY && mouseY < targetY + buttonHeight) {
           selectedNextRole = ROLE[selectableRoleKeys[i]];

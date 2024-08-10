@@ -62,7 +62,11 @@ function getMessageText(w) {
     if (selectedUnits.length === 0) {
       return "Click on a tile, and then click and drag over the units you want to move. The selected role on the tile will be given assigned to the units, if no role is selected, the units will be randomly assigned one."
     } else {
-      return "Click on a tile where you want to move the selected units to.";
+      if (shouldShowRoleButtons) {
+        return "Click on which role these units should take on in the destination tile."
+      } else {
+        return "Click on a tile where you want to move the selected units to.";
+      }
     }
   }
   case CLICK_MODE.ONE_END_CYCLIC_PATH: {

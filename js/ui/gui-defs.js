@@ -43,6 +43,12 @@ const buildTileUIInfo = {
   dynamiteTopLeftY: 600,
 }
 
+const nextRoleButtonsUIInfo = {
+  // In pixels.
+  topLeftX: 860,
+  topLeftY: 600,
+}
+
 // In pixel position.
 const unitsInTileUIInfo = {
   topLeftX: 860,
