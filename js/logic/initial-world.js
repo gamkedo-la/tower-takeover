@@ -139,6 +139,7 @@ const initialWorldOld = {
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
   selectedPath: false,
+  mapTileSelected: capital,
 }
 
 // ================================================================================
@@ -165,6 +166,8 @@ const initialTileTypes = [
 
 const mapCols = initialTileTypesRowLength;
 const mapRows = initialTileTypes / mapCols;
+
+const initialTiles = _initialTileTypesToTiles(initialTileTypes);
 
 if (initialTileTypes.length % initialTileTypesRowLength != 0) {
   console.error("The length of initialTileTypes must be a multiple of initialTileTypesRowLength.");
@@ -307,8 +310,22 @@ function _tileTypeToPrefab(tileType) {
   }
 }
 
+// [2D-array-of Tile] -> Tile
+// Gets the capital in the given grid. Assumes there is only one.
+function _getCapital(grid) {
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const tile = grid[r][c];
+
+      if (tile.tag === TILE_TYPE.CAPITAL) {
+        return tile;
+      }
+    }
+  }
+}
+
 const initialWorld = {
-  grid: _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety),
+  grid: _addSocietyToInitialTiles(initialTiles, initialPosToSociety),
   cyclicPaths: [],
   oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
@@ -317,4 +334,5 @@ const initialWorld = {
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
   selectedPath: false,
+  mapTileSelected: _getCapital(initialTiles),
 }
