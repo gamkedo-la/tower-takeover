@@ -166,7 +166,14 @@ function selectBuildTile(tileType) {
 }
 
 function selectMapTile(r, c) {
-  world.mapTileSelected = world.grid[r][c];
+  // The input.js is currently playing the ok SFX no matter what you do.
+  const tile = world.grid[r][c];
+  if (tile.tag !== TILE_TYPE.WALL) {
+    world.mapTileSelected = tile;
+    // playSFX("button_click_ok");
+  } else {
+    // playSFX("button_click_fail");
+  }
 }
 
 function selectUnit(unit) {
