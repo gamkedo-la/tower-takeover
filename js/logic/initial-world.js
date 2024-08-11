@@ -124,6 +124,8 @@ const buildTileOptions0 = [
 const walkableTile1 = _.cloneDeep(WALKABLE_TILE_PREFAB);
 const walkableTile2 = _.cloneDeep(WALKABLE_TILE_PREFAB);
 
+
+// If using this strategy, comment out _addInitialpathsToWorld in logic/index.js.
 const initialWorldOld = {
   grid: [
     [wall, wall, capital, wall],
@@ -145,10 +147,6 @@ const initialWorldOld = {
 // ================================================================================
 // WORLD BUILDER
 // ================================================================================
-
-// TODO(marvin):
-// However, currently has no way of adding paths. I can do that after reworking
-// the path system so that the one off and cyclic paths aren't weird.
 
 // Uses TILE_TYPE. For convenience, we write down integers instead of
 // TILE_TYPE.X.
@@ -191,6 +189,16 @@ const initialPosToSociety = [
 if (initialPosToSociety.length % 3 != 0) {
   console.error("initialPosToSociety should have a length that is a multiple of 3");
 }
+
+// Must follow the form [Nat, Nat, Nat, Nat, [Role, Nat, ...], ...]
+// which corresponds to [origin row position, origin col position, destination
+// row position, destination col position, [role in origin tile, number of units
+// of that role in origin tile, ...] ...]
+// Note that row and col position counts from 0. Row counts from top to bottom,
+// and col counts from left to right.
+const initialPaths = [
+  3, 4, 1, 2, [ROLE.SOLDIER, 10],
+]
 
 // [2D-Arrayof Tile], [Flat-Listof Nat Nat [Flat-Listof Role Nat]] -> Void
 // The given society takes a special form (assume that is true), one that is more convenient for
@@ -324,6 +332,8 @@ function _getCapital(grid) {
   }
 }
 
+// For paths to work, need to call the feature functions after assigning to
+// initialWorld for the first time.
 const initialWorld = {
   grid: _addSocietyToInitialTiles(initialTiles, initialPosToSociety),
   cyclicPaths: [],
@@ -336,3 +346,5 @@ const initialWorld = {
   selectedPath: false,
   mapTileSelected: _getCapital(initialTiles),
 }
+
+

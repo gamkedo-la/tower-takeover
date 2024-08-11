@@ -20,6 +20,65 @@
 // ================================================================================
 // The world object to be used by the main game loop.
 var world = initialWorld;
+_updateUnitPos(world);  // Required for add initial paths to world.
+
+// NOTE(marvin):
+// This should be in initial-world.js, but because initial-world relies on
+// feature functions that require world to be defined, but initial-world itself
+// don't have world defined, cannot put in initial-world. What should be done
+// instead is to be able to create cyclic paths without modifying world as a
+// side effect, so that we can pass in initial world into that
+// procedure. Though, I am not willing to spend time working on that right now.
+_addInitialPathsToWorld(world, initialPaths);
+
+// World [Nat, Nat, Nat, Nat, [Role, Nat, ...], ...] -> Void
+function _addInitialPathsToWorld(world, paths) {
+  const currItem = [];
+  let currItemLength = 0;
+
+  for (const el of paths) {
+    currItem.push(el);
+    currItemLength++;
+
+    if (currItemLength >= 5) {
+      // currItem should have the form
+      // [Nat, Nat, Nat, Nat, [Role, Nat, ...], ...]
+      // Origin and destination row and cols positions.
+      const or = currItem[0];
+      const oc = currItem[1];
+      const dr = currItem[2];
+      const dc = currItem[3];
+      const rolesCounts = currItem[4];
+
+      const currRolesCount = [];
+      let currRolesCountLength = 0;
+
+      const originTileSociety = world.grid[or][oc].society;
+
+      for (const rc of rolesCounts) {
+        currRolesCount.push(rc);
+        currRolesCountLength++;
+
+        if (currRolesCountLength >= 2) {
+          // currRolesCount shuld have the form [Role, Nat].
+          const role = currRolesCount[0];
+          const count = currRolesCount[1];
+
+          // Array's slice returns a shallow copy of the origin array.
+          const unitsToMove = originTileSociety.get(role).units.slice(0, count);
+
+          directUnitsToCyclicPath(unitsToMove, or, oc, dr, dc);
+          
+          currRolesCount.length = 0;
+          currRolesCountLength = 0;
+        }
+      }
+
+      currItem.length = 0;
+      currItemLength = 0;
+    }
+  }
+}
 
 // ================================================================================
 // MAIN ONTICK FUNCTION
@@ -570,10 +629,7 @@ function createCyclicPath(r1, c1, r2, c2) {
   directSelectedUnitsToCyclicPath(r1, c1, r2, c2);
 }
 
-// Nat Nat Nat Nat -> Void
-// Sends the selected units off to a cyclic path to the given origin and
-// destination positions. Updates the world data definition only.
-function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
+function directUnitsToCyclicPath(units, r1, c1, r2, c2) {
   const newCyclicPath = _createCyclicPath(r1, c1, r2, c2);
 
   // Adds a unique cyclic path to world.cyclicPaths. If it already exist, does
@@ -583,7 +639,7 @@ function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
   // If the unit is not already in the path, the unit needs to first
   // travel to a point in the newCyclicPath's orderedPoss that is the
   // minimum distance. Let the movement code deal with this.
-  for (const unit of world.selectedUnits) {
+  for (const unit of units) {
     const {orderedPoss} = newCyclicPath;
 
     unit.direction = DIRECTION.TO;
@@ -610,6 +666,13 @@ function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
       newCyclicPath.numFollowers++;
     }
   }
+}
+
+// Nat Nat Nat Nat -> Void
+// Sends the selected units off to a cyclic path to the given origin and
+// destination positions. Updates the world data definition only.
+function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
+  directUnitsToCyclicPath(world.selectedUnits, r1, c1, r2, c2);
 }
 
 // [Listof Pos] Pos -> Nat

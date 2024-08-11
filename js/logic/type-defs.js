@@ -411,7 +411,7 @@ const CAPITAL_PREFAB = Object.assign({
   numUnitsToSpawnNextCycle: 0,
   ticksPassed: 0,
   ticksPerEggCycle: 30,  // Immutable
-  projectedFoodCostPerCycle: 0,  // Keep updated every game logic tick. IWASHERE,
+  projectedFoodCostPerCycle: 0,  // Keep updated every game logic tick.
   projectedSurplusFoodOverCostPerCyclePercentage: 0,  // Keep updated every game logic tick.
 }, foodStorageMixin);
 
