@@ -186,11 +186,17 @@ function _getTileMessageText(tile) {
       `Food: ${foodStoredStr}`;
   }
   case TILE_TYPE.FOOD_FARM: {
-    const { foodStored, foodMaxCapacity } = tile;
+    const { foodStored, foodMaxCapacity, society } = tile;
     const foodStoredStr = _getFoodStoredMessageText(foodStored, foodMaxCapacity);
-    // TODO(food production): Add food production rate.
+    const farmerSocietyClass = society.get(ROLE.FARMER);
+    const { capacity, units } = farmerSocietyClass;
+    const numFarmers = units.length;
+    const foodProductionPercentage = Math.ceil(numFarmers / capacity * 100);
+    // Assume each farmer contributes 15.
+    const foodProductionStr = `${15 * numFarmers}kg/tick (${foodProductionPercentage}%)`;
     return "FARM. Produces food at a rate proportional to number of farmers. Units leaving this tile will always carry food out with them.\n\n" +
-      `Food: ${foodStoredStr}`;
+      `Food: ${foodStoredStr}\n` +
+      `Production: ${foodProductionStr}`;
   }
   case TILE_TYPE.ENEMY_CAMP: {
     return "ENEMY CAMP. Enemies come from here. Destroy all enemy camps to win the game.";

@@ -39,9 +39,16 @@ function _onTickTileEatAndDecay(tile) {
     }
   }
 
-  // Food farm should restore food first.
-  if (tile.tag === TILE_TYPE.FOOD_FARM) {
-    tile.foodStored = Math.min(tile.foodStored + 150, tile.foodMaxCapacity);
+  // Farmers add food to food stored.
+  for (const [role, {units}] of tile.society) {
+    if (role === ROLE.FARMER) {
+      const numFarmers = units.length;
+
+      // Each farmer adds 15. If this number changes, also change message for
+      // food farm tile.
+      tile.foodStored = Math.min(tile.foodStored + (15 * numFarmers),
+                                 tile.foodMaxCapacity);
+    }
   }
 
   // Units that are holding food because the tile's food storage was full before
