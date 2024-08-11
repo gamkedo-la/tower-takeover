@@ -92,8 +92,15 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
     return;
   }
 
+  // Not ideal. For one-off path, players have to select which role the queen or
+  // attacker should take before saying that the player isn't allowed to move
+  // them.
   if (unit.role === ROLE.QUEEN) {
-    setTemporaryMessage("Can't move the queen");
+    setTemporaryMessage("Can't move the queen.");
+    unit.path = false;
+    return;
+  } else if (unit.role === ROLE.ATTACKER) {
+    setTemporaryMessage("Can't move enemy units.");
     unit.path = false;
     return;
   }
