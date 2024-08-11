@@ -17,6 +17,9 @@ const soundFolderRoot = "sound/";
 // used throughout the codebase, and the right-hand of the pair is the path to
 // the file (including the file itself) relative to `soundFolderRoot`. That is,
 // you do not have to write `soundFolderRoot` in the file path.
+// Some of these are hard-coded to have lower volume in playSFX. Ideally, can
+// specify volume in this array, convert the array to a map. The reason for
+// hard-coding is just to get the game out of the door ASAP.
 const nameToFilePath = [
   ["building_built", "building_built.mp3"],
   ["building_denied", "building_denied.mp3"],
@@ -50,10 +53,10 @@ function playSFX(name,vol=1,loop=false) {
   if (!gameMuted) {
     const audio = nameToAudio.get(name);
     if (audio) {
-        audio.currentTime = 0;
-        audio.volume = vol;
-        audio.loop = loop;
-        audio.play();
+      audio.currentTime = 0;
+      audio.volume = (name == "building_built" || name == "building_denied") ? 0.4 : vol;
+      audio.loop = loop;
+      audio.play();
     } else {
       console.error("unknown sound: "+name);
     }
