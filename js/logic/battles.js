@@ -33,7 +33,9 @@ function _onTickTileBattles(tile) {
     const guards = tile.society.get(ROLE.SOLDIER).units;
     const enemies = tile.society.get(ROLE.ATTACKER).units;
     while (guards.length > 0 && enemies.length > 0) {
+      // Each guard is worth two enemies.
       guards.pop();
+      enemies.pop();
       enemies.pop();
     }
 
@@ -53,12 +55,38 @@ function _onTickTileBattles(tile) {
 
     yourUnits.length -= numBattles;
     enemyUnits.length -= numBattles;
+  } else {
+    // The default behaviour is to let guards fight first, and then let everyone
+    // else fight.
+
+    // If the tile cannot host enemies, then battles cannot possibly take place.
+    if (!tile.society.has(ROLE.ATTACKER)) {
+      return;
+    }
+
+    if (tile.society.has(ROLE.SOLDIER)) {
+      const enemies = tile.society.get(ROLE.ATTACKER).units;
+      const guards = tile.society.get(ROLE.SOLDIER).units;
+      while (guards.length > 0 && enemies.length > 0) {
+        // Each guard is worth two enemies.
+        guards.pop();
+        enemies.pop();
+        enemies.pop();
+      }
+    }
+
+    _societyBattle(tile.society);
+    if (tile.pathUnitsQueues) {
+      _pathUnitsQueuesBattle(tile.society.get(ROLE.ATTACKER).units, tile.pathUnitsQueues);
+    }
   }
 }
 
 // [Mapping Role SocietyClass] -> Void
 // All units of the society with enemy role fights every other role, except the queen. Mutates the
 // given society as necessary.
+// Assume that soldiers have already fought, and so there would be no
+// soldiers.
 function _societyBattle(society) {
   const enemyUnits = society.get(ROLE.ATTACKER).units;
 
