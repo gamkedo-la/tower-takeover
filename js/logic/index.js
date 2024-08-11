@@ -517,6 +517,7 @@ function toggleDynamite() {
 // Sends the selected units off a to a one-off path to the given map position
 // row r and column c. Updates the world data definition only.
 function directSelectedUnitsToOneOffPath(r, c) {
+  playSFX("path_drawn");
   _directUnitsToOneOffPath(world.selectedUnits, r, c);
 }
 
@@ -672,6 +673,7 @@ function directUnitsToCyclicPath(units, r1, c1, r2, c2) {
 // Sends the selected units off to a cyclic path to the given origin and
 // destination positions. Updates the world data definition only.
 function directSelectedUnitsToCyclicPath(r1, c1, r2, c2) {
+  playSFX("path_drawn");
   directUnitsToCyclicPath(world.selectedUnits, r1, c1, r2, c2);
 }
 
