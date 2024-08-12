@@ -71,6 +71,7 @@ function initializeInput(canvas0) {
 	changeClickMode(clickMode);
 
         // Anything underneath shouldn't be registered.
+        mouseDownPos = null;
         return;
       }
     }
@@ -220,7 +221,7 @@ function initializeInput(canvas0) {
           if (mouseY >= r * squareLength &&
               mouseY <= (r + 1) * squareLength &&
               mouseX >= c * squareLength &&
-              moisValidPathEndPointareLength) {
+              mouseX <= (c + 1) * squareLength) {
             if (isValidPathEndPoint(r, c)) {
               const { twoEndCyclicPathFirstPos } = world;
               if (twoEndCyclicPathFirstPos) {
