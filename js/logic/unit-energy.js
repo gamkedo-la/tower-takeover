@@ -41,7 +41,7 @@ function _onTickTileEatAndDecay(tile) {
   // Decay without feeding.
   for (const [role, {units}] of tile.society) {
     for (const unit of units) {
-      unit.energy -= 20;
+      unit.energy--;
     }
   }
 
