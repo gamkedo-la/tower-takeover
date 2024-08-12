@@ -326,40 +326,28 @@ function initializeInput(canvas0) {
       return;
     }
 
-    // Here, we evaluate the drag
-    if (mouseDownPos.x <= (world.grid[0].length + 1) * squareLength &&
-	mouseDownPos.y <= (world.grid.length + 1) * squareLength) {
-      // First mousedown inside map
-      console.log("DRAG INSIDE MAP");
-    } else if ((world.clickMode === CLICK_MODE.INFO ||
-		world.clickMode === CLICK_MODE.ONE_OFF_PATH ||
-		world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH ||
-		world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH) &&
-	       mouseDownPos.x >= unitsInTileUIInfo.topLeftX &&
-	       mouseDownPos.y >= unitsInTileUIInfo.topLeftY) {
-      // First mousedown inside tile units display
-      console.log("DRAG INSIDE TILE UNITS DISPLAY");
-      const cornerPos1 = mouseDownPos;
-      const cornerPos2 = mouseUpPos;
-      const [ startX, endX ] = cornerPos1.x <= cornerPos2.x
-	? [ cornerPos1.x, cornerPos2.x ]
-	: [ cornerPos2.x, cornerPos1.x ];
-      const [ startY, endY ] = cornerPos1.y <= cornerPos2.y
-	    ? [ cornerPos1.y, cornerPos2.y ]
-	    : [ cornerPos2.y, cornerPos1.y ];
+    // First mousedown inside tile units display
+    const cornerPos1 = mouseDownPos;
+    const cornerPos2 = mouseUpPos;
+    const [ startX, endX ] = cornerPos1.x <= cornerPos2.x
+	  ? [ cornerPos1.x, cornerPos2.x ]
+	  : [ cornerPos2.x, cornerPos1.x ];
+    const [ startY, endY ] = cornerPos1.y <= cornerPos2.y
+	  ? [ cornerPos1.y, cornerPos2.y ]
+	  : [ cornerPos2.y, cornerPos1.y ];
+    
+    // Check selection in society table.
+    const { societyUnits } = drawState;
 
-      // Check selection in society table.
-      const { societyUnits } = drawState;
+    for (const societyUnit of societyUnits) {
+      const { topLeftX, topLeftY, bottomRightX, bottomRightY, unit } = societyUnit;
 
-      for (const societyUnit of societyUnits) {
-        const { topLeftX, topLeftY, bottomRightX, bottomRightY, unit } = societyUnit;
-
-        if ((startX <= topLeftX && topLeftX <= endX &&
-             startY <= topLeftY && topLeftY <= endY) ||
-            (startX <= bottomRightX && bottomRightX <= endX &&
-             startY <= bottomRightY && bottomRightY <= endY)) {
-          selectUnit(unit);
-        }
+      // There is a collision if there is any overlap between the unit's
+      // bounding box and the selection box. Mathematically, that is just if
+      // there is overlap between the X ranges AND Y ranges of both boxes.
+      if (hasOverlap(startX, endX, topLeftX, bottomRightX) &&
+          hasOverlap(startY, endY, topLeftY, bottomRightY)) {
+        selectUnit(unit);
       }
     }
     mouseDownPos = null;
@@ -393,4 +381,12 @@ function initializeInput(canvas0) {
       console.log(gameMuted ? "Game audio muted" : "Game audio unmuted")
     }
   }
+}
+
+
+// Num Num Num Num -> Boolean
+// A helper function for boox collision.
+function hasOverlap(xa1, xb1, xa2, xb2) {
+  return (xa1 <= xa2 && xa2 <= xb1) || (xa1 <= xb2 && xb2 <= xb1) ||
+    (xa2 <= xa1 && xa1 <= xb2) || (xa2 <= xb1 && xb1 <= xb2);
 }
