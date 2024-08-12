@@ -321,6 +321,13 @@ function initializeInput(canvas0) {
     mouseY = evt.clientY - rect.top - root.scrollTop;
     mouseUpPos = {x: mouseX, y: mouseY};
 
+    // If mouseDownPos isn't registered, don't do anything.
+    // This happens when the user clicks holds down left click outside of the
+    // canvas but releases it inside the canvas.
+    if (!mouseDownPos) {
+      return;
+    }
+
     // If not drag, don't treat as drag.
     if (mouseDownPos.x === mouseUpPos.x && mouseDownPos.y === mouseUpPos.y) {
       return;
