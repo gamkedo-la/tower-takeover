@@ -5,7 +5,8 @@
 // eat before completely dying, and units that have full energy will lose energy
 // first before eating again.
 
-// _onTickUnitsEatAndDecay : World -> Void   
+// _onTickUnitsEatAndDecay : World -> Void
+// _onTickPurgeStarvedUnits : World -> Void
 
 
 // ================================================================================
@@ -22,20 +23,25 @@ function _onTickUnitsEatAndDecay(world) {
   }
 }
 
+function _onTickPurgeStarvedUnits(world) {
+  for (let r = 0; r < world.grid.length; r++) {
+    for (let c = 0; c < world.grid[r].length; c++) {
+      const tile = world.grid[r][c];
+
+      _onTickTilePurgeStarvedUnits(tile);
+    }
+  }
+}
 
 // ================================================================================
 // AUXILLARY FUNCTIONALITY
 // ================================================================================
 
 function _onTickTileEatAndDecay(tile) {
-  // TODO(marvin): Go through all units with negative energy/marked for clean up
-  // and remove them from the world.
-
-
   // Decay without feeding.
   for (const [role, {units}] of tile.society) {
     for (const unit of units) {
-      unit.energy--;
+      unit.energy -= 20;
     }
   }
 
@@ -110,3 +116,31 @@ function getUnitsCanSustain(food) {
 }
 
 
+function _onTickTilePurgeStarvedUnits(tile) {
+  // Society.
+  for (const [role, {units}] of tile.society) {
+    // Enemies cannot starve
+    if (role === ROLE.ATTACKER) {
+      continue;
+    }
+
+    for (let i = units.length - 1; i >= 0; i--) {
+      const unit = units[i];
+      if (unit.energy <= 0) {
+        units.splice(i, 1);
+      }
+    }
+  }
+
+  // Path units queues, if it exists.
+  if (tile.pathUnitsQueues) {
+    for (const {unitsQueue} of tile.pathUnitsQueues) {
+      for (let i = unitsQueue.length - 1; i >= 0; i--) {
+        const unit = unitsQueue[i];
+        if (unit.energy <= 0) {
+          units.splice(i, 1);
+        }
+      }
+    }
+  }
+}

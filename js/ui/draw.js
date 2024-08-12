@@ -445,7 +445,7 @@ function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidth
 // Returns the height of the table.
 function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, bgColor = false, resetSocietyUnits = false) {
   if (units.length === 0) {
-    return topLeftY;
+    return 0;
   }
   
   const maximumX = topLeftX + tableWidthPx;

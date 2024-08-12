@@ -92,7 +92,8 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
-  
+
+  _onTickPurgeStarvedUnits(world);
   _onTickPurgeUnfollowedOneOffPaths(world);
   _onTickDestroyTiles(world);
 }
