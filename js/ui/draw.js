@@ -263,12 +263,6 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
   // We actually store draw computations, so we can just read from
   // those. However, if cyclicPath changes in meaning, then we will need to
   // redraw.
-
-  // TODO: hasChanged needs to be flicked to true whenever world.cyclicPaths
-  // changes. A few ways to go about that:
-  // - The input responsible for drawing a new cyclicPath needs to also change
-  // the drawState.
-
   const {
     hasChanged: shouldUpdateDrawStateCyclicPaths,
     pathBoxUIInfos

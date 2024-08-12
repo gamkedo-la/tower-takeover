@@ -135,7 +135,7 @@ const nextRoleUIInfo = {
 
 let drawState = {
   cyclicPaths: {
-    hasChanged: false,  // Toggled by input.js
+    hasChanged: true,  // Toggled by input.js
     pathBoxUIInfos: [],  // Reset and filled in by draw.js
   },
   message: {
