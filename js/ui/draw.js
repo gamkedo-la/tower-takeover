@@ -282,22 +282,27 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
     let pathBoxTopLeftX = currX;
     let pathBoxTopLeftY = currY;
 
-    // Draw a light blue background if selected.
-    if (world.selectedPath &&
-        cyclicPathEquals(cyclicPath, world.selectedPath)) {
-      canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
-      canvasContext.fillRect(currX, currY, pathBoxW, pathBoxH);
-
-    }
-
     currX += paddingX;
     currY += paddingY;
 
     // If go beyond the screen height, go to second column.
     if (currY >= screenHeight) {
-      currY = topLeftY + paddingY;
+      currY = topLeftY;
       resetX = midTopLeftX;
-      currX = resetX + paddingX;
+      currX = resetX;
+      
+      pathBoxTopLeftX = currX;
+      pathBoxTopLeftY = currY;
+
+      currX += paddingX;
+      currY += paddingY;
+    }
+    
+    // Draw a light blue background if selected.
+    if (world.selectedPath &&
+        cyclicPathEquals(cyclicPath, world.selectedPath)) {
+      canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
+      canvasContext.fillRect(pathBoxTopLeftX, pathBoxTopLeftY, pathBoxW, pathBoxH);
     }
 
     // Draw the paths as tiny 16x16 tiles.
@@ -314,12 +319,14 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
     
     // Draw the delete button
     const redXImage = nameToImage.get("redX");
-    const dTLX = topLeftX + (w / 2) - paddingX - redXImage.width;
+    const dTLX = pathBoxTopLeftX + (w / 2) - paddingX - redXImage.width;
     const dTLY = pathBoxTopLeftY + paddingY;
 
     canvasContext.drawImage(redXImage, dTLX, dTLY);
 
     if (shouldUpdateDrawStateCyclicPaths) {
+      // Admittedly, I was undisciplined in storing values, so I ended up
+      // subtracting padding from currX. Less than ideal.
       pathBoxUIInfos.push({
         topLeftX: pathBoxTopLeftX,
         topLeftY: pathBoxTopLeftY,
