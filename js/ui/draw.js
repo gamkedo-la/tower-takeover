@@ -200,15 +200,29 @@ function onDraw() {
   // Draw the modes.
   // When we draw an image, we add its width to this value, so that we know
   // where to place the next image.
+  
+  // draw mode gui background box
+  let modeDesc = ["INFO","BUILD","MOVE","CYCLE","PATROL"];
+  canvasContext.fillStyle = "rgba(0,0,0,0.25)";
+  canvasContext.fillRect(0,0,296,48);
+  canvasContext.strokeStyle = "rgba(0,0,0,0.5)";
+  canvasContext.strokeRect(1,1,294,46);
+  canvasContext.font = "14px Arial";
+  canvasContext.fillStyle = "rgba(180,180,180,1)";
+  canvasContext.fillText("Command Mode:",8,22);
+  canvasContext.fillText(modeDesc[world.clickMode],8,36);
+
+  // draw the mode buttons
   let clickModeXSoFar = modeUIInfo.topLeftX;
   for (const clickMode of modeUIInfo.clickModes) {
     const clickModeImage = clickModeToImage.get(clickMode);
-
     // If clickMode is what's selected at the moment, give it a different
     // background.
     if (world.clickMode === clickMode) {
-      canvasContext.fillStyle = "white";
+      canvasContext.fillStyle = "rgba(255,255,255,0.25)";
       canvasContext.fillRect(clickModeXSoFar, modeUIInfo.topLeftY, clickModeImage.width, clickModeImage.height);
+      canvasContext.strokeStyle = "rgba(0,255,0,1)";
+      canvasContext.strokeRect(clickModeXSoFar, modeUIInfo.topLeftY, clickModeImage.width, clickModeImage.height);
     }
 
     canvasContext.drawImage(clickModeImage, clickModeXSoFar, modeUIInfo.topLeftY);
