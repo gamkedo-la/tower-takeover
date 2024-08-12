@@ -221,6 +221,27 @@ function _getFoodStoredMessageText(foodStored, foodMaxCapacity) {
   return `${foodStoredInt}kg/${foodMaxCapacity}kg (${theirPercentage}%)`;
 }
 
+// Unit -> String
+function getUnitMessage(unit) {
+  const { energy, affiliation } = unit;
+
+  const affiliationStr = _getAffiliationUnitMessage(affiliation);
+
+  return `This is ${affiliationStr} unit.\n\n` +
+    `Energy: ${energy}%`
+}
+
+// Affiliation -> String
+// Helper for getUnitMessage.
+function _getAffiliationUnitMessage(affiliation) {
+  switch (affiliation) {
+  case AFFILIATION.YOURS:
+    return "your";
+  case AFFILIATION.ENEMY:
+    return "an enemy";
+  }
+}
+
 // ================================================================================
 // FEATURE FUNCTIONS
 // ================================================================================
@@ -239,6 +260,10 @@ function selectMapTile(r, c) {
   } else {
     // playSFX("button_click_fail");
   }
+}
+
+function setHoveredUnit(unit) {
+  world.hoveredUnit = unit;
 }
 
 function selectUnit(unit) {

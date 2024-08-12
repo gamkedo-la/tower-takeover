@@ -92,6 +92,13 @@ function convertPxPosToLogicalPosInTileUnitsDisplay(pxPos) {
 // Assumes that initializeDraw has been called.
 function onDraw() {
 
+  // Hovered unit.
+  if (world.hoveredUnit) {
+    drawState.message.messageForCurrentFrame = getUnitMessage(world.hoveredUnit);
+  } else {
+    drawState.message.messageForCurrentFrame = false;
+  }
+
   // Draw background.
   canvasContext.fillStyle = "rgb(58, 37, 37)";
   canvasContext.fillRect(0, 0, 1200, 680);
@@ -594,16 +601,17 @@ function _drawTileStats(tile, topLeftX, topLeftY) {
 // MESSAGE SYSTEM
 // --------------------------------------------------------------------------------
 // These are functions related to the message system. The data definitions are
-// stored in gui-defs.js. The exposed functions are `setMessageForCurrentFrame()`
+// stored in gui-defs.js. The exposed functions are `setMessageForCurrentFrame(text)`
 // (useful for hover) and `setTemporaryMessage(seconds)` to display a temporary
 // message for the given number of seconds. If a temporary message is currently
 // displayed and you set a new temporary message, the new temporary message will
 // replace the old one. The `_drawMessageGUI()` is called internally by draw.js
 // every frame.
 
-// Void -> Void
-function setMessageForCurrentFrame() {
-  console.error("Unimplemented.");
+// String -> Void
+function setMessageForCurrentFrame(text) {
+  const { message } = drawState;
+  message.messageForCurrentFrame = text;
 }
 
 // Number -> Void
@@ -625,9 +633,7 @@ function _drawMessageGUI() {
   
   const { message } = drawState;
   
-  if (message.messageForCurrentFrame) {
-    textToShowThisFrame = message.messageForCurrentFrame;
-  } else if (message.temporaryMessage) {
+  if (message.temporaryMessage) {
     textToShowThisFrame = message.temporaryMessage;
     message.temporaryMessageShownInFrames += 1;
 
@@ -638,6 +644,8 @@ function _drawMessageGUI() {
     if (temporaryMessageShownInSeconds > temporaryMessageToShowInSeconds) {
       message.temporaryMessage = false;
     }
+  } else if (message.messageForCurrentFrame) {
+    textToShowThisFrame = message.messageForCurrentFrame;
   } else {
     // We decide what text to show based on game state.
     textToShowThisFrame = getMessageText(world);

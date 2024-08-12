@@ -15,7 +15,7 @@
 // Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
 // [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
 // OneOffPath], mapTileSelected: Tile, twoEndCyclicPathFirstPos: [U
-// Pos False]}
+// Pos False], hoveredUnit: [U False Unit]}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
 // their cyclic paths converted to one off paths, however these one off paths
@@ -383,7 +383,7 @@ const DIRECTION = Object.freeze({
 // A Unit is a {energy: Integer, affiliation: Affiliation,
 // indexInPath: [U Natural false], path: [U Path false], direction: Direction, isCarryingFood: Boolean,
 // hasMovedInTick: Boolean, isSelected: Boolean, pos: Pos, cyclicPathToJoin: [U
-// CyclicPath false], indexInPathToJoin: [U Natural false] }
+// CyclicPath false], indexInPathToJoin: [U Natural false], role: Role }
 // Represents a unit that is moving to a particular direction or not moving, and
 // may or may not be carrying food. pathId and indexInPath are both -1 if the
 // unit is not associated with any paths. The pos must be initialized along with

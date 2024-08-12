@@ -140,6 +140,7 @@ const initialWorldOld = {
   dynamiteSelected: false,
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
+  hoveredUnit: false,
   selectedPath: false,
   mapTileSelected: capital,
 }
@@ -343,6 +344,7 @@ const initialWorld = {
   dynamiteSelected: false,
   clickMode: CLICK_MODE.INFO,
   selectedUnits: [],
+  hoveredUnit: false,
   selectedPath: false,
   mapTileSelected: _getCapital(initialTiles),
 }

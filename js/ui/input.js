@@ -295,6 +295,21 @@ function initializeInput(canvas0) {
         break;
       }
     }
+
+    // By default, unit not hovered.
+    setHoveredUnit(false);
+
+    // If hover over a unit in society table, update message box.
+    if (drawState.societyUnits) {
+      for (const societyUnit of drawState.societyUnits) {
+        const { topLeftX, topLeftY, bottomRightX, bottomRightY, unit } = societyUnit;
+
+        if (topLeftX <= mouseX && mouseX <= bottomRightX &&
+            topLeftY <= mouseY && mouseY <= bottomRightY) {
+          setHoveredUnit(unit);
+        }
+      }
+    }
   }
 
   function _onMouseDragEnd(evt) {
