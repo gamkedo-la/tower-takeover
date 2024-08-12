@@ -112,7 +112,9 @@ const nextRoleUIInfo = {
 // input.js should only change data that has to do with control flow (e.g. what
 // data needs to be recomputed). There is probably a better way of organizing this.
 
-// A DrawState is a (cyclicPaths: CyclicPathsDrawState, message: MessageState)
+// A DrawState is a (cyclicPaths: CyclicPathsDrawState, message: MessageState,
+// societyUnits: [U False [List-of SocietyUnit]])
+// societyUnits is false when it should be recalculated.
 
 // A CyclicPathsDrawState is a (hasChanged: Bool, pathBoxUIInfos: [Array-of PathBoxUIInfo])
 
@@ -128,6 +130,9 @@ const nextRoleUIInfo = {
 // temporaryMessageShownInFrames: Number, temporaryMessageToShowInSeconds:
 // Number, messageForCurrentFrame: [String False]).
 
+// A SocietyUnit is a (topLeftX: Nat, topLeftY: Nat, bottomRightX: Nat,
+// bottomRightY: Nat, unit: Unit).
+
 let drawState = {
   cyclicPaths: {
     hasChanged: false,  // Toggled by input.js
@@ -141,5 +146,6 @@ let drawState = {
     temporaryMessageToShowInSeconds: 0,
 
     messageForCurrentFrame: false,
-  }
+  },
+  societyUnits: false,
 };

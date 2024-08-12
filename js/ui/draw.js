@@ -28,9 +28,6 @@
 let canvas, canvasContext;
 
 
-let tileUnitsInDisplay = [];  // 2D array, rebuilt every frame
-
-
 let selectableRoleKeys = ['FARMER', 'SOLDIER'];
 let startOfNextRoleButtonsX = Infinity;
 let startOfNextRoleButtonsY = Infinity;
@@ -41,8 +38,9 @@ const roleToBgColor = new Map([
   [ROLE.SOLDIER, 'rgb(51, 153, 255)'],
   [ROLE.WALKER, 'rgb(51, 153, 255)'],
   [ROLE.QUEEN, 'rgb(255, 255, 153)'],
-  [ROLE.ATTACKER, 'rgb(0, 0, 0)'],  // Enemies will be red, so the background
-				    // shouldn't be
+  [ROLE.ATTACKER, 'rgb(200, 20, 20)'],  // Enemies colour must be distinct from
+  // red.
+  [ROLE.BUILDER, 'grey'],
 ]);
 
 const tileTypeToColor = new Map([
@@ -52,7 +50,8 @@ const tileTypeToColor = new Map([
   [TILE_TYPE.FOOD_STORAGE, 'blue'],
   [TILE_TYPE.FOOD_FARM, 'orange'],
   [TILE_TYPE.CAPITAL, 'rgb(213, 182, 10)'],  // dark yellow
-  [TILE_TYPE.ENEMY_CAMP, 'red'], 
+  [TILE_TYPE.ENEMY_CAMP, 'red'],
+  [TILE_TYPE.UNDER_CONSTRUCTION, 'grey'],
 ]);
 
 // ================================================================================
@@ -111,7 +110,7 @@ function onDraw() {
         //canvasContext.fillRect(c * squareLength, r * squareLength, squareLength, squareLength);
         _drawTileTypeAtPos(tile.tag, c, r);
 
-        // We only draw the first four units so that they can fit in a 64x64 tile.s
+        // We only draw the first four units so that they can fit in a 64x64 tile.
         _drawUnitsTable(tile.society.get(ROLE.WALKER).units.concat(tile.society.get(ROLE.ATTACKER).units).slice(0, 4), 30, 24, 2, 2, c * squareLength, r * squareLength, squareLength);
             } else if (tile.tag === TILE_TYPE.UNDER_CONSTRUCTION) {
             const { resultingTileType } = tile;
@@ -154,7 +153,7 @@ function onDraw() {
     // Pixel positions
     const tile = world.mapTileSelected;
 
-    let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX, tileUnitsInDisplay);
+    let nextTopLeftY = _drawSocietyTable(tile.society, 42, 32, 4, 4, unitsInTileUIInfo.topLeftX, unitsInTileUIInfo.topLeftY, 1200 - unitsInTileUIInfo.topLeftX);
     
     if (shouldShowRoleButtons) {
       _drawNextRoleButtons(nextRoleButtonsUIInfo.topLeftX, nextRoleButtonsUIInfo.topLeftY);
@@ -397,17 +396,34 @@ function _drawRectangleInSubtile(canvasContext, tileTopLeftC, tileTopLeftR, subt
   );
 }
 
-function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, tileUnitsInDisplay) {
-  tileUnitsInDisplay.length = 0;
-  let currTopLeftY = 0;
-
-  for (const [role, {units}] of society) {
-    if (units.length <= 0) {
-      continue;
-    }
-    
+function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx) {
+  let resetSocietyUnits = false;
+  if (drawState.societyUnits === false) {
+    drawState.societyUnits = [];
+    resetSocietyUnits = true;
+  }
+  
+  let currTopLeftY = topLeftY;
+  for (const [role, {capacity, units}] of society) {
     const bgColor = roleToBgColor.get(role);
-    currTopLeftY += _drawUnitsTable(units, l, w, dl, dw, topLeftX, currTopLeftY, tableWidthPx, bgColor, tileUnitsInDisplay);
+    
+    // Background colour of header row.
+    if (bgColor) {
+      canvasContext.fillStyle = bgColor;
+      canvasContext.fillRect(topLeftX, currTopLeftY, tableWidthPx, w);
+    }
+
+    // Draw header row text.
+    canvasContext.font = `${l / 2}px Arial`;
+    canvasContext.fillStyle = "black";
+    canvasContext.fillText(getSocietyRoleHeaderText(role, units.length, capacity), topLeftX + 2, currTopLeftY + l / 2);
+
+    // For the header
+    currTopLeftY += l + dl;
+
+    // Draw the units rows
+    currTopLeftY += _drawUnitsTable(units, l, w, dl, dw, topLeftX, currTopLeftY, tableWidthPx, bgColor, resetSocietyUnits);
+
   }
 
   return currTopLeftY;
@@ -419,7 +435,7 @@ function _drawSocietyTable(society, l, w, dl, dw, topLeftX, topLeftY, tableWidth
 // grid having the top left (X, Y) px coordinates as topLeftX and topLeftY
 // respectively, and a total width of tableWidthPx.
 // Returns the height of the table.
-function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, bgColor = false, refGrid = false) {
+function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, bgColor = false, resetSocietyUnits = false) {
   if (units.length === 0) {
     return topLeftY;
   }
@@ -429,10 +445,6 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
   // Row and column position in px of the unit to be drawn.
   let rr = 0;
   let cc = 0;
-
-  if (refGrid) {
-    refGrid.push([]);
-  }
 
   if (bgColor) {
     // Colours the entire row
@@ -446,10 +458,6 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
       cc = 0;
       rr += l + dl;
 
-      if (refGrid) {
-	refGrid.push([]);
-      }
-
       if (bgColor) {
 	// Colours the entire row
 	canvasContext.fillStyle = bgColor;
@@ -458,12 +466,8 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
 
     }
 
-    _drawUnit(unit, topLeftX + cc, topLeftY + rr, l, w);
+    _drawUnit(unit, topLeftX + cc, topLeftY + rr, l, w, drawState.societyUnits, resetSocietyUnits);
 
-    if (refGrid) {
-      refGrid[refGrid.length - 1].push(unit);
-    }
-    
     cc += w + dw;
   }
 
@@ -471,7 +475,8 @@ function _drawUnitsTable(units, l, w, dl, dw, topLeftX, topLeftY, tableWidthPx, 
 }
 
 // Ideally, l should be divisible by 6, and l divisible by 8.
-function _drawUnit(unit, topLeftX, topLeftY, l, w) {
+// societyUnits is for drawState.
+function _drawUnit(unit, topLeftX, topLeftY, l, w, societyUnits = false, resetSocietyUnits = false) {
   const mainColorComponent = 255;
   const otherColorComponents = 200 - 200 * (unit.energy / 100);
 
@@ -496,6 +501,16 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w) {
       topLeftY + l / 2 + 3,
       w / 2,
       l / 3 - 2);
+  }
+
+  if (societyUnits && resetSocietyUnits) {
+    societyUnits.push({
+      topLeftX: topLeftX,
+      topLeftY: topLeftY,
+      bottomRightX: topLeftX + l,
+      bottomRightY: topLeftY + w,
+      unit: unit
+    });
   }
 }
 

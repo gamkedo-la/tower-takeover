@@ -172,8 +172,6 @@ function _gameStart() {
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
-    onDraw();
-
     // The game logic update should happen every few frames instead of every frame
     if(!gamePaused && (frame % (FRAMES_PER_SECOND/GAME_LOGIC_FRAMES_PER_SECOND) < 1)){
       onTick();
@@ -186,6 +184,10 @@ function _gameStart() {
     if(!gamePaused){
       frame++;
     }
+
+    drawState.societyUnits = false;
+
+    onDraw();
 
     if(gamePaused){
       // Pause Screen

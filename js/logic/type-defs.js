@@ -173,6 +173,13 @@ function isFriendlyTileType(tileType) {
 // Represents the units in a particular class of society, as well as the maximum
 // capacity that can be contained in that society.
 
+function getSocietyRoleHeaderText(role, numUnits, capacity) {
+  const roleName = getRoleAsString(role);
+  const roleDescription = getRoleDescription(role);
+  const inParentheses = capacity === Infinity ? numUnits : `${numUnits} / ${capacity}`;
+  return `${roleName} (${inParentheses}) - ${roleDescription}`;
+}
+
 // Society -> Boolean
 // Does the given society have any movable units? All units are movable except
 // enemies and the queen.
@@ -280,6 +287,45 @@ const ROLE = Object.freeze({
   ATTACKER: 4,
   BUILDER: 5,
 });
+
+// Role -> String
+function getRoleAsString(role) {
+  switch (role) {
+  case ROLE.FARMER:
+    return "Farmers";
+  case ROLE.SOLDIER:
+    return "Soldiers";
+  case ROLE.WALKER:
+    return "Walkers";
+  case ROLE.QUEEN:
+    return "Queen";
+  case ROLE.ATTACKER:
+    return "Enemies";
+  case ROLE.BUILDER:
+    return "Builders";
+  default:
+    console.error("Can't get role as string for unknown role:", role);
+  }
+}
+
+function getRoleDescription(role) {
+  switch (role) {
+  case ROLE.FARMER:
+    return "Generates food";
+  case ROLE.SOLDIER:
+    return "Each kills two";
+  case ROLE.WALKER:
+    return "Walks";
+  case ROLE.QUEEN:
+    return "If she dies, you lose";
+  case ROLE.ATTACKER:
+    return "Kills your units";
+  case ROLE.BUILDER:
+    return "Builds";
+  default:
+    console.error("Can't get description for unknown role:", role);
+  }
+}
 
 // An UnderConstruction is a (...ATile, constructionProgress: Nat,
 // constructionGoal: Nat, resultingTile: ATile)

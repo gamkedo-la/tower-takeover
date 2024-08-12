@@ -166,17 +166,18 @@ function initializeInput(canvas0) {
       // Check if the click happens inside the tile in units display.
 
       if (mouseX >= unitsInTileUIInfo.topLeftX &&
-        mouseY >= unitsInTileUIInfo.topLeftY) {
-        // Normalize the values so that they are in logical position relative to
-        // the top left of the units in tile UI.
-        const x = Math.floor((mouseX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l);
-        const y = Math.floor((mouseY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w);
-        if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
-          const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
-          if (possibleUnitInCell != undefined) {
-            selectUnit(possibleUnitInCell);
+          mouseY >= unitsInTileUIInfo.topLeftY) {
+        const { societyUnits } = drawState;
+
+        for (const societyUnit of societyUnits) {
+          const { topLeftX, topLeftY, bottomRightX, bottomRightY, unit } = societyUnit;
+
+          if (topLeftX <= mouseX && mouseX <= bottomRightX &&
+              topLeftY <= mouseY && mouseY <= bottomRightY) {
+            selectUnit(unit);
           }
         }
+
       }
     } else if (world.clickMode == CLICK_MODE.BUILD) {
       // Check if the click happens to be inside a building select.
@@ -332,25 +333,18 @@ function initializeInput(canvas0) {
 	    ? [ cornerPos1.y, cornerPos2.y ]
 	    : [ cornerPos2.y, cornerPos1.y ];
 
-      // Normalize the values so that they are in logical position relative to
-      // the top left of the units in tile UI.
-      const [nStartX, nEndX, nStartY, nEndY] = [
-	Math.floor((startX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l),
-	Math.floor((endX - unitsInTileUIInfo.topLeftX) / unitInTileUIInfo.l),
-	Math.floor((startY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w),
-	Math.floor((endY - unitsInTileUIInfo.topLeftY) / unitInTileUIInfo.w),
-      ]
+      // Check selection in society table.
+      const { societyUnits } = drawState;
 
-      for (let x = nStartX; x <= nEndX; x++) {
-	for (let y = nStartY; y <= nEndY; y++) {
- 	  if (y <= tileUnitsInDisplay.length - 1 && x <= tileUnitsInDisplay[y].length - 1) {
-	    const possibleUnitInCell = tileUnitsInDisplay[y][x];  // Can be undefined
-	    if (possibleUnitInCell != undefined) {
-	      selectUnit(possibleUnitInCell);
-	    }
-	  }
+      for (const societyUnit of societyUnits) {
+        const { topLeftX, topLeftY, bottomRightX, bottomRightY, unit } = societyUnit;
 
-	}
+        if ((startX <= topLeftX && topLeftX <= endX &&
+             startY <= topLeftY && topLeftY <= endY) ||
+            (startX <= bottomRightX && bottomRightX <= endX &&
+             startY <= bottomRightY && bottomRightY <= endY)) {
+          selectUnit(unit);
+        }
       }
     }
     mouseDownPos = null;
