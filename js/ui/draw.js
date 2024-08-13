@@ -224,6 +224,7 @@ function onDraw() {
   let modeDesc = ["INFO","BUILD","MOVE","CYCLE","PATROL"];
   canvasContext.fillStyle = "rgba(0,0,0,0.25)";
   canvasContext.fillRect(0,0,296,48);
+  canvasContext.lineWidth = 1;
   canvasContext.strokeStyle = "rgba(0,0,0,0.5)";
   canvasContext.strokeRect(1,1,294,46);
   canvasContext.font = "14px Arial";
