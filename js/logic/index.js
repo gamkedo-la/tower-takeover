@@ -799,6 +799,10 @@ function _updateUnitPosInTile(tile, r, c) {
 // Is the position with the given row and column in the world grid a valid
 // cyclic end point?
 function isValidPathEndPoint(r, c) {
+  if (r > world.grid.length - 1 ||
+      c > world.grid[r].length - 1) {
+    return false;
+  }
   const tile = world.grid[r][c];
 
   switch (tile.tag) {

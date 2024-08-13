@@ -278,6 +278,23 @@ function initializeInput(canvas0) {
     mouseX = evt.clientX - rect.left - root.scrollLeft;
     mouseY = evt.clientY - rect.top - root.scrollTop;
 
+    // If invalid mouse position, ignore.
+    if (mouseX < 0 || mouseX > screenWidth ||
+        mouseY < 0 || mouseY > screenHeight) {
+      return;
+    }
+
+    // If mouse is hovering over building tile.
+    // It's not possible for a building to become a non valid end point without
+    // the player moving their mouse, so we can get away with leaving the
+    // update in onMouseMove.
+    drawState.hoveredBuildingTile = false;  // By default, none.
+    const c = Math.floor(mouseX / squareLength);
+    const r = Math.floor(mouseY / squareLength);
+    if (isValidPathEndPoint(r, c)) {
+      drawState.hoveredBuildingTile = {r: r, c: c};
+    }
+
     // If hover over a path in pathUI, give that path box a light blue
     // background and draw that path on the map.
     world.selectedPath = false;  // By default, no selected path.

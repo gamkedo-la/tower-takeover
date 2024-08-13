@@ -129,8 +129,8 @@ function onDraw() {
         // if this is the currently selected tile, remember where it is on screen
         if (world.mapTileSelected == tile) {
             shouldHighlight = true;
-            selectedTileX = c*squareLength-32;
-            selectedTileY = r*squareLength-32;
+            selectedTileX = c*squareLength;
+            selectedTileY = r*squareLength;
         }
 
     }
@@ -138,9 +138,26 @@ function onDraw() {
     // highlight the currently selected tile
     // we draw it here and not in the loop above so other tiles don't overlap it
     if (shouldHighlight) {
-        canvasContext.globalAlpha = Math.sin(performance.now()/300)/4+0.4; // pulse
-        canvasContext.drawImage(nameToImage.get("selectedTileHighlight"),selectedTileX,selectedTileY);
-        canvasContext.globalAlpha = 1;
+      if (world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH) {
+        _drawCursor(selectedTileX, selectedTileY, 'A');
+      } else {
+        _drawCursor(selectedTileX, selectedTileY);
+      }
+    }
+
+    // Highlight the first pos of a two end cyclic path.
+    if (world.twoEndCyclicPathFirstPos) {
+      _drawCursor(world.twoEndCyclicPathFirstPos.c * squareLength,
+                  world.twoEndCyclicPathFirstPos.r * squareLength,
+                  'A');
+    }
+
+    if (drawState.hoveredBuildingTile) {
+      const character = world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH && !world.twoEndCyclicPathFirstPos ? 'A' : 'B';
+      // Highlight the destination building tile of a two end cyclic path.
+      _drawCursor(drawState.hoveredBuildingTile.c * squareLength,
+                  drawState.hoveredBuildingTile.r * squareLength,
+                  character);
     }
 
   }
@@ -240,6 +257,24 @@ function onDraw() {
     canvasContext.strokeRect(mouseDownPos.x, mouseDownPos.y, mouseX - mouseDownPos.x, mouseY - mouseDownPos.y);
     canvasContext.restore();
   }
+}
+
+// Draws the cursor at the given position of top left x and y, in pixels.
+function _drawCursor(x, y, text = false) {
+  canvasContext.globalAlpha = Math.sin(performance.now()/300)/4+0.4; // pulse
+  canvasContext.drawImage(nameToImage.get("selectedTileHighlight"), x - squareLength/2, y - squareLength/2);
+  if (text) {
+    canvasContext.font = "48px Arial";
+    canvasContext.strokeStyle = 'black';
+    canvasContext.lineWidth = 3;
+    canvasContext.fillStyle = "white";
+    const width = canvasContext.measureText(text).width;
+    const height = canvasContext.measureText(text).height;
+    canvasContext.strokeText(text, x + squareLength/2 - width/2, y + squareLength/2 + width/2);
+    canvasContext.fillText(text, x + squareLength/2 - width/2, y + squareLength/2 + width/2);
+  }
+  canvasContext.globalAlpha = 1;
+  canvasContext.lineWidth = 1;
 }
 
 function _drawBlueHighlightAtPixels(x, y) {

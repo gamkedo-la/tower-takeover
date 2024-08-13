@@ -113,7 +113,8 @@ const nextRoleUIInfo = {
 // data needs to be recomputed). There is probably a better way of organizing this.
 
 // A DrawState is a (cyclicPaths: CyclicPathsDrawState, message: MessageState,
-// societyUnits: [U False [List-of SocietyUnit]])
+// societyUnits: [U False [List-of SocietyUnit]],
+// hoveredBuildingTile: [U Pos False])
 // societyUnits is false when it should be recalculated.
 
 // A CyclicPathsDrawState is a (hasChanged: Bool, pathBoxUIInfos: [Array-of PathBoxUIInfo])
@@ -148,4 +149,5 @@ let drawState = {
     messageForCurrentFrame: false,
   },
   societyUnits: false,
+  hoveredBuildingTile: false,
 };
