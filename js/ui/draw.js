@@ -152,7 +152,9 @@ function onDraw() {
                   'A');
     }
 
-    if (drawState.hoveredBuildingTile) {
+    if ((world.clickMode === CLICK_MODE.ONE_END_CYCLIC_PATH ||
+         world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH) &&
+        drawState.hoveredBuildingTile) {
       const character = world.clickMode === CLICK_MODE.TWO_END_CYCLIC_PATH && !world.twoEndCyclicPathFirstPos ? 'A' : 'B';
       // Highlight the destination building tile of a two end cyclic path.
       _drawCursor(drawState.hoveredBuildingTile.c * squareLength,
