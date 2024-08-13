@@ -221,7 +221,7 @@ function onDraw() {
   // where to place the next image.
   
   // draw mode gui background box
-  let modeDesc = ["INFO","BUILD","MOVE","CYCLE","PATROL"];
+  let modeDesc = ["INFO","BUILD","MOVE","THERE AND BACK","PATROL 2 POINTS"];
   canvasContext.fillStyle = "rgba(0,0,0,0.25)";
   canvasContext.fillRect(0,0,296,48);
   canvasContext.lineWidth = 1;
