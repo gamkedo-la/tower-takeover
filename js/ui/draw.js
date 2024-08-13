@@ -28,6 +28,9 @@
 let canvas, canvasContext;
 
 
+const DRAW_SOLDIER_BOXES = false; // original working yellow soldier icons
+const DRAW_SOLDIER_SPRITES = true; // pixelart medieval spear knight
+
 let selectableRoleKeys = ['FARMER', 'SOLDIER'];
 let startOfNextRoleButtonsX = Infinity;
 let startOfNextRoleButtonsY = Infinity;
@@ -551,8 +554,18 @@ function _drawUnit(unit, topLeftX, topLeftY, l, w, societyUnits = false, resetSo
     ? `rgb(${otherColorComponents}, ${mainColorComponent}, ${otherColorComponents})`
     : `rgb(${mainColorComponent}, ${otherColorComponents}, ${otherColorComponents})`;
 
-  canvasContext.fillRect(topLeftX + (w / 8), topLeftY, (w / 4 * 3), l / 3);
-  canvasContext.fillRect(topLeftX, topLeftY + (l / 3) + 4, w, l / 3 * 2 - 4);
+  if (DRAW_SOLDIER_BOXES) {
+    canvasContext.fillRect(topLeftX + (w / 8), topLeftY, (w / 4 * 3), l / 3);
+    canvasContext.fillRect(topLeftX, topLeftY + (l / 3) + 4, w, l / 3 * 2 - 4);
+  }
+
+  if (DRAW_SOLDIER_SPRITES) {
+    if (unit.affiliation === AFFILIATION.YOURS) {
+        canvasContext.drawImage(tileTypeToImage.get("SOLDIER"), topLeftX, topLeftY);
+    } else {
+        canvasContext.drawImage(tileTypeToImage.get("SOLDIERENEMY"), topLeftX, topLeftY);
+    }
+  }
 
   if (unit.isCarryingFood) {
     canvasContext.fillStyle = "orange";

@@ -51,7 +51,10 @@ function _prepareGameStart(callback) {
     {tileType: TILE_TYPE.WALKABLE_TILE, filename: "walkableTerrainGrassland.png"},
     {tileType: TILE_TYPE.CAPITAL, filename: "capitalCity.png"},
     {tileType: TILE_TYPE.ENEMY_CAMP, filename: "enemy_camp.png"},
-    {tileType: TILE_TYPE.WALL, filename: "mountains.png"},    
+    {tileType: TILE_TYPE.WALL, filename: "mountains.png"},  
+    // FIXME: is there a better place to put these?
+    {tileType: "SOLDIER", filename: "soldier.png"}, 
+    {tileType: "SOLDIERENEMY", filename: "soldierEnemy.png"},
   ];
 
   const modeImages = [
