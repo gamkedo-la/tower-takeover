@@ -133,6 +133,7 @@ const initialWorldOld = {
     [wall, wall, walkableTile2, wall],
     [wall, wall, foodStorage, wall],
   ],
+  capitalPos: {r: 0, c: 2},
   cyclicPaths: paths0,
   oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
@@ -143,6 +144,14 @@ const initialWorldOld = {
   hoveredUnit: false,
   selectedPath: false,
   mapTileSelected: capital,
+  enemyWave: {
+    ticksUntilEnemyWave: 60,
+    ticksUntilAnnounceEnemyWave: 45,
+    ticksPassed: 0,
+    madeAnnouncement: false,
+    paths: [],
+    enemyCampPoss: [],
+  },
 }
 
 // ================================================================================
@@ -333,10 +342,54 @@ function _getCapital(grid) {
   }
 }
 
+// Grid -> Pos
+// Gets the position of the capital in the given grid. Logs an error if there
+// isn't one and returns {r: 0, c: 0}.
+function _getCapitalPos(grid) {
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const tile = grid[r][c];
+      if (tile.tag === TILE_TYPE.CAPITAL) {
+        return {r: r, c: c};
+      }
+    }
+  }
+
+  console.error("Capital not found in grid. Every grid should have one", grid);
+  return {r: 0, c: 0};
+}
+
+// Grid -> [List-of Pos]
+// Gets the list of positions of enemy camps in the given grid.
+function _getEnemyCampPoss(grid) {
+  const enemyCampPoss = [];
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const tile = grid[r][c];
+      if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
+        enemyCampPoss.push({r: r, c: c});
+      }
+    }
+  }
+  return enemyCampPoss;
+}
+
+const initialWorldGrid = _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety);
+
+const initialWorldEnemyWave = {
+  ticksUntilEnemyWave: 60,
+  ticksUntilAnnounceEnemyWave: 45,
+  ticksPassed: 0,
+  madeAnnouncement: false,
+  paths: [],
+  enemyCampPoss: _getEnemyCampPoss(initialWorldGrid),
+};
+
 // For paths to work, need to call the feature functions after assigning to
 // initialWorld for the first time.
 const initialWorld = {
-  grid: _addSocietyToInitialTiles(initialTiles, initialPosToSociety),
+  grid: initialWorldGrid,
+  capitalPos: _getCapitalPos(initialWorldGrid),
   cyclicPaths: [],
   oneOffPaths: [],
   buildTileOptions: buildTileOptions0,
@@ -347,6 +400,7 @@ const initialWorld = {
   hoveredUnit: false,
   selectedPath: false,
   mapTileSelected: _getCapital(initialTiles),
+  enemyWave: initialWorldEnemyWave,
 }
 
 

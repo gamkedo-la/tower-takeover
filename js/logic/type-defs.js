@@ -15,7 +15,7 @@
 // Null], dynamiteSelected: Boolean, clickMode: ClickMode, selectedUnits:
 // [Array-of Unit], selectedPath: CyclicPath, oneOffPaths: [Array-of
 // OneOffPath], mapTileSelected: Tile, twoEndCyclicPathFirstPos: [U
-// Pos False], hoveredUnit: [U False Unit]}
+// Pos False], hoveredUnit: [U False Unit], capitalPos: Pos, enemyWave: EnemyWave}
 // Represents a 2D grid of tiles, and the paths which the units traverse between
 // in the grid. Units that are in cyclic paths that are destroyed will have
 // their cyclic paths converted to one off paths, however these one off paths
@@ -23,13 +23,17 @@
 // can get away with this because we don't need to observe the one off paths
 // other than getting the units to move.)
 // If dynamiteSelected is true, then buildTileSelected must be null.
+// `capitalPos` is fine because the capital's position is immutable. Be sure
+// that it's set properly at the initial world state.
 
 // A PathType is one of:
 // - ONE_OFF
 // - CYCLIC
+// - ATTACKER
 const PATH_TYPE = Object.freeze({
   ONE_OFF: 0,
   CYCLIC: 1,
+  ATTACKER: 2,
 });
 
 // A Path is one of:
@@ -109,6 +113,14 @@ function _pathEquals(path1, path2) {
 // 0. Destroyed means that the path should be converted to one to the opposite
 // direction (units will return to where they came from.), or if where they came
 // from has also been destroyed, then go to nearest friendly tile.
+
+// A EnemyPath is a {tag: PathType, orderedPoss: [Array-of Pos], numFollowers:
+// Integer, lastIndex: Integer, initiated: Boolean} Initiated means that the
+// enemies have begun using to the path to go to the tile they want to
+// destroy. Assume that orderedPoss[0] is the position of an enemy camp. Unlike
+// one off path, num followers can be more than 0 without any units actually
+// taking the path, but they intend to take the path at some point. Destroys
+// itself once numFollowers is 0 and initiated is true.
 
 // A Pos is a {r: Integer, c: Integer}
 // Represents the position in the world's grid, where the larger r is, the more
@@ -480,6 +492,10 @@ const CLICK_MODE = Object.freeze({
   ONE_END_CYCLIC_PATH: 3,
   TWO_END_CYCLIC_PATH: 4,
 });
+
+// A EnemyWave is a (ticksUntilEnemyWave: Nat, ticksUntilAnnounceEnemyWave: Nat,
+// ticksPassed: Nat, madeAnnouncement: Boolean, paths: [List-of EnemyPath],
+// enemyCampPoss: [List-of Pos])
 
 // ================================================================================
 // FUNCTIONS
