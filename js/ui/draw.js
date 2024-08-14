@@ -253,7 +253,7 @@ function onDraw() {
     clickModeXSoFar += clickModeImage.width;
   }
 
-  _drawPathsUI(cyclicPathsUIInfo, world.cyclicPaths, world.grid);
+  _drawPathsUI(cyclicPathsUIInfo, world.enemyWave.paths.concat(world.cyclicPaths), world.grid);
 
   _drawMessageGUI();
 
@@ -302,8 +302,10 @@ function _drawBlueSquareOutlineAt(r, c) {
   canvasContext.restore();
 }
 
-// CyclicPathUIInfo [Array-of CyclicPath] -> Void
-function _drawPathsUI(uiInfo, cyclicPaths, grid) {
+// CyclicPathUIInfo [Array-of [U EnemyPath CyclicPath]] -> Void
+// Need to access path's tag, orderedPoss, numFollowers and lastIndex, both
+// EnemyPath and CyclicPath have those.
+function _drawPathsUI(uiInfo, paths, grid) {
   const { topLeftX, topLeftY, w } = uiInfo;
 
   const paddingX = 16;  // In pixels, on each side
@@ -316,22 +318,22 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
   let currY = topLeftY;
 
   // We actually store draw computations, so we can just read from
-  // those. However, if cyclicPath changes in meaning, then we will need to
+  // those. However, if path changes in meaning, then we will need to
   // redraw.
   const {
-    hasChanged: shouldUpdateDrawStateCyclicPaths,
+    hasChanged: shouldUpdateDrawStatePaths,
     pathBoxUIInfos
-  } = drawState.cyclicPaths;
+  } = drawState.paths;
 
   const pathBoxW = (w / 2);
   const pathBoxH = (2 * paddingY) + tileSideLength;
 
-  if (shouldUpdateDrawStateCyclicPaths) {
+  if (shouldUpdateDrawStatePaths) {
     pathBoxUIInfos.length = 0;
   }
 
-  for (const cyclicPath of cyclicPaths) {
-    const { orderedPoss, numFollowers, lastIndex } = cyclicPath;
+  for (const path of paths) {
+    const { tag, orderedPoss, numFollowers, lastIndex } = path;
     const pathLen = lastIndex + 1;
 
     let pathBoxTopLeftX = currX;
@@ -353,10 +355,18 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
       currY += paddingY;
     }
     
-    // Draw a light blue background if selected.
+    // Draw a background if selected, light blue if cyclic, light red if attacker.
     if (world.selectedPath &&
-        cyclicPathEquals(cyclicPath, world.selectedPath)) {
+        tag === PATH_TYPE.CYCLIC &&
+        world.selectedPath.tag === PATH_TYPE.CYCLIC &&
+        cyclicPathEquals(path, world.selectedPath)) {
       canvasContext.fillStyle = `rgb(173, 216, 230)`;  // Light blue.
+      canvasContext.fillRect(pathBoxTopLeftX, pathBoxTopLeftY, pathBoxW, pathBoxH);
+    } else if (world.selectedPath &&
+               tag === PATH_TYPE.ATTACKER &&
+               world.selectedPath.tag === PATH_TYPE.ATTACKER &&
+               enemyPathEquals(path, world.selectedPath)) {
+      canvasContext.fillStyle = `rgb(216, 173, 230)`;  // Light red.
       canvasContext.fillRect(pathBoxTopLeftX, pathBoxTopLeftY, pathBoxW, pathBoxH);
     }
 
@@ -372,14 +382,24 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
     }
 
     
-    // Draw the delete button
-    const redXImage = nameToImage.get("redX");
-    const dTLX = pathBoxTopLeftX + (w / 2) - paddingX - redXImage.width;
-    const dTLY = pathBoxTopLeftY + paddingY;
+    // Draw the delete button, if cyclic and not enemy
+    let deleteUIInfo = false;
+    if (tag === PATH_TYPE.CYCLIC) {
+      const redXImage = nameToImage.get("redX");
+      const dTLX = pathBoxTopLeftX + (w / 2) - paddingX - redXImage.width;
+      const dTLY = pathBoxTopLeftY + paddingY;
 
-    canvasContext.drawImage(redXImage, dTLX, dTLY);
+      canvasContext.drawImage(redXImage, dTLX, dTLY);
 
-    if (shouldUpdateDrawStateCyclicPaths) {
+      deleteUIInfo = {
+        topLeftX: dTLX,
+        topLeftY: dTLY,
+        w: redXImage.width,
+        h: redXImage.height,
+      };
+    }
+
+    if (shouldUpdateDrawStatePaths) {
       // Admittedly, I was undisciplined in storing values, so I ended up
       // subtracting padding from currX. Less than ideal.
       pathBoxUIInfos.push({
@@ -387,13 +407,8 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
         topLeftY: pathBoxTopLeftY,
         w: pathBoxW,
         h: pathBoxH,
-        deleteUIInfo: {
-          topLeftX: dTLX,
-          topLeftY: dTLY,
-          w: redXImage.width,
-          h: redXImage.height,
-        },
-        path: cyclicPath,
+        deleteUIInfo: deleteUIInfo,
+        path: path,
       });
     }
 
@@ -402,12 +417,16 @@ function _drawPathsUI(uiInfo, cyclicPaths, grid) {
   }
 
   // Since we have just drawn, must be up to date.
-  drawState.cyclicPaths.hasChanged = false;
+  drawState.paths.hasChanged = false;
 }
 
 function _drawPath(path) {
-  canvasContext.strokeStyle = "rgb(188, 231, 245)";  // Light blue, slightly
-                                                     // brighter than select color
+  if (path.tag === PATH_TYPE.CYCLIC) {
+    canvasContext.strokeStyle = "rgb(188, 231, 245)";  // Light blue, slightly
+                                                       // brighter than select color
+  } else if (path.tag === PATH_TYPE.ATTACKER) {
+    canvasContext.strokeStyle = "rgb(216, 173, 230)";  // Light red.
+  }
   canvasContext.lineWidth = 5;
 
   let prevPos = path.orderedPoss[0];

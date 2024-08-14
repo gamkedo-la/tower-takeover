@@ -124,7 +124,7 @@ function initializeInput(canvas0) {
 	      // no way to select units from the multiple positions at the same
 	      // time, soisValidPathEndPointn shoulds be the same.
               if (isValidPathEndPoint(r, c)) {
-                drawState.cyclicPaths.hasChanged = true;
+                drawState.paths.hasChanged = true;
 	        directSelectedUnitsToCyclicPath(world.selectedUnits[0].pos.r, world.selectedUnits[0].pos.c, r, c);
 	        clearSelectedUnits();
               } else {
@@ -225,7 +225,7 @@ function initializeInput(canvas0) {
             if (isValidPathEndPoint(r, c)) {
               const { twoEndCyclicPathFirstPos } = world;
               if (twoEndCyclicPathFirstPos) {
-                drawState.cyclicPaths.hasChanged = true;
+                drawState.paths.hasChanged = true;
 	        createCyclicPath(twoEndCyclicPathFirstPos.r, twoEndCyclicPathFirstPos.c, r, c);
 	        world.twoEndCyclicPathFirstPos = false;
 	      } else {
@@ -241,15 +241,18 @@ function initializeInput(canvas0) {
 
     // In any mode, clicking on a redX in path UI display should destroy the
     // path.
-    for (const pathBoxUIInfo of drawState.cyclicPaths.pathBoxUIInfos) {
-      const { deleteUIInfo:{ topLeftX, topLeftY, w, h }, path } = pathBoxUIInfo;
+    for (const pathBoxUIInfo of drawState.paths.pathBoxUIInfos) {
+      const { deleteUIInfo, path } = pathBoxUIInfo;
+      if (deleteUIInfo) {
+        const { topLeftX, topLeftY, w, h } = deleteUIInfo;
 
-      if (mouseX >= topLeftX &&
-          mouseX < topLeftX + w &&
-          mouseY >= topLeftY &&
-          mouseY < topLeftY + h) {
-        drawState.cyclicPaths.hasChanged = true;
-        destroyCyclicPath(path);
+        if (mouseX >= topLeftX &&
+            mouseX < topLeftX + w &&
+            mouseY >= topLeftY &&
+            mouseY < topLeftY + h) {
+          drawState.paths.hasChanged = true;
+          destroyCyclicPath(path);
+        }
       }
     }
 
@@ -298,7 +301,7 @@ function initializeInput(canvas0) {
     // If hover over a path in pathUI, give that path box a light blue
     // background and draw that path on the map.
     world.selectedPath = false;  // By default, no selected path.
-    const { pathBoxUIInfos } = drawState.cyclicPaths;
+    const { pathBoxUIInfos } = drawState.paths;
     for (const pathBoxUIInfo of pathBoxUIInfos) {
       const { topLeftX, topLeftY, w, h, path } = pathBoxUIInfo;
 

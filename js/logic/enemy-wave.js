@@ -69,6 +69,10 @@ function _onTickEnemyWave(world) {
           initiated: false,
         });
       }
+
+      // SMELL: Changing draw state in logic code is weird. Logic should have no
+      // effect on draw code... or should it?
+      drawState.paths.hasChanged = true;
     }
 
     setTemporaryMessage("The enemies are preparing for battle!");

@@ -59,7 +59,7 @@ const PATH_TYPE = Object.freeze({
 function cyclicPathEquals(cyclicPath1, cyclicPath2) {
   if (cyclicPath1.tag != PATH_TYPE.CYCLIC ||
       cyclicPath2.tag != PATH_TYPE.CYCLIC) {
-    console.error("cyclicPathEquals received one off path");
+    console.error("cyclicPathEquals received non cyclic.");
   }
   return _pathEquals(cyclicPath1, cyclicPath2);
 }
@@ -85,9 +85,19 @@ function pathHasEnds(path, origin, destination) {
 function oneOffPathEquals(oneOffPath1, oneOffPath2) {
   if (cyclicPath1.tag != PATH_TYPE.ONE_OFF ||
       cyclicPath2.tag != PATH_TYPE.ONE_OFF) {
-    console.error("oneOffPathEquals received cyclic");
+    console.error("oneOffPathEquals received non one off");
   }
   return _pathEquals(oneOffPath1, oneOffPath2);
+}
+
+// Assumes that the two given paths are attacker. Equal when origin and
+// destination of the two paths are the same.
+function enemyPathEquals(enemyPath1, enemyPath2) {
+  if (enemyPath1.tag != PATH_TYPE.ATTACKER ||
+      enemyPath2.tag != PATH_TYPE.ATTACKER) {
+    console.error("enemyPathEquals received non enemy", enemyPath1.tag, enemyPath2.tag);
+  }
+  return _pathEquals(enemyPath1, enemyPath2);
 }
 
 // Assumes that the two given paths are of the same type.
