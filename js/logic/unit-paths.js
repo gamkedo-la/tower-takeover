@@ -140,6 +140,11 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
       };
       world.oneOffPaths.push(unit.path);
     }
+  } else if (unit.path.tag === PATH_TYPE.ATTACKER &&
+             getPathDestinationTile(unit.path).tag === TILE_TYPE.WALL) {
+    // TODO(enemy): If the player destroys the tile that the enemies are going
+    // to, then the path should be switched out. Units will have to make use of
+    // `pathToJoin` to get to the new path if they were in the middle of the old one.
   } else if (unit.path.tag === PATH_TYPE.ONE_OFF && unit.path.destroyed) {
     const startPos = unit.path.orderedPoss[0];
     if (worldGrid[startPos.r][startPos.c].tag === TILE_TYPE.WALL) {
@@ -321,4 +326,12 @@ function _onTickPathUnitsQueue(pathUnitsQueue, worldGrid, worldPaths) {
   for (let i = pathUnitsQueue.unitsQueue.length - 1; i >= 0; i--) {
     _onTickUnitInPaths(pathUnitsQueue.unitsQueue, i, worldGrid, worldPaths);
   }
+}
+
+
+// Path -> Tile
+// Returns the destination tile of the given path.
+function getPathDestinationTile(path) {
+  const { orderedPoss, lastIndex } = path;
+  return orderedPoss[lastIndex];
 }
