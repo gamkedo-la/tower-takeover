@@ -31,7 +31,7 @@ function _onTickEnemyWave(world) {
     enemyWave.ticksPassed = 0;
     enemyWave.ticksUntilEnemyWave = getRandomInt(20, 30);
     console.log("New ticks until enemy wave ", enemyWave.ticksUntilEnemyWave);
-    enemyWave.ticksUntilAnnounceEnemyWave = ticksUntilEnemyWave - getRandomInt(10, 15);
+    enemyWave.ticksUntilAnnounceEnemyWave = enemyWave.ticksUntilEnemyWave - getRandomInt(10, 15);
     console.log("New ticks until enemy wave announcement  ", enemyWave.ticksUntilAnnounceEnemyWave);
     return;
   } else if (ticksPassed >= ticksUntilAnnounceEnemyWave && !madeAnnouncement) {
@@ -98,6 +98,8 @@ function launchAttack(enemyCamp, path) {
       const numEnemiesToSend = Math.min(numFollowers, units.length);
       for (let i = 0; i < numEnemiesToSend; i++) {
         const unit = units[i];
+        unit.indexInPath = 0;
+        unit.direction = DIRECTION.TO;
         unit.path = path;
       }
     }

@@ -65,6 +65,8 @@ function _onTickPurgeUnfollowedOneOffPaths(world) {
     const enemyPath = enemyPaths[i];
     if (enemyPath.initiated && enemyPath.numFollowers <= 0) {
       enemyWave.paths.splice(i, 1);
+      // SMELL: Logic probably shouldn't mess with drawState.
+      drawState.paths.hasChanged = true;
     }
   }
 }
@@ -109,11 +111,18 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
     setTemporaryMessage("Can't move the queen.");
     unit.path = false;
     return;
-  } else if (unit.role === ROLE.ATTACKER) {
+  }
+
+  /*
+    TODO(path): Need to move this logic to check to when user selects the units
+    and clicks for the first time, making a commitment to move the selected
+    units.
+     
+    else if (unit.role === ROLE.ATTACKER) {
     setTemporaryMessage("Can't move enemy units.");
     unit.path = false;
     return;
-  }
+  } */
 
   if (unit.path.tag === PATH_TYPE.CYCLIC && unit.path.destroyed) {
     if (unit.path.forceDest) {
@@ -198,6 +207,11 @@ function _onTickUnitInPaths(units, idx, worldGrid, worldPaths) {
 	unit.indexInPathToJoin = false;
       }
     }
+  } else if (unit.path.tag === PATH_TYPE.ATTACKER) {
+    if (unit.indexInPath === unit.path.lastIndex) {
+      unit.path.numFollowers--;
+      unit.path = false;
+    }
   } else if (unit.path.tag === PATH_TYPE.CYCLIC) {
     // Change unit's direction if arrive at either end of the path.
     if (unit.indexInPath === unit.path.lastIndex) {
@@ -262,7 +276,8 @@ function _addUnitToTile(unit, tile) {
     // If one off, join based on priority. If cyclic, join the path units queue.
     if (unit.path.tag === PATH_TYPE.ONE_OFF) {
       _addUnitToRole(tile, _getSelectedLegalSocietyRoleToJoin(tile), unit);
-      // _addUnitToRole(tile, _getLegalSocietyRoleToJoin(tile), unit);
+    } else if (unit.path.tag === PATH_TYPE.ATTACKER) {
+      _addUnitToRole(tile, ROLE.ATTACKER, unit);
     } else if (unit.path.tag === PATH_TYPE.CYCLIC) {
       if (tile.hasOwnProperty("pathUnitsQueues")) {
 	// Add unit to the right queue if it already exists

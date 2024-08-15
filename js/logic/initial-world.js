@@ -262,6 +262,8 @@ function _addSocietyToInitialTiles(tiles, society) {
           }
           if (role === ROLE.QUEEN) {
             console.error("You shouldn't be adding queens in the world builder, the capital prefab already provides the queen unit.");
+          } else if (role === ROLE.ATTACKER) {
+            unitToAdd.affiliation = AFFILIATION.ENEMY;
           }
 	  societyRole.units.push(unitToAdd);
 	}
