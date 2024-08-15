@@ -18,7 +18,6 @@ function _onTickEnemyWave(world) {
 
   if (ticksPassed >= ticksUntilEnemyWave) {
     // Attack!
-    console.log("Attacking");
     for (const path of paths) {
       const enemyCampPos = path.orderedPoss[0];
       const enemyCamp = grid[enemyCampPos.r][enemyCampPos.c];
@@ -29,13 +28,10 @@ function _onTickEnemyWave(world) {
     // Book-keeping
     enemyWave.madeAnnouncement = false;
     enemyWave.ticksPassed = 0;
-    enemyWave.ticksUntilEnemyWave = getRandomInt(20, 30);
-    console.log("New ticks until enemy wave ", enemyWave.ticksUntilEnemyWave);
-    enemyWave.ticksUntilAnnounceEnemyWave = enemyWave.ticksUntilEnemyWave - getRandomInt(10, 15);
-    console.log("New ticks until enemy wave announcement  ", enemyWave.ticksUntilAnnounceEnemyWave);
+    enemyWave.ticksUntilEnemyWave = getRandomInt(30, 60);
+    enemyWave.ticksUntilAnnounceEnemyWave = enemyWave.ticksUntilEnemyWave - getRandomInt(15, 25);
     return;
   } else if (ticksPassed >= ticksUntilAnnounceEnemyWave && !madeAnnouncement) {
-    console.log("Making attack announcement.");
     enemyWave.madeAnnouncement = true;
 
     // Logic for which buildings each enemy camp will go for, and how many units will be sent.
@@ -43,7 +39,6 @@ function _onTickEnemyWave(world) {
       const shouldGoForCapital = Math.random() < 0.5;
       const numEnemies = 15;  // TODO(enemies): this number should increase as the game goes on, and also have randomness.
       if (shouldGoForCapital) {
-        console.log("Attack: Going for capital");
         const orderedPoss = generatePathOrderedPoss(grid, pos.r, pos.c, capitalPos.r, capitalPos.c);
         paths.push({
           tag: PATH_TYPE.ATTACKER,
@@ -57,8 +52,6 @@ function _onTickEnemyWave(world) {
         const allFriendlyBuildingsPoss = getAllFriendlyBuildingsPoss(grid);
         // Random element from array impl from https://stackoverflow.com/a/4550514
         const randFriendlyBuildingPos = allFriendlyBuildingsPoss[Math.floor(Math.random() * allFriendlyBuildingsPoss.length)];
-
-        console.log("Attack: Going for pos", randFriendlyBuildingPos);
 
         const orderedPoss = generatePathOrderedPoss(grid, pos.r, pos.c, randFriendlyBuildingPos.r, randFriendlyBuildingPos.c);
         paths.push({
