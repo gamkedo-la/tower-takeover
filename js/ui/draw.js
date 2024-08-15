@@ -165,6 +165,10 @@ function onDraw() {
                   character);
     }
 
+    // FIXME: we might eventually have a main menu state where this could go
+    // but for now this is a simple non-interactive fading splashscreen 
+    drawLogo(); // stops drawing when fully faded out
+
   }
 
   // Drawing the selected path
@@ -784,4 +788,15 @@ function _fillWrappedText(text, topLeftX, topLeftY, maxWidth, fontSize, lineSpac
   const words = text.split(" ");
 
 
+}
+
+// quick splash screen! TODO: turn into a proper main menu gui
+let logoAlpha = 1;
+let logoFadespeed = 0.0025;
+function drawLogo() {
+    logoAlpha-=logoFadespeed;
+    if (logoAlpha <= 0) return;
+    canvasContext.globalAlpha = logoAlpha;
+    canvasContext.drawImage(nameToImage.get("logo"),180,100);
+    canvasContext.globalAlpha = 1;
 }
