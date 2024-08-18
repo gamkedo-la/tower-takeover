@@ -831,30 +831,33 @@ function showCreditsToggle() {
 function drawCredits() {
   var lineX = 40;
   var lineY = 43;
-  var creditsSize = 15;
-  var lineSkip = creditsSize+6;
+  var creditsSize = 17;
+  var lineSkip = creditsSize+4;
   canvasContext.globalAlpha = 1;
   canvasContext.fillStyle = "rgba(220,220,220,1)";
+  var wasFont = canvasContext.font;
+  canvasContext.font = creditsSize+"px Arial";
   for(var i=0;i<this.creditsList.length;i++) {
       canvasContext.fillText(this.creditsList[i],lineX,lineY+=lineSkip);
   }
+  canvasContext.font = wasFont;
 }
 
 var creditsList=[
-"Marvin Chong: Project lead, core gameplay, main systems (battle, farms, energy, capital, society table, audio, messages, events, pathfinding), enemy and wave logic, input and UI button handling, page styling, assorted asset integration, additional sounds (building, action denied), sprites (dynamite, under construction), help messages",
-"Dan Dela Rosa: Assorted UI (soldier count, food display, initial selection, layout, role picking, enforce destination selection)",
+"Marvin Chong: Project lead, core gameplay, main systems (battle, farms, energy, capital, society table, audio, messages, events, pathfinding), enemy and wave logic, input and UI button handling, page styling, assorted asset integration, additional sounds (building, action denied), sprites (modes, dynamite, under construction), help messages, test runner (internal development program)",
+"Dan Dela Rosa: Unit role selection and tile reassignment system, assorted UI (soldier count, food display, initial selection, layout, role picking, enforce destination selection)",
 "Luke Bertram: Background music",
-"Christer \"McFunkypants\" Kaitila: Tile art (farm, capital, grass, mountain, food), sounds (ambient loop, moue click), tile stats display, highlight effect, logo, plash screen, UI improvements",
+"Christer \"McFunkypants\" Kaitila: Tile art (farm, capital, grass, mountain, food), sounds (ambient loop, moue click), tile stats display, tile highlight effect, logo, plash screen, UI improvements",
 "Anthony Hernandez: Pause screen, minor code refactor, frame counter fix",
 "Chris \"BOLT\" Bolte: Sounds (building destruction, path draw, button)",
 "Justin Montgomery: Enemy camp destroyed when last unit defeated, related fix for all role types",
 "Michael Monty: Enemy camp tile",
-"Playtesting: Will be added soon (still doing testing)"," ",
-"                           == CLICK ANYWHERE TO PLAY =="];
+"Playtesting: Klaim (A. Joël Lamotte)"," ",
+"                                                 == CLICK ANYWHERE TO PLAY =="];
 
 function lineWrapCredits() {
     const newCut = [];
-    var maxLineChar = 75;
+    var maxLineChar = 96;
     var findEnd;
 
     for(let i = 0; i < this.creditsList.length; i++) {
