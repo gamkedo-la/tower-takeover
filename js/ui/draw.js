@@ -167,7 +167,7 @@ function onDraw() {
 
     // FIXME: we might eventually have a main menu state where this could go
     // but for now this is a simple non-interactive fading splashscreen 
-    drawLogo(); // stops drawing when fully faded out
+    drawLogoAndCredits(); // stops drawing when fully faded out
 
   }
 
@@ -793,10 +793,108 @@ function _fillWrappedText(text, topLeftX, topLeftY, maxWidth, fontSize, lineSpac
 // quick splash screen! TODO: turn into a proper main menu gui
 let logoAlpha = 1;
 let logoFadespeed = 0.0025;
-function drawLogo() {
+let showCredits = false;
+let creditsButtonX=300;
+let creditsButtonY=357;
+let creditsButtonW=265;
+let creditsButtonH=30;
+function drawLogoAndCredits() {
+    if(showCredits) {
+      canvasContext.globalAlpha = 0.3;
+      canvasContext.fillStyle = "black";
+      canvasContext.fillRect(0,0,830,450);
+      drawCredits();
+      return;
+    }
     logoAlpha-=logoFadespeed;
     if (logoAlpha <= 0) return;
     canvasContext.globalAlpha = logoAlpha;
     canvasContext.drawImage(nameToImage.get("logo"),180,100);
+    canvasContext.fillStyle = "black";
+    canvasContext.fillRect(300,357,265,30);
+    canvasContext.fillStyle = "rgba(180,180,180,1)";
+    canvasContext.fillText("Click here to view credits",305,380);
     canvasContext.globalAlpha = 1;
 }
+
+function showCreditsToggle() {
+  if(logoAlpha > 0 &&
+     mouseX > creditsButtonX && mouseX < creditsButtonX+creditsButtonW &&
+     mouseY > creditsButtonY && mouseY < creditsButtonY+creditsButtonH) {
+    showCredits=true;
+    logoAlpha = 0;
+    return true;
+  }
+  return false;
+}
+
+function drawCredits() {
+  var lineX = 40;
+  var lineY = 43;
+  var creditsSize = 15;
+  var lineSkip = creditsSize+6;
+  canvasContext.globalAlpha = 1;
+  canvasContext.fillStyle = "rgba(220,220,220,1)";
+  for(var i=0;i<this.creditsList.length;i++) {
+      canvasContext.fillText(this.creditsList[i],lineX,lineY+=lineSkip);
+  }
+}
+
+var creditsList=[
+"Marvin Chong: Project lead, core gameplay, main systems (battle, farms, energy, capital, society table, audio, messages, events, pathfinding), enemy and wave logic, input and UI button handling, page styling, assorted asset integration, additional sounds (building, action denied), sprites (dynamite, under construction), help messages",
+"Dan Dela Rosa: Assorted UI (soldier count, food display, initial selection, layout, role picking, enforce destination selection)",
+"Luke Bertram: Background music",
+"Christer \"McFunkypants\" Kaitila: Tile art (farm, capital, grass, mountain, food), sounds (ambient loop, moue click), tile stats display, highlight effect, logo, plash screen, UI improvements",
+"Anthony Hernandez: Pause screen, minor code refactor, frame counter fix",
+"Chris \"BOLT\" Bolte: Sounds (building destruction, path draw, button)",
+"Justin Montgomery: Enemy camp destroyed when last unit defeated, related fix for all role types",
+"Michael Monty: Enemy camp tile",
+"Playtesting: Will be added soon (still doing testing)"," ",
+"                           == CLICK ANYWHERE TO PLAY =="];
+
+function lineWrapCredits() {
+    const newCut = [];
+    var maxLineChar = 75;
+    var findEnd;
+
+    for(let i = 0; i < this.creditsList.length; i++) {
+      const currentLine = this.creditsList[i];
+      for(let j = 0; j < currentLine.length; j++) {
+        /*const aChar = currentLine[j];
+        if(aChar === ":") {
+          if(i !== 0) {
+            newCut.push("\n");
+          }
+          newCut.push(currentLine.substring(0, j + 1));
+          newCut.push(currentLine.substring(j + 2, currentLine.length));
+          break;
+        } else*/ if(j === currentLine.length - 1) {
+          if((i === 0) || (i >= this.creditsList.length - 2)) {
+            newCut.push(currentLine);
+          } else {
+            newCut.push(currentLine.substring(0, currentLine.length));
+          }
+        }
+      }
+    }
+
+    const newerCut = [];
+    for(var i=0;i<newCut.length;i++) {
+      while(newCut[i].length > 0) {
+        findEnd = maxLineChar;
+        if(newCut[i].length > maxLineChar) {
+          for(var ii=findEnd;ii>0;ii--) {
+            if(newCut[i].charAt(ii) == " ") {
+              findEnd=ii;
+              break;
+            }
+          }
+        }
+        newerCut.push(newCut[i].substring(0, findEnd));
+        newCut[i] = newCut[i].substring(findEnd, newCut[i].length);
+      }
+    }
+
+    this.creditsList = newerCut;
+  }
+lineWrapCredits();

@@ -42,6 +42,10 @@ function initializeInput(canvas0) {
   document.addEventListener("keydown", _onKeyDown);
 
   function _onMouseClick(evt) {
+    if(showCreditsToggle()) {
+      return;
+    }
+
     if (firstClickEver) {
         firstClickEver = false;
         playSFX("bgm_01",0.5,true);
@@ -334,6 +338,10 @@ function initializeInput(canvas0) {
   }
 
   function _onMouseDragEnd(evt) {
+    if(showCredits) {
+      showCredits=false;
+      return;
+    }
     if(gamePaused){
       return;
     }
