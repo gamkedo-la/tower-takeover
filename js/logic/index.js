@@ -92,6 +92,7 @@ function onTick() {
   _onTickBattles(world);
   _onTickPaths(world);
   _onTickEggs(world);
+  _onTickEnemySpawn(world);
   _onTickEnemyWave(world);
 
   _onTickPurgeStarvedUnits(world);

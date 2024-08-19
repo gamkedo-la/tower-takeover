@@ -431,8 +431,8 @@ const UNIT_PREFAB = {
 const FOOD_STORAGE_PREFAB = Object.assign({
   ...ATILE,
   tag: TILE_TYPE.FOOD_STORAGE,
-  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
-		    [ROLE.ATTACKER, {capacity: 20, units: []}]]),
+  society: new Map([[ROLE.SOLDIER, {capacity: Infinity, units: []}],
+		    [ROLE.ATTACKER, {capacity: Infinity, units: []}]]),
   pathUnitsQueues: [],
   foodMaxCapacity: 15000,
 }, foodStorageMixin);
@@ -481,7 +481,8 @@ const CAPITAL_PREFAB = Object.assign({
 }, foodStorageMixin);
 
 // An EnemyCamp is a {tag: TileType, enemyUnits: [Array-of Unit],
-// pathUnitsQueues: [Array-of PathUnitsQueue]}
+// pathUnitsQueues: [Array-of PathUnitsQueue], ticksSoFar: Nat, numTicksToSpawn:
+// Nat, numTicksToIncreaseSpawn: Nat, numToSpawn: Nat}
 // Represents that which holds enemies that want to walk to the capital to kill
 // the queen.
 // Note that soldier here refers to the player's units, and attacker refers to
@@ -489,8 +490,13 @@ const CAPITAL_PREFAB = Object.assign({
 const ENEMY_CAMP_PREFAB = {
   ...ATILE,
   tag: TILE_TYPE.ENEMY_CAMP,
-  society: new Map([[ROLE.SOLDIER, {capacity: 20, units: []}],
-		    [ROLE.ATTACKER, {capacity: 20, units: []}]])
+  society: new Map([[ROLE.SOLDIER, {capacity: Infinity, units: []}],
+		    [ROLE.ATTACKER, {capacity: Infinity, units: []}]]),
+  toSpawnTicksSoFar: 0,
+  numTicksToSpawn: 30,
+  toIncreaseSpawnTicksSoFar: 0,
+  numTicksToIncreaseSpawn: 30,
+  numToSpawn: 5,
 }
 
 // A ClickMode is one of the below.

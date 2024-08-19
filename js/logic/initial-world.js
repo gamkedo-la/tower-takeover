@@ -379,8 +379,8 @@ function _getEnemyCampPoss(grid) {
 const initialWorldGrid = _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety);
 
 const initialWorldEnemyWave = {
-  ticksUntilEnemyWave: 7,
-  ticksUntilAnnounceEnemyWave: 3,
+  ticksUntilEnemyWave: 60,
+  ticksUntilAnnounceEnemyWave: 30,
   ticksPassed: 0,
   madeAnnouncement: false,
   paths: [],
