@@ -22,6 +22,13 @@ const GAME_LOGIC_FRAMES_PER_SECOND = 1;
 const SECONDS_PER_GAME_LOGIC_FRAME = 1 / GAME_LOGIC_FRAMES_PER_SECOND;
 
 // ================================================================================
+// GLOBAL MUTABLES
+// ================================================================================
+
+let playerHasLost = false;
+let playerHasWon = false;
+
+// ================================================================================
 // IMPLEMENTATION
 // ================================================================================
 
@@ -176,6 +183,17 @@ function _gameStart() {
   // The event loop (every frame: the world, and draw everything), assumes that
   // input-handling happens before onTick and onDraw when a new frame is being loaded.
   setInterval(function() {
+    if (playerHasLost) {
+      drawTintedRect(0.6, "black", 0, 0, canvas.width, canvas.height)
+      centerBox(canvas.width/2, canvas.height/2, 350, 100, "black")
+      centerText("Game over. Your queen has died. Refresh to restart.", canvas.width/2, canvas.height/2, "white", "30")
+      return;
+    }
+
+    if (playerHasWon) {
+      return;
+    }
+    
     // The game logic update should happen every few frames instead of every frame
     if(!gamePaused && (frame % (FRAMES_PER_SECOND/GAME_LOGIC_FRAMES_PER_SECOND) < 1)){
       onTick();

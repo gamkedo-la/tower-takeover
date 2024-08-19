@@ -44,8 +44,7 @@ function _onTickTileBattles(tile, r, c) {
 
     if (enemies.length > 0) {
       tile.isQueenAlive = false;
-
-      // TODO(lose): Put the game into the lose state.
+      playerHasLost = true;
     }
   } else if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
     const yourUnits = tile.society.get(ROLE.SOLDIER).units;
