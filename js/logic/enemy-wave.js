@@ -36,8 +36,11 @@ function _onTickEnemyWave(world) {
 
     // Logic for which buildings each enemy camp will go for, and how many units will be sent.
     for (const pos of enemyCampPoss) {
+      const enemyTile = world.grid[pos.r][pos.c];
       const shouldGoForCapital = Math.random() < 0.5;
-      const numEnemies = 15;  // TODO(enemies): this number should increase as the game goes on, and also have randomness.
+      const percentageOfEnemies = getRandomNum(0.5, 0.75);
+      const numEnemies = Math.floor(enemyTile.society.get(ROLE.ATTACKER).units.length * percentageOfEnemies);
+      console.log(percentageOfEnemies, numEnemies);
       if (shouldGoForCapital) {
         const orderedPoss = generatePathOrderedPoss(grid, pos.r, pos.c, capitalPos.r, capitalPos.c);
         paths.push({

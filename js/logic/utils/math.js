@@ -7,3 +7,9 @@ function getRandomInt(min, max) {
   const maxFloored = Math.floor(max);
   return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled);
 }
+
+// Num Num -> Num
+// Returns a random number within the given range of min to max, not including max.
+function getRandomNum(min, max) {
+  return Math.random() * (max - min) + min;
+}
