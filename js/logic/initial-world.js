@@ -163,10 +163,10 @@ const initialWorldOld = {
 // The length of initialTileTypes must be a multiple of initialTileTypesRowLength.
 const initialTileTypesRowLength = 13;  // Number of columns.
 const initialTileTypes = [
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  1, 1, 1, 1, 1, 1, 1, 1, 6, 1, 1, 1, 1,
   1, 1, 5, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
   1, 1, 2, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1,
-  3, 2, 2, 2, 4, 1, 1, 1, 2, 2, 2, 2, 1,
+  3, 2, 2, 2, 4, 1, 1, 1, 2, 2, 2, 2, 6,
   1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
   4, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1,
   1, 1, 6, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1,
@@ -191,7 +191,9 @@ const initialPosToSociety = [
   // 5, 4, [ROLE.SOLDIER, 15, ROLE.ATTACKER, 2],
   1, 2, [ROLE.SOLDIER, 10],
   3, 4, [ROLE.SOLDIER, 15, ROLE.FARMER, 15],
-  6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 15],
+  6, 2, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 20],
+  3, 12, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 15],
+  0, 8, [ROLE.SOLDIER, 0, ROLE.ATTACKER, 15],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
   // 3, 2, [ROLE.WALKER, 1, ROLE.ATTACKER, 1],
 ];
