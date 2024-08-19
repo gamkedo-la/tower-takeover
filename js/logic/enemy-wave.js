@@ -18,6 +18,11 @@ function _onTickEnemyWave(world) {
 
   const enemyCampPoss = _getEnemyCampPoss(world.grid);
 
+  if (enemyCampPoss.length <= 0) {
+    playerHasWon = true;
+    return;
+  }
+
   if (ticksPassed >= ticksUntilEnemyWave) {
     // Attack!
     for (const path of paths) {

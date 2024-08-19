@@ -191,6 +191,9 @@ function _gameStart() {
     }
 
     if (playerHasWon) {
+      drawTintedRect(0.6, "black", 0, 0, canvas.width, canvas.height)
+      centerBox(canvas.width/2, canvas.height/2, 350, 100, "black")
+      centerText("Congratulations! You have destroyed all enemy camps. Refresh to restart.", canvas.width/2, canvas.height/2, "white", "30")
       return;
     }
     
