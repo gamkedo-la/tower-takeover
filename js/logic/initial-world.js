@@ -363,18 +363,6 @@ function _getCapitalPos(grid) {
 
 // Grid -> [List-of Pos]
 // Gets the list of positions of enemy camps in the given grid.
-function _getEnemyCampPoss(grid) {
-  const enemyCampPoss = [];
-  for (let r = 0; r < grid.length; r++) {
-    for (let c = 0; c < grid[r].length; c++) {
-      const tile = grid[r][c];
-      if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
-        enemyCampPoss.push({r: r, c: c});
-      }
-    }
-  }
-  return enemyCampPoss;
-}
 
 const initialWorldGrid = _addSocietyToInitialTiles(_initialTileTypesToTiles(initialTileTypes), initialPosToSociety);
 
@@ -384,7 +372,6 @@ const initialWorldEnemyWave = {
   ticksPassed: 0,
   madeAnnouncement: false,
   paths: [],
-  enemyCampPoss: _getEnemyCampPoss(initialWorldGrid),
 };
 
 // For paths to work, need to call the feature functions after assigning to

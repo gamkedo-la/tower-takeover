@@ -14,7 +14,9 @@
 
 function _onTickEnemyWave(world) {
   const { enemyWave, grid, capitalPos } = world;
-  const { madeAnnouncement, ticksUntilEnemyWave, ticksUntilAnnounceEnemyWave, ticksPassed, paths, enemyCampPoss } = enemyWave;
+  const { madeAnnouncement, ticksUntilEnemyWave, ticksUntilAnnounceEnemyWave, ticksPassed, paths } = enemyWave;
+
+  const enemyCampPoss = _getEnemyCampPoss(world.grid);
 
   if (ticksPassed >= ticksUntilEnemyWave) {
     // Attack!
@@ -101,4 +103,20 @@ function launchAttack(enemyCamp, path) {
   }
 
   path.initiated = true;
+}
+
+
+
+
+function _getEnemyCampPoss(grid) {
+  const enemyCampPoss = [];
+  for (let r = 0; r < grid.length; r++) {
+    for (let c = 0; c < grid[r].length; c++) {
+      const tile = grid[r][c];
+      if (tile.tag === TILE_TYPE.ENEMY_CAMP) {
+        enemyCampPoss.push({r: r, c: c});
+      }
+    }
+  }
+  return enemyCampPoss;
 }

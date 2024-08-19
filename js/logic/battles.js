@@ -7,7 +7,7 @@ function _onTickBattles(world) {
     for (let c = 0; c < world.grid[r].length; c++) {
       const tile = world.grid[r][c];
 
-      _onTickTileBattles(tile);
+      _onTickTileBattles(tile, r, c);
     }
   }
 }
@@ -16,7 +16,7 @@ function _onTickBattles(world) {
 // AUXILLARY FUNCTIONALITY
 // ================================================================================
 
-function _onTickTileBattles(tile) {
+function _onTickTileBattles(tile, r, c) {
   // For now, battles only occur in walkable tiles, the capital and enemy camps.
   if (tile.tag === TILE_TYPE.WALKABLE_TILE) {
     let yourUnits = tile.society.get(ROLE.WALKER);
@@ -78,6 +78,13 @@ function _onTickTileBattles(tile) {
     _societyBattle(tile.society);
     if (tile.pathUnitsQueues) {
       _pathUnitsQueuesBattle(tile.society.get(ROLE.ATTACKER).units, tile.pathUnitsQueues);
+    }
+
+    // If there is at least one enemy, that means the enemies have defeated all
+    // the guards, and the tile should get destroyed.
+    const enemies = tile.society.get(ROLE.ATTACKER).units;
+    if (enemies.length > 0) {
+      changeMapTile(r, c, TILE_TYPE.WALL, true);
     }
   }
 }

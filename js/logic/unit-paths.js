@@ -76,6 +76,10 @@ function _onTickPurgeUnfollowedOneOffPaths(world) {
 // ================================================================================
 
 function _onTickTileInPaths(tile, worldGrid, worldPaths) {
+  if (tile.tag === TILE_TYPE.WALL) {
+    return;
+  }
+  
   for (const [role, {units}] of tile.society) {
     // The units array will be modified, so cannot use for...of
     for (let i = units.length - 1; i >= 0; i--) {

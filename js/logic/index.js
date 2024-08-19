@@ -499,7 +499,7 @@ function changeMapTile(r, c, tileType, gameCommand = false) {
     // NOTE(marvin):
     // Not exactly sure if players should be able to do this... We can play it
     // by ear, and remove it as an option if it doesn't work out.
-    world.grid[r][c] = {tag: tileType};
+    world.grid[r][c] = _.cloneDeep(WALL_PREFAB);
     break;
   case TILE_TYPE.WALKABLE_TILE:
     // Building a walkable tile is equivalent to destroying a player
@@ -877,15 +877,15 @@ function _onTickDestroyTiles(world) {
 
 function _onTickDestroyTile(r, c, tile) {
   if(tile.tag === TILE_TYPE.ENEMY_CAMP) {
-    if(!hasAnyUnits(tile)) {
+    if(!hasEnemies(tile)) {
       console.log(`All enemy units destroyed in enemy camp [${r},${c}] - changing to walkable tile`);
       // Destroy the enemy camp by changing it to a walkable tile
-      changeMapTile(r, c, TILE_TYPE.WALKABLE_TILE, true);
+      changeMapTile(r, c, TILE_TYPE.WALL, true);
     }
   }
 }
 
-function hasAnyUnits(tile) {
+function hasEnemies(tile) {
   if (!tile) {
     return false;
   }
@@ -893,10 +893,9 @@ function hasAnyUnits(tile) {
     return false;
   }
 
-  for (const [_, {units}] of tile.society) {
-    if (units.length > 0) {
-      return true;
-    }
+  const enemies = tile.society.get(ROLE.ATTACKER).units;
+  if (enemies.length > 0) {
+    return true;
   }
 }
 
